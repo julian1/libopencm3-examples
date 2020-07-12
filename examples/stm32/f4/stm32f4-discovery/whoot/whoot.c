@@ -63,10 +63,11 @@ int main(void)
 
 	gpio_setup();
 
-  // gpio_toggle(GPIOD, GPIO0);  // JA enable
-  gpio_set(GPIOD, GPIO0);  
+  
+  gpio_clear(GPIOD, GPIO0);   // JA enable A
+                              // OKK. seems to work regardless of this pin...
 
-
+    // initial postion
     gpio_set(GPIOD, GPIO1);  
     gpio_clear(GPIOD, GPIO2);  
 
@@ -93,7 +94,7 @@ int main(void)
 
 		// gpio_toggle(GPIOD, GPIO12);	/* LED on/off */
 
-    gpio_toggle(GPIOE, GPIO2);  // JA
+    gpio_toggle(GPIOE, GPIO0);  // blink 
 
     gpio_toggle(GPIOD, GPIO1);  // JA
     gpio_toggle(GPIOD, GPIO2);  // JA
