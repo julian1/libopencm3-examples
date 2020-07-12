@@ -27,8 +27,14 @@
 #define ARRAY_LEN(array) (sizeof((array))/sizeof((array)[0]))
 #endif
 
-#define LED1_PORT GPIOD
-#define LED1_PIN GPIO12
+// #define LED1_PORT GPIOD
+// #define LED1_PIN GPIO12
+
+#define LED1_PORT GPIOE
+#define LED1_PIN  GPIO0
+
+
+
 
 /* Morse standard timings */
 #define ELEMENT_TIME 500
@@ -69,10 +75,11 @@ static void clock_setup(void)
 static void gpio_setup(void)
 {
 	/* Enable GPIO clock for leds. */
-	rcc_periph_clock_enable(RCC_GPIOD);
+	rcc_periph_clock_enable(RCC_GPIOE); // JA
 
 	/* Enable led as output */
-	gpio_mode_setup(LED1_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED1_PIN);
+   gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
+
 	gpio_set(LED1_PORT, LED1_PIN);
 }
 
@@ -149,6 +156,7 @@ void tim2_isr(void)
 		gpio_toggle(LED1_PORT, LED1_PIN);
 	}
 }
+
 
 int main(void)
 {
