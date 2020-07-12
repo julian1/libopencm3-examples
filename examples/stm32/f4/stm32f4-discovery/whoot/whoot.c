@@ -44,20 +44,78 @@ static void gpio_setup(void)
    gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
 
 
-   gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
-   gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO1); // JA
-   gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO2); // JA
+   gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0 | GPIO1 | GPIO2 | GPIO3 | GPIO4 | GPIO5 ); // JA
 
 }
+
+// think coil has 4 power positions.
+// +5,0, +5,+5, 0,+5, 0,0, 
+// but we won't use them all.
+// and we have to get the polarity right...
+/* 
+static int ia[][4] = {
+  { 1,0,   0, 1 },
+  { 1,1,   0, 0 },
+  { 0,1,   1, 0 },
+  { 0,0,   1, 1 },
+};
+*/
+// just use modulus?
+
 
 
 
 int main(void)
 {
-	int i;
+	int i = 0;
+	int j = 0;
 
 	gpio_setup();
 
+  // this needs to be set/high - to get the voltage switch 
+  // alternatively we pulse this ... to reduce current...
+  gpio_set(GPIOD, GPIO0);   // JA enable A
+  gpio_set(GPIOD, GPIO5);   // enable B 
+
+
+  // full wave drive
+	while (1) {
+
+    ++i;
+    switch(i % 4) {
+
+      // we only really need to do the values that change.  
+      // except would need to define separate start
+      case 0: 
+        gpio_set(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
+        break;
+      case 1: 
+        gpio_set(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
+        break;
+      case 2: 
+        gpio_clear(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
+        break;
+      case 3: 
+        gpio_clear(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
+        break;
+    } 
+
+    gpio_toggle(GPIOE, GPIO0);  // led blink 
+
+    for (j = 0; j < 2000000; j++) { /* Wait a bit. */
+			__asm__("nop");
+		}
+	}
+
+	return 0;
+}
+
+
+static int main1(void)
+{
+	int i;
+
+	gpio_setup();
   
   gpio_set(GPIOD, GPIO0);   // JA enable A
                               // this needs to be set/high - to get the voltage switch 
@@ -75,8 +133,8 @@ int main(void)
     gpio_toggle(GPIOE, GPIO0);  // led blink 
 
     // toggle the the winding.
-    gpio_toggle(GPIOD, GPIO1);  // JA
-    gpio_toggle(GPIOD, GPIO2);  // JA
+    // gpio_toggle(GPIOD, GPIO1);  // JA blinks one led.
+    gpio_toggle(GPIOD, GPIO2);  // JA blinks the other.
 
 
     for (i = 0; i < 2000000; i++) { /* Wait a bit. */
