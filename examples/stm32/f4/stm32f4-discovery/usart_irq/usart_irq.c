@@ -24,51 +24,66 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/nvic.h>
 
+
+
+
+
 static void clock_setup(void)
 {
-	/* Enable GPIOD clock for LED & USARTs. */
-	rcc_periph_clock_enable(RCC_GPIOD);
+	/* Enable GPIOE clock for LED & USARTs. */
+	rcc_periph_clock_enable(RCC_GPIOE);
 	rcc_periph_clock_enable(RCC_GPIOA);
 
-	/* Enable clocks for USART2. */
-	rcc_periph_clock_enable(RCC_USART2);
+	/* Enable clocks for USART1. */
+  // JA
+	rcc_periph_clock_enable(RCC_USART1);
 }
 
 static void usart_setup(void)
 {
-	/* Enable the USART2 interrupt. */
-	nvic_enable_irq(NVIC_USART2_IRQ);
+	/* Enable the USART1 interrupt. */
+	nvic_enable_irq(NVIC_USART1_IRQ); // JA
 
-	/* Setup GPIO pins for USART2 transmit. */
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO2);
+	/* Setup GPIO pins for USART1 transmit. */
+	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9); // JA
 
-	/* Setup GPIO pins for USART2 receive. */
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO3);
-	gpio_set_output_options(GPIOA, GPIO_OTYPE_OD, GPIO_OSPEED_25MHZ, GPIO3);
 
-	/* Setup USART2 TX and RX pin as alternate function. */
-	gpio_set_af(GPIOA, GPIO_AF7, GPIO2);
-	gpio_set_af(GPIOA, GPIO_AF7, GPIO3);
+	/* Setup GPIO pins for USART1 receive. */
+	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO10);
+	gpio_set_output_options(GPIOA, GPIO_OTYPE_OD, GPIO_OSPEED_25MHZ, GPIO10);
 
-	/* Setup USART2 parameters. */
-	usart_set_baudrate(USART2, 115200);
-	usart_set_databits(USART2, 8);
-	usart_set_stopbits(USART2, USART_STOPBITS_1);
-	usart_set_mode(USART2, USART_MODE_TX_RX);
-	usart_set_parity(USART2, USART_PARITY_NONE);
-	usart_set_flow_control(USART2, USART_FLOWCONTROL_NONE);
+	/* Setup USART1 TX and RX pin as alternate function. */
+	// gpio_set_af(GPIOA, GPIO_AF7, GPIO2);
+	gpio_set_af(GPIOA, GPIO_AF7, GPIO9);  // JA  tx
 
-	/* Enable USART2 Receive interrupt. */
-	usart_enable_rx_interrupt(USART2);
+	// gpio_set_af(GPIOA, GPIO_AF7, GPIO3);
+	gpio_set_af(GPIOA, GPIO_AF7, GPIO10); // JA    rx
+
+	/* Setup USART1 parameters. */
+	// usart_set_baudrate(USART1, 38400);
+	usart_set_baudrate(USART1, 115200); // JA
+	usart_set_databits(USART1, 8);
+	usart_set_stopbits(USART1, USART_STOPBITS_1);
+	usart_set_mode(USART1, USART_MODE_TX_RX);
+	usart_set_parity(USART1, USART_PARITY_NONE);
+	usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
+
+	/* Enable USART1 Receive interrupt. */
+	usart_enable_rx_interrupt(USART1);
 
 	/* Finally enable the USART. */
-	usart_enable(USART2);
+	usart_enable(USART1);
+
+
+
 }
 
 static void gpio_setup(void)
 {
 	/* Setup GPIO pin GPIO12 on GPIO port D for LED. */
-	gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO12);
+	// gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO12);
+
+  gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_OTYPE_OD, GPIO0); // JA
 }
 
 int main(void)
@@ -77,39 +92,42 @@ int main(void)
 	gpio_setup();
 	usart_setup();
 
+
 	while (1) {
 		__asm__("NOP");
 	}
 
+ 
 	return 0;
 }
 
-void usart2_isr(void)
+void usart1_isr(void)
 {
 	static uint8_t data = 'A';
 
 	/* Check if we were called because of RXNE. */
-	if (((USART_CR1(USART2) & USART_CR1_RXNEIE) != 0) &&
-	    ((USART_SR(USART2) & USART_SR_RXNE) != 0)) {
+	if (((USART_CR1(USART1) & USART_CR1_RXNEIE) != 0) &&
+	    ((USART_SR(USART1) & USART_SR_RXNE) != 0)) {
 
 		/* Indicate that we got data. */
-		gpio_toggle(GPIOD, GPIO12);
+		gpio_toggle(GPIOE, GPIO0);
 
 		/* Retrieve the data from the peripheral. */
-		data = usart_recv(USART2);
+		data = usart_recv(USART1);
 
 		/* Enable transmit interrupt so it sends back the data. */
-		usart_enable_tx_interrupt(USART2);
+		usart_enable_tx_interrupt(USART1);
 	}
 
 	/* Check if we were called because of TXE. */
-	if (((USART_CR1(USART2) & USART_CR1_TXEIE) != 0) &&
-	    ((USART_SR(USART2) & USART_SR_TXE) != 0)) {
+	if (((USART_CR1(USART1) & USART_CR1_TXEIE) != 0) &&
+	    ((USART_SR(USART1) & USART_SR_TXE) != 0)) {
 
 		/* Put data into the transmit register. */
-		usart_send(USART2, data);
+		usart_send(USART1, data);
 
 		/* Disable the TXE interrupt as we don't need it anymore. */
-		usart_disable_tx_interrupt(USART2);
+		usart_disable_tx_interrupt(USART1);
 	}
 }
+
