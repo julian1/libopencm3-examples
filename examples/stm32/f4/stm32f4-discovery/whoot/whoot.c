@@ -69,7 +69,12 @@ static int ia[][4] = {
 // http://rfanat.ru/stanki_chpu/BIPOLAR_Stepper_Motor_Driver_Circuits_74194.html
 
 /*
-  3.75V turning quite fast 1rpm. uses 0.16A
+  3.75V 
+    turning quite fast 1 rps. uses 0.16A
+    1 revolution every 10 sec uses 1.4 amps. 
+    runnning a click every second uses 1.69 amps. which is a lot.
+
+    eg. when slow - its almost an open short.
 */
 
 int main(void)
@@ -115,8 +120,8 @@ int main(void)
 
     gpio_toggle(GPIOE, GPIO0);  // led blink 
 
-    for (j = 0; j < 10000; j++) { /* Wait a bit. */
-    // for (j = 0; j < 100000; j++) { /* Wait a bit. */
+    // for (j = 0; j < 10000; j++) { /* Wait a bit. */
+    for (j = 0; j < 100000; j++) { /* Wait a bit. */
     // for (j = 0; j < 2000000; j++) { /* Wait a bit. */
 			__asm__("nop");
 		}
@@ -126,36 +131,3 @@ int main(void)
 }
 
 
-static int main1(void)
-{
-	int i;
-
-	gpio_setup();
-  
-  gpio_set(GPIOD, GPIO0);   // JA enable A
-                              // this needs to be set/high - to get the voltage switch 
-                              // alternatively we pulse this ... to reduce current...
-
-    // initial postion
-    gpio_set(GPIOD, GPIO1);  
-    gpio_clear(GPIOD, GPIO2);  
-
-	/* Blink the LED (PC8) on the board. */
-	while (1) {
-		/* Using API function gpio_toggle(): */
-
-
-    gpio_toggle(GPIOE, GPIO0);  // led blink 
-
-    // toggle the the winding.
-    // gpio_toggle(GPIOD, GPIO1);  // JA blinks one led.
-    gpio_toggle(GPIOD, GPIO2);  // JA blinks the other.
-
-
-    for (i = 0; i < 2000000; i++) { /* Wait a bit. */
-			__asm__("nop");
-		}
-	}
-
-	return 0;
-}
