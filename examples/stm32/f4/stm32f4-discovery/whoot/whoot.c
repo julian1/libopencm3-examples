@@ -61,6 +61,7 @@ int main(void)
   
   gpio_set(GPIOD, GPIO0);   // JA enable A
                               // this needs to be set/high - to get the voltage switch 
+                              // alternatively we pulse this ... to reduce current...
 
     // initial postion
     gpio_set(GPIOD, GPIO1);  
