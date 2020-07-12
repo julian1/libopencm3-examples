@@ -96,7 +96,9 @@ int main(void)
 	while (1) {
 
     ++i;
-    switch(i % 4) {
+    // switch(i % 4) {
+    switch(3 - (i % 4)) {
+        // reverse would just be 3 - the value
 
       // NO... the pins are around the wrong way.
       // the wave form pins - are different. for particular pair should never be both set or both clear.
