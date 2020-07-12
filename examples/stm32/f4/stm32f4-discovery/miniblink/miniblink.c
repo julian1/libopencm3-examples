@@ -38,7 +38,9 @@ static void gpio_setup(void)
 	// gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO12);
 
 
-   gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_OTYPE_OD, GPIO0); // JA
+   // gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_OTYPE_OD, GPIO0); // JA
+   gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
+
 }
 
 int main(void)
@@ -73,7 +75,7 @@ int main(void)
 
     gpio_toggle(GPIOE, GPIO0);  // JA
 
-		for (i = 0; i < 1000000; i++) {	/* Wait a bit. */
+    for (i = 0; i < 1000000; i++) { /* Wait a bit. */
 			__asm__("nop");
 		}
 	}
