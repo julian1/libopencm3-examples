@@ -63,6 +63,10 @@ static int ia[][4] = {
 // just use modulus?
 
 
+// wiring, actually doesn't seem to matter, will just spin forward/reverse
+// 42byg https://www.youtube.com/watch?v=pID6TTgg1HU
+// wave-form
+// http://rfanat.ru/stanki_chpu/BIPOLAR_Stepper_Motor_Driver_Circuits_74194.html
 
 
 int main(void)
@@ -79,30 +83,34 @@ int main(void)
 
 
   // full wave drive
+  // seems to be working
 	while (1) {
 
     ++i;
     switch(i % 4) {
 
-      // we only really need to do the values that change.  
-      // except would need to define separate start
+      // NO... the pins are around the wrong way.
+      // the wave form pins - are different. for particular pair should never be both set or both clear. 
+
       case 0: 
-        gpio_set(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
+        gpio_set(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
         break;
       case 1: 
-        gpio_set(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
+        gpio_set(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
         break;
       case 2: 
-        gpio_clear(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
+        gpio_clear(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
         break;
       case 3: 
-        gpio_clear(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
+        gpio_clear(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
         break;
     } 
 
     gpio_toggle(GPIOE, GPIO0);  // led blink 
 
-    for (j = 0; j < 2000000; j++) { /* Wait a bit. */
+    for (j = 0; j < 10000; j++) { /* Wait a bit. */
+    // for (j = 0; j < 100000; j++) { /* Wait a bit. */
+    // for (j = 0; j < 2000000; j++) { /* Wait a bit. */
 			__asm__("nop");
 		}
 	}
