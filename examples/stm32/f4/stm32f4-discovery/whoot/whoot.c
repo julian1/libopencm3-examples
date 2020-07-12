@@ -68,6 +68,9 @@ static int ia[][4] = {
 // wave-form
 // http://rfanat.ru/stanki_chpu/BIPOLAR_Stepper_Motor_Driver_Circuits_74194.html
 
+/*
+  3.75V turning quite fast 1rpm. uses 0.16A
+*/
 
 int main(void)
 {
@@ -93,16 +96,20 @@ int main(void)
       // the wave form pins - are different. for particular pair should never be both set or both clear. 
 
       case 0: 
-        gpio_set(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
+        // gpio_set(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
+        gpio_set(GPIOD, GPIO1 | GPIO3);  gpio_clear(GPIOD, GPIO2 | GPIO4);  
         break;
       case 1: 
-        gpio_set(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
+        // gpio_set(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
+        gpio_set(GPIOD, GPIO1 | GPIO4);  gpio_clear(GPIOD, GPIO2 | GPIO3);  
         break;
       case 2: 
-        gpio_clear(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
+        // gpio_clear(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_clear(GPIOD, GPIO3);  gpio_set(GPIOD, GPIO4);  
+        gpio_set(GPIOD, GPIO2 | GPIO4);  gpio_clear(GPIOD, GPIO1 | GPIO3);  
         break;
       case 3: 
-        gpio_clear(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
+        // gpio_clear(  GPIOD, GPIO1);  gpio_set(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);  
+        gpio_set(GPIOD, GPIO2 | GPIO3);    gpio_clear(GPIOD, GPIO1 | GPIO4);  
         break;
     } 
 
