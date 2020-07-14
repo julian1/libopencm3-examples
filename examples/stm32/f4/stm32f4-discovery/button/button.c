@@ -28,19 +28,21 @@ static void clock_setup(void)
 	rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
 }
 
+// led -> D -> E, GPIO0 -> GPIO0 
+// button
+
 static void gpio_setup(void)
 {
-	/* Enable GPIOD clock. */
-	rcc_periph_clock_enable(RCC_GPIOD);
+	/* Enable GPIOE clock. */
+	rcc_periph_clock_enable(RCC_GPIOE);
 
-	/* Set GPIO12 (in GPIO port D) to 'output push-pull'. */
-	gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT,
-			GPIO_PUPD_NONE, GPIO12 | GPIO13 | GPIO14 | GPIO15);
+	/* Set GPIO0 (in GPIO port D) to 'output push-pull'. */
+	gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0 );
 }
 
 static void button_setup(void)
 {
-	/* Enable GPIOA clock. */
+	/* Enable GPIOA clock. - for led */
 	rcc_periph_clock_enable(RCC_GPIOA);
 
 	/* Set GPIOA0 to 'input floating'. */
@@ -57,7 +59,7 @@ int main(void)
 
 	/* Blink the LED (PD12) on the board. */
 	while (1) {
-		gpio_toggle(GPIOD, GPIO12);
+		gpio_toggle(GPIOE, GPIO0);
 
 		/* Upon button press, blink more slowly. */
 		if (gpio_get(GPIOA, GPIO0)) {
