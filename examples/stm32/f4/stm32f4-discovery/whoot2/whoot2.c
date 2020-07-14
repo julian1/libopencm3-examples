@@ -23,14 +23,6 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/timer.h>
 
-/*
-#ifndef ARRAY_LEN
-#define ARRAY_LEN(array) (sizeof((array))/sizeof((array)[0]))
-#endif
-*/
-
-// #define LED1_PORT GPIOD
-// #define LED1_PIN GPIO12
 
 #define LED1_PORT GPIOE
 #define LED1_PIN  GPIO0
@@ -86,6 +78,7 @@ static void tim_setup(void)
 	// timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 10000));
 	// timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 1000000));
 	timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 1000));
+	// timer_set_prescaler(TIM2, 1 ); // presumably this is ok. if we want it...
 
 	/* Disable preload. */
 	timer_disable_preload(TIM2);
@@ -95,7 +88,7 @@ static void tim_setup(void)
 	timer_set_period(TIM2, 65535);
 
 	/* Set the initual output compare value for OC1. */
-	timer_set_oc_value(TIM2, TIM_OC1, 1000 );
+	timer_set_oc_value(TIM2, TIM_OC1, 1 );   // could set to 1 or something?
 
 	/* Counter enable. */
 	timer_enable_counter(TIM2);
@@ -132,8 +125,8 @@ void tim2_isr(void)
       gpio_set(LED1_PORT, LED1_PIN);
     }
     else {
-      delay = 100;
-      gpio_clear(LED1_PORT, LED1_PIN);
+      delay = 10;
+      gpio_clear(LED1_PORT, LED1_PIN); // clear turns on.
     }
     dutyx = !dutyx;
 
