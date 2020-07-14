@@ -126,6 +126,8 @@ bool dutyx;
     - slower osc clock - eg. 50kHz, and bigger inductor, then can get minimum duty to 2.5% which would be nicer
     ----------
     - what is the lowest prescaler - is it 0 or is it 1. - need to check.
+    - mcu - has very high clock rate. therefore minimym on time duty cycle is likely to be favorable o dedicated part
+    - albeit analog/continuous - will have more resolution
 */
 
 struct MyPWM  {
@@ -136,7 +138,7 @@ struct MyPWM  {
 
   bool        dutyx_;
 
-  // prescaler... 
+  // prescaler...  should not be here. because it's common and global.
 };
 
 void tim2_isr(void)
@@ -162,17 +164,18 @@ void tim2_isr(void)
     // eg. before we do timer_get_counter. actually not sure. timer_get_counter is just before the gpio change. which is right.
     if(dutyx) {
       // led off
-      delay = 610; // read this from a structure.
       gpio_set(LED1_PORT, LED1_PIN);
+      delay = 610; // read this from a structure.
+      dutyx = false;
     }
     else {
       // clear turns led on
+      gpio_clear(LED1_PORT, LED1_PIN);
       delay = 30;   // 50 appears to work with prescalar of 1...
                     // 20 doesn't work.
                     // 30 appears to work. may still be glitchy.
-      gpio_clear(LED1_PORT, LED1_PIN);
+      dutyx = true;
     }
-    dutyx = !dutyx;
 
 		// update the time
     // think this sets up the next interupt.
