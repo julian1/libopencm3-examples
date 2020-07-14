@@ -101,12 +101,10 @@ static void tim_setup(void)
 	timer_enable_irq(TIM2, TIM_DIER_CC1IE);
 }
 
+
+
 bool dutyx;
 
-// ok so we have duty cycle... can have an array .   i % 2
-// but it might be easy...
-// is it useful to compare the duty cycle
-// just needs a toggle, rather than a count 
 
 void tim2_isr(void)
 {
@@ -123,8 +121,7 @@ void tim2_isr(void)
 
 		/* Calculate and set the next compare value. */
     // note we have 16 bits of resolution here.
-		// uint16_t new_time = compare_time + (dutyx ? 1000: 200);   // don't think this is right. what about overflow
-    // could remove the bool - and just test the flipped values 
+    // could remove the bool - and just test the flipped values
     uint16_t delay;
 
     if(dutyx) {
@@ -137,12 +134,9 @@ void tim2_isr(void)
     }
     dutyx = !dutyx;
 
-		// timer_set_oc_value(TIM2, TIM_OC1, new_time);
-		timer_set_oc_value(TIM2, TIM_OC1, compare_time + delay );
+		// update the time
+		timer_set_oc_value(TIM2, TIM_OC1, compare_time + delay ); // overflow seems ok. eg. it's a hardware > presumably.
 
-		/* Toggle LED to indicate compare event. */
-		// gpio_toggle(LED1_PORT, LED1_PIN);
-		
 	}
 }
 
