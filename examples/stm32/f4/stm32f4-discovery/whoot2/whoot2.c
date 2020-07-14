@@ -140,17 +140,18 @@ bool dutyx;
     ok  - reason not to use a mcu control loop - for steup-up and generating 12V from 5V - we need a mosfet with 5V gate drive.
     -------
     mosfet driver - why not just npn with open collector pullup for 20mA. then 2 tx emitter follower - push-pull.  all at 5V.
-        remember its not a particularly - low powered design.
+        remember its not a particularly - low powered design - which means avoiding open-collector.
 
 */
 
 struct MyPWM  {
 
-  // uint16_t   timer.
+  // uint16_t   timer.          // eg. could read the timer to use.
   uint16_t    on_delay;
   uint16_t    off_delay;
 
-  bool        dutyx_;
+  bool        dutyx_;       // phase/cycle.
+  // bool        enabled;      // on/off . control. No. should just stop timer - and set port to low? 
 
   // prescaler...  should not be here. because it's common and global.
 };
