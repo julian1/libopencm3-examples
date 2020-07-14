@@ -144,14 +144,16 @@ void tim2_isr(void)
 		uint16_t compare_time = timer_get_counter(TIM2);
 
 		/* Calculate and set the next compare value. */
-		uint16_t frequency = frequency_sequence[frequency_sel++];
-		uint16_t new_time = compare_time + frequency;
+		// uint16_t frequency = frequency_sequence[frequency_sel++];
+		// uint16_t new_time = compare_time + frequency;
+		uint16_t new_time = compare_time + 1000;
 
 		timer_set_oc_value(TIM2, TIM_OC1, new_time);
+/*
 		if (frequency_sel == ARRAY_LEN(frequency_sequence)) {
 			frequency_sel = 0;
 		}
-
+*/
 		/* Toggle LED to indicate compare event. */
 		gpio_toggle(LED1_PORT, LED1_PIN);
 	}
