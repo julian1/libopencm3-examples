@@ -124,14 +124,15 @@ void tim2_isr(void)
 		/* Calculate and set the next compare value. */
     // note we have 16 bits of resolution here.
 		// uint16_t new_time = compare_time + (dutyx ? 1000: 200);   // don't think this is right. what about overflow
+    // could remove the bool - and just test the flipped values 
     uint16_t delay;
 
     if(dutyx) {
-      delay = 1000;
+      delay = 10000;
       gpio_set(LED1_PORT, LED1_PIN);
     }
     else {
-      delay = 200;
+      delay = 1000;
       gpio_clear(LED1_PORT, LED1_PIN);
     }
     dutyx = !dutyx;
