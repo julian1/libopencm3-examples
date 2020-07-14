@@ -126,6 +126,15 @@ bool dutyx;
     - slower osc clock - eg. 50kHz, and bigger inductor, then can get minimum duty to 2.5% which would be nicer
 */
 
+struct MyPWM  {
+
+  // uint16_t   timer.
+  uint16_t    on_delay;
+  uint16_t    off_delay;
+
+  bool        dutyx_;
+};
+
 void tim2_isr(void)
 {
 	if (timer_get_flag(TIM2, TIM_SR_CC1IF)) {
