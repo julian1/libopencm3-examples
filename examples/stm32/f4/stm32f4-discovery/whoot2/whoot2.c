@@ -124,6 +124,8 @@ bool dutyx;
     think about mosfet switch and slew time. cannot switch a big mosfet on and off in 1 millionth of a second. so what we are doing 
       maybe reasonable.  and don't need counter directly triggered on hardware
     - slower osc clock - eg. 50kHz, and bigger inductor, then can get minimum duty to 2.5% which would be nicer
+    ----------
+    - what is the lowest prescaler - is it 0 or is it 1. - need to check.
 */
 
 struct MyPWM  {
@@ -133,6 +135,8 @@ struct MyPWM  {
   uint16_t    off_delay;
 
   bool        dutyx_;
+
+  // prescaler... 
 };
 
 void tim2_isr(void)
