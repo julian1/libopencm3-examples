@@ -77,8 +77,11 @@ static void tim_setup(void)
 	 */
 	// timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 10000));
 	// timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 1000000));
-	timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 1000));
-	// timer_set_prescaler(TIM2, 1 ); // presumably this is ok. if we want it...
+	// timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 1000));
+	// timer_set_prescaler(TIM2, 10 ); // appears to work ok.
+                                  // but perhaps at 1, the interupt is running into each other. for delay of 10
+  timer_set_prescaler(TIM2, 1 );    // doesn't work... if delay is 10. interupts
+                                    // but appears ok if delay is set to 100
 
 	/* Disable preload. */
 	timer_disable_preload(TIM2);
@@ -121,16 +124,21 @@ void tim2_isr(void)
     uint16_t delay;
 
     if(dutyx) {
+      // led off
       delay = 1000;
       gpio_set(LED1_PORT, LED1_PIN);
     }
     else {
-      delay = 10;
-      gpio_clear(LED1_PORT, LED1_PIN); // clear turns on.
+      // clear turns led on
+      delay = 30;   // 50 appears to work with prescalar of 1...
+                    // 20 doesn't work.
+                    // 30 appears to work. may still be glitchy.
+      gpio_clear(LED1_PORT, LED1_PIN);
     }
     dutyx = !dutyx;
 
 		// update the time
+    // think this sets up the next interupt.
 		timer_set_oc_value(TIM2, TIM_OC1, compare_time + delay ); // overflow seems ok. eg. it's a hardware > presumably.
 
 	}
