@@ -116,6 +116,7 @@ void usart1_isr(void)
 		data = usart_recv(USART1);
 
 		/* Enable transmit interrupt so it sends back the data. */
+    // JA - so this is a cheap way of echoing data???
 		usart_enable_tx_interrupt(USART1);
 	}
 

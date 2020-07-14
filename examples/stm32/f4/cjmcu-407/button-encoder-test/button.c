@@ -31,8 +31,7 @@ static void clock_setup(void)
 // JA
 // led -> D -> E, GPIO0 -> GPIO0
 // button GPIOD unchanged. GPIO0 -> GPIO15
-// button GPIOD -> GPIOD , 0 GPIO15
-
+// button GPIOD -> GPIOD GPIO15
 
 
 static void gpio_setup(void)
@@ -46,40 +45,27 @@ static void gpio_setup(void)
 
 static void button_setup(void)
 {
-	/* Enable GPIOD clock. - for led */
-	rcc_periph_clock_enable(RCC_GPIOD);
-
-	/* Set GPIOD0 to 'input floating'. */
-	gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO15 );
-  // PULLUP - means pull the pin up. not pullup resistor.
-	// gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, GPIO15 );
-	// gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO15 );
-
-
+	rcc_periph_clock_enable(RCC_GPIOA);
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7 );
 }
 
 int main(void)
 {
-	int i;
-
 	clock_setup();
 	button_setup();
 	gpio_setup();
 
+  gpio_clear(GPIOE, GPIO0);
+
 	/* Blink the LED (PD12) on the board. */
 	while (1) {
-		gpio_toggle(GPIOE, GPIO0);
 
-		/* Upon button press, blink more slowly. */
-		if (gpio_get(GPIOD, GPIO15)) {
-			for (i = 0; i < 3000000; i++) {	/* Wait a bit. */
-				__asm__("nop");
-			}
+		if (gpio_get(GPIOA, GPIO7)) {
+		  gpio_set(GPIOE, GPIO0);
 		}
-
-		for (i = 0; i < 3000000; i++) {		/* Wait a bit. */
-			__asm__("nop");
-		}
+    else {
+		  gpio_clear(GPIOE, GPIO0);
+    } 
 	}
 
 	return 0;
