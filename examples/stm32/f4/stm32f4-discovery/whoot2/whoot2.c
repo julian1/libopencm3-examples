@@ -40,7 +40,8 @@
 
 static void clock_setup(void)
 {
-	rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
+  // OK. openocd locks up - just the same - even if we don't change the clocking.
+	// rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
 }
 
 static void gpio_setup(void)
@@ -82,7 +83,9 @@ static void tim_setup(void)
 	 * In our case, TIM2 on APB1 is running at double frequency, so this
 	 * sets the prescaler to have the timer run at 5kHz
 	 */
-	timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 10000));
+	// timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 10000));
+	// timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 1000000));
+	timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 1000));
 
 	/* Disable preload. */
 	timer_disable_preload(TIM2);
@@ -100,7 +103,6 @@ static void tim_setup(void)
 	/* Enable Channel 1 compare interrupt to recalculate compare values */
 	timer_enable_irq(TIM2, TIM_DIER_CC1IE);
 }
-
 
 
 bool dutyx;
@@ -122,14 +124,15 @@ void tim2_isr(void)
 		/* Calculate and set the next compare value. */
     // note we have 16 bits of resolution here.
     // could remove the bool - and just test the flipped values
+    // if wanted dead time, then could use an array
     uint16_t delay;
 
     if(dutyx) {
-      delay = 10000;
+      delay = 1000;
       gpio_set(LED1_PORT, LED1_PIN);
     }
     else {
-      delay = 1000;
+      delay = 100;
       gpio_clear(LED1_PORT, LED1_PIN);
     }
     dutyx = !dutyx;
