@@ -118,24 +118,27 @@ bool dutyx;
         so adc read - should probably be configured on the same timer. eg. TIM2
     - the min pulse - ignores jjjjjjjjj
     - should have a nominal load. 5% power, from a resistor or something.
-    - we need to get some coupled inductors. use lm2577 data sheet. 
-    - if one has a mcu - does it make sense that all voltage rails are driven by it. rather than selecting lm2577. 
+    - we need to get some coupled inductors. use lm2577 data sheet.
+    - if one has a mcu - does it make sense that all voltage rails are driven by it. rather than selecting lm2577.
     --------------
-    think about mosfet switch and slew time. cannot switch a big mosfet on and off in 1 millionth of a second. so what we are doing 
+    think about mosfet switch and slew time. cannot switch a big mosfet on and off in 1 millionth of a second. so what we are doing
       maybe reasonable.  and don't need counter directly triggered on hardware
     - slower osc clock - eg. 50kHz, and bigger inductor, then can get minimum duty to 2.5% which would be nicer
     ----------
     - what is the lowest prescaler - is it 0 or is it 1 ? - need to check.
+        manual 2.2.21. p31. prescalar can be from 1 to 65536. eg. not 0.
     - mcu - has very high clock rate. therefore minimym on time duty cycle is likely to be favorable o dedicated part
     - albeit analog/continuous - will have more resolution
     -----
-    can have gpio at 5V instead of 3.3V.   need to know - because influences gate driver. 
-    No. see 2.2.14 manual. p24.  it's all 3.3V. just different circuits for analog and digital. 
-    Does it make sense to use different linear regulators for those circuits though?- 
+    - stlink has a 5V output. available. probably direct from usb.
+    -----
+    can *not* use gpio at 5V.
+      see 2.2.14 manual. p24.  it's all 3.3V. just different circuits for analog,reset and digital.
+      It might make sense to use different linear regulators for those circuits though?-
     Vse Vdd
     ------
-    ok  - reason not to use a mcu control loop - for steup-up and generating 12V from 5V - we need a mosfet with 5V gate drive. 
-      
+    ok  - reason not to use a mcu control loop - for steup-up and generating 12V from 5V - we need a mosfet with 5V gate drive.
+
 */
 
 struct MyPWM  {
@@ -168,7 +171,7 @@ void tim2_isr(void)
     // if wanted dead time, then could use an array
     uint16_t delay;
 
-    // IMPORTANT - We should probably do this as the first thing - after clearing the interrupt flag. 
+    // IMPORTANT - We should probably do this as the first thing - after clearing the interrupt flag.
     // eg. before we do timer_get_counter. actually not sure. timer_get_counter is just before the gpio change. which is right.
     if(dutyx) {
       // led off
