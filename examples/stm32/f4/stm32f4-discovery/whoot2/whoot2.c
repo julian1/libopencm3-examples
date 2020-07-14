@@ -111,6 +111,14 @@ static void tim_setup(void)
 
 bool dutyx;
 
+// ok - we want to be able to control it - either uart. or pot.
+/*
+  very important
+    - adc should probably sample at some fixed point in the duty cycle. even if only every 10.
+    - should have a nominal load. 5% power, from a resistor or something.
+    - we need to get some coupled inductors. use lm2577 data sheet. 
+    - if one has a mcu - does it make sense that all voltage rails are driven by it. rather than selecting lm2577. 
+*/
 
 void tim2_isr(void)
 {
