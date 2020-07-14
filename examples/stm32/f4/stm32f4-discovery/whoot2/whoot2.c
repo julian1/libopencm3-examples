@@ -23,9 +23,11 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/timer.h>
 
+/*
 #ifndef ARRAY_LEN
 #define ARRAY_LEN(array) (sizeof((array))/sizeof((array)[0]))
 #endif
+*/
 
 // #define LED1_PORT GPIOD
 // #define LED1_PIN GPIO12
@@ -35,37 +37,6 @@
 
 
 
-
-/* Morse standard timings */
-#define ELEMENT_TIME 500
-#define DIT (1*ELEMENT_TIME)
-#define DAH (3*ELEMENT_TIME)
-#define INTRA (1*ELEMENT_TIME)
-#define INTER (3*ELEMENT_TIME)
-#define WORD (7*ELEMENT_TIME)
-
-uint16_t frequency_sequence[] = {
-	DIT,
-	INTRA,
-	DIT,
-	INTRA,
-	DIT,
-	INTER,
-	DAH,
-	INTRA,
-	DAH,
-	INTRA,
-	DAH,
-	INTER,
-	DIT,
-	INTRA,
-	DIT,
-	INTRA,
-	DIT,
-	WORD,
-};
-
-int frequency_sel = 0;
 
 static void clock_setup(void)
 {
@@ -111,7 +82,7 @@ static void tim_setup(void)
 	 * In our case, TIM2 on APB1 is running at double frequency, so this
 	 * sets the prescaler to have the timer run at 5kHz
 	 */
-	timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 5000));
+	timer_set_prescaler(TIM2, ((rcc_apb1_frequency * 2) / 10000));
 
 	/* Disable preload. */
 	timer_disable_preload(TIM2);
@@ -121,7 +92,7 @@ static void tim_setup(void)
 	timer_set_period(TIM2, 65535);
 
 	/* Set the initual output compare value for OC1. */
-	timer_set_oc_value(TIM2, TIM_OC1, frequency_sequence[frequency_sel++]);
+	timer_set_oc_value(TIM2, TIM_OC1, 1000 );
 
 	/* Counter enable. */
 	timer_enable_counter(TIM2);
@@ -129,6 +100,13 @@ static void tim_setup(void)
 	/* Enable Channel 1 compare interrupt to recalculate compare values */
 	timer_enable_irq(TIM2, TIM_DIER_CC1IE);
 }
+
+bool dutyx;
+
+// ok so we have duty cycle... can have an array .   i % 2
+// but it might be easy...
+// is it useful to compare the duty cycle
+// just needs a toggle, rather than a count 
 
 void tim2_isr(void)
 {
@@ -144,18 +122,26 @@ void tim2_isr(void)
 		uint16_t compare_time = timer_get_counter(TIM2);
 
 		/* Calculate and set the next compare value. */
-		// uint16_t frequency = frequency_sequence[frequency_sel++];
-		// uint16_t new_time = compare_time + frequency;
-		uint16_t new_time = compare_time + 1000;
+    // note we have 16 bits of resolution here.
+		// uint16_t new_time = compare_time + (dutyx ? 1000: 200);   // don't think this is right. what about overflow
+    uint16_t delay;
 
-		timer_set_oc_value(TIM2, TIM_OC1, new_time);
-/*
-		if (frequency_sel == ARRAY_LEN(frequency_sequence)) {
-			frequency_sel = 0;
-		}
-*/
+    if(dutyx) {
+      delay = 1000;
+      gpio_set(LED1_PORT, LED1_PIN);
+    }
+    else {
+      delay = 200;
+      gpio_clear(LED1_PORT, LED1_PIN);
+    }
+    dutyx = !dutyx;
+
+		// timer_set_oc_value(TIM2, TIM_OC1, new_time);
+		timer_set_oc_value(TIM2, TIM_OC1, compare_time + delay );
+
 		/* Toggle LED to indicate compare event. */
-		gpio_toggle(LED1_PORT, LED1_PIN);
+		// gpio_toggle(LED1_PORT, LED1_PIN);
+		
 	}
 }
 
