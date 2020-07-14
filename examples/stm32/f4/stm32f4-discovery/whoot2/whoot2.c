@@ -138,6 +138,9 @@ bool dutyx;
     Vse Vdd
     ------
     ok  - reason not to use a mcu control loop - for steup-up and generating 12V from 5V - we need a mosfet with 5V gate drive.
+    -------
+    mosfet driver - why not just npn with open collector pullup for 20mA. then 2 tx emitter follower - push-pull.  all at 5V.
+        remember its not a particularly - low powered design.
 
 */
 
