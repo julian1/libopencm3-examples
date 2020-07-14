@@ -114,10 +114,16 @@ bool dutyx;
 // ok - we want to be able to control it - either uart. or pot.
 /*
   very important
-    - adc should probably sample at some fixed point in the duty cycle. even if only every 10.
+    - adc should probably sample at some fixed point in the duty cycle - due to ripple. even if only every 10 due to slower read time.
+        so adc read - should probably be configured on the same timer. eg. TIM2
+    - the min pulse - ignores jjjjjjjjj
     - should have a nominal load. 5% power, from a resistor or something.
     - we need to get some coupled inductors. use lm2577 data sheet. 
     - if one has a mcu - does it make sense that all voltage rails are driven by it. rather than selecting lm2577. 
+    --------------
+    think about mosfet switching time. cannot switch a big mosfet on and off in 1 millionth of a second. so what we are doing 
+      maybe reasonable.  and don't need counter directly triggered on hardware
+    the 
 */
 
 void tim2_isr(void)
@@ -139,6 +145,8 @@ void tim2_isr(void)
     // if wanted dead time, then could use an array
     uint16_t delay;
 
+    // IMPORTANT - We should probably do this as the first thing - after clearing the interrupt flag. 
+    // eg. before we do timer_get_counter. actually not sure. timer_get_counter is just before the gpio change. which is right.
     if(dutyx) {
       // led off
       // delay = 10000;
