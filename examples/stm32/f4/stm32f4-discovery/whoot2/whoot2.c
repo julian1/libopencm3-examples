@@ -134,7 +134,7 @@ void tim2_isr(void)
     if(dutyx) {
       // led off
       // delay = 10000;
-      delay = 610;
+      delay = 640 - 30;
       gpio_set(LED1_PORT, LED1_PIN);
     }
     else {
