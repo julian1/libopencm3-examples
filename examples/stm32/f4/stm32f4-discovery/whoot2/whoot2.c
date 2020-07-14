@@ -65,8 +65,7 @@ static void tim_setup(void)
 	 * (These are actually default values after reset above, so this call
 	 * is strictly unnecessary, but demos the api for alternative settings)
 	 */
-	timer_set_mode(TIM2, TIM_CR1_CKD_CK_INT,
-		TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+	timer_set_mode(TIM2, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
 
 	/*
 	 * Please take note that the clock source for STM32 timers
@@ -100,6 +99,15 @@ static void tim_setup(void)
 	timer_enable_irq(TIM2, TIM_DIER_CC1IE);
 }
 
+/*
+  64000000 / 100000  64Mhz  / 100kHz.
+  640
+  eg. 1 / 640 resolution. but minimum delay is about 30. that's ok.
+    that's just the limit
+
+  30 / 640 = 1/20 = 5%. is minimum - duty.
+*/
+
 
 bool dutyx;
 
@@ -125,7 +133,8 @@ void tim2_isr(void)
 
     if(dutyx) {
       // led off
-      delay = 1000;
+      // delay = 10000;
+      delay = 610;
       gpio_set(LED1_PORT, LED1_PIN);
     }
     else {
