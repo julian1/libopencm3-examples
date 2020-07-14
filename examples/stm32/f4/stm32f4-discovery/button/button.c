@@ -29,7 +29,10 @@ static void clock_setup(void)
 }
 
 // led -> D -> E, GPIO0 -> GPIO0 
-// button
+// button GPIOD unchanged. GPIO0 -> GPIO15 
+// button GPIOD -> GPIOD , 0 GPIO15 
+
+
 
 static void gpio_setup(void)
 {
@@ -42,11 +45,11 @@ static void gpio_setup(void)
 
 static void button_setup(void)
 {
-	/* Enable GPIOA clock. - for led */
-	rcc_periph_clock_enable(RCC_GPIOA);
+	/* Enable GPIOD clock. - for led */
+	rcc_periph_clock_enable(RCC_GPIOD);
 
-	/* Set GPIOA0 to 'input floating'. */
-	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO0);
+	/* Set GPIOD0 to 'input floating'. */
+	gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO15 );
 }
 
 int main(void)
@@ -62,7 +65,7 @@ int main(void)
 		gpio_toggle(GPIOE, GPIO0);
 
 		/* Upon button press, blink more slowly. */
-		if (gpio_get(GPIOA, GPIO0)) {
+		if (gpio_get(GPIOD, GPIO15)) {
 			for (i = 0; i < 3000000; i++) {	/* Wait a bit. */
 				__asm__("nop");
 			}
