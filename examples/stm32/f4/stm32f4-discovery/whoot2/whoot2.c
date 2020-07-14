@@ -125,14 +125,17 @@ bool dutyx;
       maybe reasonable.  and don't need counter directly triggered on hardware
     - slower osc clock - eg. 50kHz, and bigger inductor, then can get minimum duty to 2.5% which would be nicer
     ----------
-    - what is the lowest prescaler - is it 0 or is it 1. - need to check.
+    - what is the lowest prescaler - is it 0 or is it 1 ? - need to check.
     - mcu - has very high clock rate. therefore minimym on time duty cycle is likely to be favorable o dedicated part
     - albeit analog/continuous - will have more resolution
     -----
     can have gpio at 5V instead of 3.3V.   need to know - because influences gate driver. 
-    Vss Vdd
+    No. see 2.2.14 manual. p24.  it's all 3.3V. just different circuits for analog and digital. 
+    Does it make sense to use different linear regulators for those circuits though?- 
+    Vse Vdd
     ------
     ok  - reason not to use a mcu control loop - for steup-up and generating 12V from 5V - we need a mosfet with 5V gate drive. 
+      
 */
 
 struct MyPWM  {
