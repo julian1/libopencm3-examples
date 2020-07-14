@@ -131,6 +131,8 @@ bool dutyx;
     -----
     can have gpio at 5V instead of 3.3V.   need to know - because influences gate driver. 
     Vss Vdd
+    ------
+    ok  - reason not to use a mcu control loop - for steup-up and generating 12V from 5V - we need a mosfet with 5V gate drive. 
 */
 
 struct MyPWM  {
