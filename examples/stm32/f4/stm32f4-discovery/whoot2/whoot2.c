@@ -121,9 +121,9 @@ bool dutyx;
     - we need to get some coupled inductors. use lm2577 data sheet. 
     - if one has a mcu - does it make sense that all voltage rails are driven by it. rather than selecting lm2577. 
     --------------
-    think about mosfet switching time. cannot switch a big mosfet on and off in 1 millionth of a second. so what we are doing 
+    think about mosfet switch and slew time. cannot switch a big mosfet on and off in 1 millionth of a second. so what we are doing 
       maybe reasonable.  and don't need counter directly triggered on hardware
-    the 
+    - slower osc clock - eg. 50kHz, and bigger inductor, then can get minimum duty to 2.5% which would be nicer
 */
 
 void tim2_isr(void)
@@ -149,8 +149,7 @@ void tim2_isr(void)
     // eg. before we do timer_get_counter. actually not sure. timer_get_counter is just before the gpio change. which is right.
     if(dutyx) {
       // led off
-      // delay = 10000;
-      delay = 640 - 30;
+      delay = 610; // read this from a structure.
       gpio_set(LED1_PORT, LED1_PIN);
     }
     else {
