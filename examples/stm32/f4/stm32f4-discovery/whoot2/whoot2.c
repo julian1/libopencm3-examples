@@ -130,6 +130,7 @@ bool dutyx;
     - albeit analog/continuous - will have more resolution
     -----
     can have gpio at 5V instead of 3.3V.   need to know - because influences gate driver. 
+    Vss Vdd
 */
 
 struct MyPWM  {
