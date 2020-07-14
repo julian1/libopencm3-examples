@@ -128,6 +128,8 @@ bool dutyx;
     - what is the lowest prescaler - is it 0 or is it 1. - need to check.
     - mcu - has very high clock rate. therefore minimym on time duty cycle is likely to be favorable o dedicated part
     - albeit analog/continuous - will have more resolution
+    -----
+    can have gpio at 5V instead of 3.3V.   need to know - because influences gate driver. 
 */
 
 struct MyPWM  {
