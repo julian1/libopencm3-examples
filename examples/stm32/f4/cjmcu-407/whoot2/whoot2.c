@@ -42,7 +42,7 @@ static void gpio_setup(void)
 	rcc_periph_clock_enable(RCC_GPIOE); // JA
 
 	/* Enable led as output */
-    // what is pupd - pull-up, pull-down. 
+    // what is pupd - pull-up, pull-down.
    gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
 
 	gpio_set(LED1_PORT, LED1_PIN);
@@ -90,6 +90,7 @@ static void tim_setup(void)
 	/* count full range, as we'll update compare value continuously */
 	timer_set_period(TIM2, 65535);
 
+  // TODO read from the array
 	/* Set the initual output compare value for OC1. */
 	timer_set_oc_value(TIM2, TIM_OC1, 1 );   // could set to 1 or something?
 
@@ -110,7 +111,6 @@ static void tim_setup(void)
 */
 
 
-bool dutyx;
 
 // ok - we want to be able to control it - either uart. or pot.
 /*
@@ -139,27 +139,34 @@ bool dutyx;
     Vse Vdd
     ------
     ok  - reason not to use a mcu control loop - for steup-up and generating 12V from 5V - we need a mosfet with 5V gate drive.
-        mtp3055 o       
+        mtp3055 o
     -------
     mosfet driver - why not just npn with open collector pullup for 20mA. then 2 tx emitter follower - push-pull.  all at 5V.
         remember its not a particularly - low powered design - which means avoiding open-collector.
 
 */
 
-struct MyPWM  {
+typedef struct MyPWM  {
 
   // uint16_t   timer.          // eg. could read the timer to use.
   uint16_t    on_delay;
   uint16_t    off_delay;
-
-  bool        dutyx_;       // phase/cycle.
-  // bool        enabled;      // on/off . control. No. should just stop timer - and set port to low? 
+  bool        dutyx;       // phase/cycle.
+  // bool        enabled;      // on/off . control. No. should just stop timer - and set port to low?
 
   // prescaler...  should not be here. because it's common and global.
-};
+} MyPWM;
+
+
+MyPWM  x;
+
+
 
 void tim2_isr(void)
 {
+
+  MyPWM  *pwm = &x;
+
 	if (timer_get_flag(TIM2, TIM_SR_CC1IF)) {
 
 		/* Clear compare interrupt flag. */
@@ -179,19 +186,17 @@ void tim2_isr(void)
 
     // IMPORTANT - We should probably do this as the first thing - after clearing the interrupt flag.
     // eg. before we do timer_get_counter. actually not sure. timer_get_counter is just before the gpio change. which is right.
-    if(dutyx) {
+    if(pwm->dutyx) {
       // led off
       gpio_set(LED1_PORT, LED1_PIN);
-      delay = 610; // read this from a structure.
-      dutyx = false;
+      delay = pwm->off_delay;
+      pwm->dutyx = false;
     }
     else {
-      // clear turns led on
+      // clear - turns led on? eg. sinks?
       gpio_clear(LED1_PORT, LED1_PIN);
-      delay = 30;   // 50 appears to work with prescalar of 1...
-                    // 20 doesn't work.
-                    // 30 appears to work. may still be glitchy.
-      dutyx = true;
+      delay = pwm->on_delay;
+      pwm->dutyx = true;
     }
 
 		// update the time
@@ -208,7 +213,31 @@ int main(void)
 	gpio_setup();
 	tim_setup();
 
+
+  uint16_t    i = 0;
+  uint16_t    period = 640;
+  MyPWM       *pwm   = &x;  // pwm01.
+
+
+  pwm->dutyx     = true;
+  pwm->off_delay = 610;
+  pwm->on_delay  = 30;
+                      // 50 appears to work with prescalar of 1...
+                    // 20 doesn't work.
+                    // 30 appears to work. may still be glitchy.
+
+
+
 	while (1) {
+    uint16_t    j;
+    ++i;
+
+    for (j = 0; j < 10000; j++) { /* Wait a bit. */
+			__asm__("nop");
+		}
+
+      pwm->on_delay  = i % 610  + 30;
+      pwm->off_delay = period - pwm->on_delay;
 		;
 	}
 
