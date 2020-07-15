@@ -202,10 +202,10 @@ void tim2_isr(void)
 		// update the time
     // think this sets up the next interupt.
 		timer_set_oc_value(TIM2, TIM_OC1, compare_time + delay ); // overflow seems ok. eg. it's a hardware > presumably.
-
 	}
 }
 
+// it really
 
 int main(void)
 {
@@ -219,14 +219,14 @@ int main(void)
   MyPWM       *pwm   = &x;  // pwm01.
 
 
+  // initial
   pwm->dutyx     = true;
-  pwm->off_delay = 610;
   pwm->on_delay  = 30;
-                      // 50 appears to work with prescalar of 1...
+  pwm->off_delay = period - pwm->on_delay;
+
+                    // 50 appears to work with prescalar of 1...
                     // 20 doesn't work.
-                    // 30 appears to work. may still be glitchy.
-
-
+                    // 25 doesn't work.
 
 	while (1) {
     uint16_t    j;
@@ -236,8 +236,8 @@ int main(void)
 			__asm__("nop");
 		}
 
-      pwm->on_delay  = i % 610  + 30;
-      pwm->off_delay = period - pwm->on_delay;
+    pwm->on_delay  = i % 610  + 30;
+    pwm->off_delay = period - pwm->on_delay;
 		;
 	}
 
