@@ -232,7 +232,7 @@ int main(void)
     uint16_t    j;
     ++i;
 
-    for (j = 0; j < 10000; j++) { /* Wait a bit. */
+    for (j = 0; j < 5000; j++) { /* Wait a bit. */
 			__asm__("nop");
 		}
 
