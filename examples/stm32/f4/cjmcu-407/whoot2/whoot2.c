@@ -42,6 +42,7 @@ static void gpio_setup(void)
 	rcc_periph_clock_enable(RCC_GPIOE); // JA
 
 	/* Enable led as output */
+    // what is pupd - pull-up, pull-down. 
    gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
 
 	gpio_set(LED1_PORT, LED1_PIN);
@@ -138,6 +139,7 @@ bool dutyx;
     Vse Vdd
     ------
     ok  - reason not to use a mcu control loop - for steup-up and generating 12V from 5V - we need a mosfet with 5V gate drive.
+        mtp3055 o       
     -------
     mosfet driver - why not just npn with open collector pullup for 20mA. then 2 tx emitter follower - push-pull.  all at 5V.
         remember its not a particularly - low powered design - which means avoiding open-collector.
