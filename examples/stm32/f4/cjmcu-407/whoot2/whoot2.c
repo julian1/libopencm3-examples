@@ -27,8 +27,9 @@
 #define LED1_PORT GPIOE
 #define LED1_PIN  GPIO0
 
+/*
 
-
+*/
 
 static void clock_setup(void)
 {
@@ -43,7 +44,7 @@ static void gpio_setup(void)
 
 	/* Enable led as output */
     // what is pupd - pull-up, pull-down.
-   gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
+   gpio_mode_setup(LED1_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED1_PIN); // JA
 
 	gpio_set(LED1_PORT, LED1_PIN);
 }

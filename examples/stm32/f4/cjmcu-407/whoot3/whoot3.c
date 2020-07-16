@@ -25,6 +25,12 @@
 
 
 /*
+
+  
+  based on the following code - timer functions and example that should work,
+  https://github.com/libopencm3/libopencm3-examples/pull/185/files
+
+  ----------
   PWM1 - The output is active when the counter is less than the compare register contents and inactive otherwise.
   PWM2 - The output is inactive when the counter is less than the compare register contents and active otherwise.
 
@@ -35,9 +41,6 @@
   Ok - slightly staggered / or deadtime is easy
     just use the same timer, but a different channel - with a slightly different CCR time.
 
-  ---------
-  timer functions and example that should work,
-  https://github.com/libopencm3/libopencm3-examples/pull/185/files
 
 */
 
