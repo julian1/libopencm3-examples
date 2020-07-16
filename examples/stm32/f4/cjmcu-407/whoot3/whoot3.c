@@ -71,24 +71,25 @@ timer functions.
   ---------
   example that should work,
   https://github.com/libopencm3/libopencm3-examples/pull/185/files
+
 */
 
 int main(void)
 {
 
   // PA8 is TIM1 CH1 see p/
-  // is it also usb?
 
+	rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
 
   rcc_periph_clock_enable(RCC_GPIOA);
   rcc_periph_clock_enable(RCC_TIM1);
 
   
-   gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 );
-   gpio_set_af(GPIOA, GPIO_AF1, GPIO8 );
-   gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO8 );
+  gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 );
+  gpio_set_af(GPIOA, GPIO_AF1, GPIO8 );
+  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO8 );
 
-	timer_set_prescaler(TIM1, 6553 ); // JA
+	timer_set_prescaler(TIM1, 65530 ); // JA - blinks 1x/s. eg. consistent with 64MHz or so
 
 
   timer_set_mode(TIM1, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_CENTER_1, TIM_CR1_DIR_UP);
