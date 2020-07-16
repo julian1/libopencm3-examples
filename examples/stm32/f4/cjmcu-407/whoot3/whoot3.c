@@ -89,6 +89,8 @@ int main(void)
   gpio_set_af(GPIOA, GPIO_AF1, GPIO8 );
   gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO8 ); // 50is faster than 100?
 
+
+  rcc_periph_reset_pulse(RST_TIM1);
 	timer_set_prescaler(TIM1, 65535 ); // JA - blinks 1x/s. eg. consistent with 64MHz, which is documented .
 
 
