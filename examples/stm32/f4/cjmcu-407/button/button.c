@@ -31,7 +31,7 @@ static void clock_setup(void)
 // JA
 // led -> D -> E, GPIO0 -> GPIO0
 // button GPIOD unchanged. GPIO0 -> GPIO15
-// button GPIOD -> GPIOD , 0 GPIO15
+// button GPIOD -> GPIOD GPIO15
 
 
 
@@ -51,11 +51,12 @@ static void button_setup(void)
 
 	/* Set GPIOD0 to 'input floating'. */
 	gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO15 );
+
+  //// GPIO_MODE_FLOATING is another option.
+
   // PULLUP - means pull the pin up. not pullup resistor.
 	// gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, GPIO15 );
 	// gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO15 );
-
-
 }
 
 int main(void)
