@@ -33,21 +33,6 @@
 
 /*
 
-    rotary encoder.
-
-
-    uses a single timer,
-
-    rcc_periph_clock_enable(RCC_TIM3);
-    timer_set_period(TIM3, 1024);
-    timer_slave_set_mode(TIM3, 0x3); // encoder
-    timer_ic_set_input(TIM3, TIM_IC1, TIM_IC_IN_TI1);
-    timer_ic_set_input(TIM3, TIM_IC2, TIM_IC_IN_TI2);
-    timer_enable_counter(TIM3);
-    ...
-    int motor_pos = timer_get_count(TIM3);
-
-
     Uses - TIM3 and slave mode, so very similar....
       https://github.com/aklomp/stm32-rotary-zero/blob/master/src/rotary.c
 
@@ -145,13 +130,40 @@ int main(void)
   usart_setup();
 
 
-  rcc_periph_clock_enable(RCC_GPIOA);
-  // to blink...
-	rcc_periph_clock_enable(RCC_GPIOE); // JA
-  gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
 
   ///////////////////////
 
+  // board button is PD15.  AF2  TIM4_CH1, p65 of manual
+
+	rcc_periph_clock_enable(RCC_GPIOD);
+	gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO15 );
+  // or floating...
+  gpio_set_af(GPIOD, GPIO_AF2, GPIO15 );  
+
+
+  // ic = input compare, oc = output compare ?
+
+  // 77 functions... for timers.
+
+  rcc_periph_reset_pulse(RST_TIM4);
+
+  // timer_set_prescaler(TIM4, 3999); /* 4Mhz/1000hz - 1 */
+  timer_set_period(TIM4, 0xffff);
+
+  timer_ic_enable(TIM4,TIM_IC4);
+  timer_ic_set_input(TIM4, TIM_IC4, TIM_IC_IN_TI4);
+
+  timer_ic_set_filter(TIM4,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_4); 
+  timer_ic_set_prescaler(TIM4,TIM_IC1,TIM_IC_PSC_OFF);
+
+
+
+
+  timer_enable_counter(TIM4);
+
+/*
+
+  rcc_periph_clock_enable(RCC_GPIOA);
 
   // mode floating
 	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7);
@@ -174,11 +186,9 @@ int main(void)
   timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2); 
   timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
 
-
-
   timer_enable_counter(TIM3);
 
-
+*/
 
   /*
   timer_set_period(TIM3, 1024);
@@ -226,21 +236,16 @@ int main(void)
 
   */
 
+  /*
   gpio_clear(GPIOE, GPIO0);   // on, 
   // gpio_set(GPIOE, GPIO0);   // off
+  */
 
-  int i = 0;
 	while (1) {
 
-      int motor_pos = timer_get_counter(TIM3);
+      int count = timer_get_counter(TIM4);
 
-      printf("motor_pos %d\n", motor_pos);
-
-
-      if(i != motor_pos) {
-        i = motor_pos;
-        gpio_toggle(GPIOE, GPIO0);  // JA
-      }
+      printf("count %d\n", count);
 
 			__asm__("nop");
 	}
