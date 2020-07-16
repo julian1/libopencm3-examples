@@ -87,9 +87,9 @@ int main(void)
   
   gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 );
   gpio_set_af(GPIOA, GPIO_AF1, GPIO8 );
-  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO8 );
+  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO8 ); // 50is faster than 100?
 
-	timer_set_prescaler(TIM1, 65530 ); // JA - blinks 1x/s. eg. consistent with 64MHz or so
+	timer_set_prescaler(TIM1, 65535 ); // JA - blinks 1x/s. eg. consistent with 64MHz, which is documented .
 
 
   timer_set_mode(TIM1, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_CENTER_1, TIM_CR1_DIR_UP);
