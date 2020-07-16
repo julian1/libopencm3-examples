@@ -161,6 +161,15 @@ int main(void)
 
   rcc_periph_clock_enable(RCC_TIM3);
 
+
+  timer_set_period(TIM3, 1024);
+  timer_slave_set_mode(TIM3, 0x3); // encoder
+  timer_ic_set_input(TIM3, TIM_IC1, TIM_IC_IN_TI1);
+  timer_ic_set_input(TIM3, TIM_IC2, TIM_IC_IN_TI2);
+  timer_enable_counter(TIM3);
+
+
+
   /*
   timer_set_period(TIM3, 1024);
   // timer_slave_set_mode(TIM3, TIM_SMCR_SMS_EM3 ); // encoder
@@ -181,6 +190,8 @@ int main(void)
 
   // Absolutely nothing works...
 
+  /*
+  // don't think this code is correct - because its trying to sync with a clock.
   timer_disable_counter(TIM3);
   // timer_reset(TIM3); // changed
   rcc_periph_reset_pulse(RST_TIM3);
@@ -203,7 +214,7 @@ int main(void)
   timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
   timer_enable_counter(TIM3);
 
-
+  */
 
   gpio_clear(GPIOE, GPIO0);   // on, 
   // gpio_set(GPIOE, GPIO0);   // off
