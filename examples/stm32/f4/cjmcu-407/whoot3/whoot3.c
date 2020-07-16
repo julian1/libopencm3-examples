@@ -23,14 +23,15 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/timer.h>
 
+// ok - having rotary encoder - means can control servo - etc. really interesting.
 
 /*
 
-  PWM.
+  PWM. good for leds, relays, motors, servos, power supplies.
 
-  // PA8 is TIM1 CH1 see p/
-  
-  based on the following code - timer functions and example that should work,
+  // PA8 is TIM1 CH1 see p55.
+
+  based on the following code
   https://github.com/libopencm3/libopencm3-examples/pull/185/files
 
   ----------
@@ -44,8 +45,8 @@
   Ok - slightly staggered / or deadtime is easy
     just use the same timer, but a different channel - with a slightly different CCR time.
 
-
 */
+
 
 int main(void)
 {
