@@ -17,6 +17,8 @@
 ## along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+OBJS = usart_irq_printf.o
+
 BINARY = whoot4
 
 LDSCRIPT = ../stm32f4-discovery.ld

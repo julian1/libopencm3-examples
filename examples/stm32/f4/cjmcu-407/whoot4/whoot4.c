@@ -18,10 +18,15 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
+
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/timer.h>
+
+
+#include "whoot4.h"
 
 // ok - having rotary encoder - means can control servo - etc. really interesting.
 // For hard real time - we need to avoid interrupts.
@@ -136,6 +141,9 @@ int main(void)
 
 	rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
 
+  usart_setup();
+
+
   rcc_periph_clock_enable(RCC_GPIOA);
   // to blink...
 	rcc_periph_clock_enable(RCC_GPIOE); // JA
@@ -205,6 +213,9 @@ int main(void)
 
       int motor_pos = timer_get_counter(TIM3);
 
+      printf("motor_pos %d\n", motor_pos);
+
+
       if(i != motor_pos) {
         i = motor_pos;
         gpio_toggle(GPIOE, GPIO0);  // JA
@@ -215,6 +226,10 @@ int main(void)
 
 	return 0;
 }
+
+
+
+
 
 
 

@@ -28,10 +28,11 @@
 #include <libopencm3/cm3/nvic.h>
 
 
+#include "whoot4.h"
 
 
 
-static void usart_setup(void)
+void usart_setup(void)
 {
 
 	/* Enable clock for USARTs gpio */
@@ -103,39 +104,6 @@ int _write(int file, char *ptr, int len)
 }
 
 
-
-// static char mybuf[100]; 
-static char *p = NULL;
-static int sz = 0;
-
-static int pos = 0;
-static int last_char = 0;
-
-// OK - the interrupt will actually prevent 
-// interupt writes into a buffer.
-// the read - has the while loop - waiting until done, 
-
-
-
-static int read_line_buffered(char *p_, int sz_) {
-  
-  // bad return value
-  p     = p_;
-  sz   = sz_;
-  last_char = 0;
-  pos   = 0;
-
-  while(pos < 5) {
-
-      //printf("whoot %u\n", pos);
-  };
-  // while(last_char != '\r') { }
-
-  return pos;
-}
-
-
-
 void usart1_isr(void)
 {
   // Only thing this is doing - is echoing the output.
@@ -149,13 +117,6 @@ void usart1_isr(void)
 
 		/* Retrieve the data from the peripheral. */
 		data = usart_recv(USART1);
-
-    if (pos < (sz - 1) ) {
-      p[pos] = data; 
-      pos++;
-      p[pos] = 0; 
-      last_char = data;
-    } 
 
 		/* Enable transmit interrupt so it sends back the data. */
     // JA - so this is a cheap way of echoing data???
@@ -177,7 +138,7 @@ void usart1_isr(void)
 
 
 // have no idea.
-
+/*
 int main(void)
 {
 	// clock_setup();
@@ -200,5 +161,5 @@ int main(void)
  
 	return 0;
 }
-
+*/
 
