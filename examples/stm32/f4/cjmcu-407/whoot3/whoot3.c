@@ -26,6 +26,9 @@
 
 /*
 
+  PWM.
+
+  // PA8 is TIM1 CH1 see p/
   
   based on the following code - timer functions and example that should work,
   https://github.com/libopencm3/libopencm3-examples/pull/185/files
@@ -46,7 +49,6 @@
 
 int main(void)
 {
-  // PA8 is TIM1 CH1 see p/
 
 	rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
 
