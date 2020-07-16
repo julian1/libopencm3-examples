@@ -31,19 +31,18 @@
 
 
 
-static void clock_setup(void)
+static void usart_setup(void)
 {
-	/* Enable GPIOE clock for LED & USARTs. */
-	rcc_periph_clock_enable(RCC_GPIOE);
+
+	/* Enable clock for USARTs gpio */
 	rcc_periph_clock_enable(RCC_GPIOA);
 
 	/* Enable clocks for USART1. */
-  // JA
 	rcc_periph_clock_enable(RCC_USART1);
-}
 
-static void usart_setup(void)
-{
+
+  //////////////////
+
 	/* Enable the USART1 interrupt. */
 	nvic_enable_irq(NVIC_USART1_IRQ); // JA
 
@@ -77,16 +76,6 @@ static void usart_setup(void)
 	/* Finally enable the USART. */
 	usart_enable(USART1);
 
-
-
-}
-
-static void gpio_setup(void)
-{
-	/* Setup GPIO pin GPIO12 on GPIO port D for LED. */
-	// gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO12);
-
-  gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_OTYPE_OD, GPIO0); // JA
 }
 
 
@@ -95,10 +84,6 @@ static void gpio_setup(void)
 /**
  * Use USART_CONSOLE as a console.
  * This is a syscall for newlib
- * @param file
- * @param ptr
- * @param len
- * @return
  */
 int _write(int file, char *ptr, int len)
 {
@@ -119,36 +104,34 @@ int _write(int file, char *ptr, int len)
 
 
 
+// char *p = NULL;
+// int pos = 0;
 
-int main(void)
-{
-	clock_setup();
-	gpio_setup();
-	usart_setup();
-
-  printf("hi\n"); 
-
-	while (1) {
-		__asm__("NOP");
-	}
-
- 
-	return 0;
-}
 
 void usart1_isr(void)
 {
 	static uint8_t data = 'A';
 
+  // return;
+
 	/* Check if we were called because of RXNE. */
 	if (((USART_CR1(USART1) & USART_CR1_RXNEIE) != 0) &&
 	    ((USART_SR(USART1) & USART_SR_RXNE) != 0)) {
 
-		/* Indicate that we got data. */
-		gpio_toggle(GPIOE, GPIO0);
-
 		/* Retrieve the data from the peripheral. */
 		data = usart_recv(USART1);
+
+    /*
+    // write to buffer - should be a circular buffer
+    // but not sure if this is useful - when do a readf we should just start blocking.  
+    if(p != NULL && pos < 10 ) {
+      // need size, and then discard...
+      p[pos++] = data;
+      if(data == '\n') {
+        // we're done... but that doesn't help
+      }
+    }
+    */
 
 		/* Enable transmit interrupt so it sends back the data. */
     // JA - so this is a cheap way of echoing data???
@@ -166,4 +149,27 @@ void usart1_isr(void)
 		usart_disable_tx_interrupt(USART1);
 	}
 }
+
+
+
+
+int main(void)
+{
+	// clock_setup();
+	usart_setup();
+
+  printf("hello %u\n", 1234); 
+
+
+	while (1) {
+     char buf[ 10 ] ;
+     read(STDIN_FILENO, buf, 10);
+
+		__asm__("NOP");
+	}
+
+ 
+	return 0;
+}
+
 
