@@ -28,7 +28,10 @@
 #define LED1_PIN  GPIO0
 
 /*
-
+  Uses a timer - to generates interrupts - and in the interupt - we read and then update
+    to generate the next interupt time.
+  A bad way to do pwm - because at a certain high speed interupts will fall on top of each other.
+  But may be useful in other contexts
 */
 
 static void clock_setup(void)
