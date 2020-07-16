@@ -67,6 +67,10 @@ timer functions.
   center aligned mode - that creates a triangle counter could be interesting. generating
   Ok - slightly staggered / or deadtime is easy
     just use the same timer, but a different channel - with a slightly different CCR time.
+
+  ---------
+  example that should work,
+  https://github.com/libopencm3/libopencm3-examples/pull/185/files
 */
 
 int main(void)
@@ -75,7 +79,6 @@ int main(void)
     // Should be TIM2 CH 1  for PA0 p46 - no its actually TIM2_CH1_ETR - and ETR is what?
 
   // PA8 is TIM1 CH 1 see p/
-
   // OKK.    
 
   // OK. order of this matters - maybe 
@@ -84,19 +87,33 @@ int main(void)
   rcc_periph_clock_enable(RCC_GPIOA);
   rcc_periph_clock_enable(RCC_TIM1);
 
-  gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 | GPIO9); // JA
+  // gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 | GPIO9); // JA... ok does this incorrectly turn it on?
+                                                                          // setup alternate function
+
+
+
+   gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 );
+   gpio_set_af(GPIOA, GPIO_AF1, GPIO8 );
+   gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO8 );
+
 	timer_set_prescaler(TIM1, 65535 ); // JA
 
 
   gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO8 | GPIO9);
-  rcc_periph_clock_enable(RCC_TIM1); // REPEAT
+  // rcc_periph_clock_enable(RCC_TIM1); // REPEAT?????
   timer_set_mode(TIM1, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_CENTER_1, TIM_CR1_DIR_UP);
   timer_set_oc_mode(TIM1, TIM_OC1, TIM_OCM_PWM2);
   timer_enable_oc_output(TIM1, TIM_OC1);
   timer_enable_break_main_output(TIM1);
   timer_set_oc_value(TIM1, TIM_OC1, 200);
+
+
+  
+   timer_enable_preload(TIM1);
+
   timer_set_period(TIM1, 1000);
   timer_enable_counter(TIM1);
+
 
    
 	while (1) {
