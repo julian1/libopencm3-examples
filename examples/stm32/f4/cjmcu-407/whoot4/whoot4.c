@@ -129,9 +129,10 @@
 
   //////////
 
-  OKK. lets try a different channel, CH2 ... 
-  
-
+  Need to do,
+    - try a different channel, CH2 ... 
+    - use the on-board button instead which we know works, see if can get it configured to count
+    - use blocking read and write - in main control loop...
  */
 
 
@@ -166,6 +167,15 @@ int main(void)
   timer_slave_set_mode(TIM3, 0x3); // encoder
   timer_ic_set_input(TIM3, TIM_IC1, TIM_IC_IN_TI1);
   timer_ic_set_input(TIM3, TIM_IC2, TIM_IC_IN_TI2);
+
+  timer_ic_enable(TIM3, TIM_IC1);
+  timer_ic_enable(TIM3, TIM_IC2);
+
+  timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2); 
+  timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
+
+
+
   timer_enable_counter(TIM3);
 
 
