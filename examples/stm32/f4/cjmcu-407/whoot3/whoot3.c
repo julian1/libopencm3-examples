@@ -91,24 +91,21 @@ int main(void)
                                                                           // setup alternate function
 
 
-
    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO8 );
    gpio_set_af(GPIOA, GPIO_AF1, GPIO8 );
    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO8 );
 
-	timer_set_prescaler(TIM1, 65535 ); // JA
+	timer_set_prescaler(TIM1, 6553 ); // JA
 
 
-  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO8 | GPIO9);
+  // gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO8 | GPIO9);
   // rcc_periph_clock_enable(RCC_TIM1); // REPEAT?????
   timer_set_mode(TIM1, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_CENTER_1, TIM_CR1_DIR_UP);
   timer_set_oc_mode(TIM1, TIM_OC1, TIM_OCM_PWM2);
   timer_enable_oc_output(TIM1, TIM_OC1);
   timer_enable_break_main_output(TIM1);
-  timer_set_oc_value(TIM1, TIM_OC1, 200);
+  timer_set_oc_value(TIM1, TIM_OC1, 100);
 
-
-  
    timer_enable_preload(TIM1);
 
   timer_set_period(TIM1, 1000);
@@ -120,19 +117,6 @@ int main(void)
 
 			__asm__("nop");
 	}
-
-/*
-	while (1) {
-    int i;
-
-    gpio_toggle(GPIOA, GPIO0);  // JA
-
-    for (i = 0; i < 1000000; i++) { 
-			__asm__("nop");
-		}
-	}
-*/
-
 
 	return 0;
 }
