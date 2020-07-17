@@ -28,13 +28,7 @@
 
 uint16_t exti_direction = FALLING;
 
-// So why the fuck. doesn't this work...
 
-/* Set STM32 to 72 MHz. */
-static void clock_setup(void)
-{
-	rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
-}
 
 static void gpio_setup(void)
 {
@@ -96,7 +90,6 @@ void exti15_10_isr(void)
 
 int main(void)
 {
-	clock_setup();
 	gpio_setup();
 	exti_setup();
 
@@ -104,19 +97,6 @@ int main(void)
 
 	while (1)
 		__asm("nop");
-
-
-/*
-	while (1) {
-
-		if (gpio_get(GPIOD, GPIO15)) {
-		  gpio_set(GPIOE, GPIO0);
-		}
-    else {
-		  gpio_clear(GPIOE, GPIO0);
-    }
-	}
-*/
 
 
 	return 0;
