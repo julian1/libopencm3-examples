@@ -148,12 +148,9 @@ int main(void)
   HERES AN EXAMPLE - from RTOS
   https://git.rnd2.org/erigas/stm32f103c8t6/src/commit/f8109e63a94f8fc8a50d9a165f27932fba148e4f/rtos/tim4_pwm_in/main.c 
   */
-  // shit is ridiculous
-  // jjjjj
 
-    // I thin we ne actually 
-    // TI1 -> TI4
-
+  // THINK - we should check the rotary encoder is actually delivering signals. on gpio pins.
+  // by modifying button code... 
 
   // think we really do require this...  otherwise cannot do set_counter, and the slave_set_mode doesn't mix in a count...
    rcc_periph_clock_enable(RCC_TIM3);
