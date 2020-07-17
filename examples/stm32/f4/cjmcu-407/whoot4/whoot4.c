@@ -129,14 +129,11 @@ int main(void)
 
   usart_setup();
 
-
-
   ///////////////////////
   // good, console code,  ../../stm32f429i-discovery/lcd-serial/console.c
 
   // board button is PD15.  AF2  TIM4_CH4, p65 of manual
-
-  // PA6, PA7    AF2
+  // encoer - PA6, PA7     AF2  TIM3 CH1 and CH2
 
 	rcc_periph_clock_enable(RCC_GPIOA);
 	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7 );
@@ -161,6 +158,7 @@ int main(void)
    // timer_reset(TIM3);
     rcc_periph_reset_pulse(RST_TIM3);
 
+/*
    // nvic_set_priority(NVIC_DMA1_CHANNEL3_IRQ,2);
    // nvic_enable_irq(NVIC_TIM3_IRQ);
    timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
@@ -169,21 +167,43 @@ int main(void)
    timer_ic_set_input(TIM3,TIM_IC1,TIM_IC_IN_TI1);
    timer_ic_set_input(TIM3,TIM_IC2,TIM_IC_IN_TI2);
 
-   // timer_ic_set_filter(TIM3,TIM_IC_IN_TI4,TIM_IC_CK_INT_N_2);
+   // timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2);
+   // timer_ic_set_filter(TIM3,TIM_IC_IN_TI2,TIM_IC_CK_INT_N_2);
 
    timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
    // timer_slave_set_mode(TIM3,TIM_SMCR_SMS_RM);
-   timer_slave_set_mode(TIM3, 3);     // OK. this is a mixer - eg. can take internal or external clock.
-
+   timer_slave_set_mode(TIM3, 7);     // OK. this is a mixer - eg. can take internal or external clock.
+                                      // eg. setting to 0 uses the internal clock.
+*/
+/*
    timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
 
    TIM_CCER(TIM3) &= ~(TIM_CCER_CC2P|TIM_CCER_CC2E
     |TIM_CCER_CC1P|TIM_CCER_CC1E);
    TIM_CCER(TIM3) |= TIM_CCER_CC2P|TIM_CCER_CC2E|TIM_CCER_CC1E;
+   // timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
+*/
+/*
    timer_ic_enable(TIM3,TIM_IC1);
    timer_ic_enable(TIM3,TIM_IC2);
-   // timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
+  */
 
+    // ohhh my goodness...
+
+          timer_set_prescaler(TIM3,1);
+        timer_ic_set_input(TIM3,TIM_IC1,TIM_IC_IN_TI1);
+        timer_ic_set_input(TIM3,TIM_IC2,TIM_IC_IN_TI1);
+        timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2);
+        timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
+        // timer_slave_set_mode(TIM3,TIM_SMCR_SMS_RM);
+        timer_slave_set_mode(TIM3, 7);
+        timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
+        TIM_CCER(TIM3) &= 0b110011; // .CCxP and .CCxE cleared
+        TIM_CCER(TIM3) |= 0b110001;
+        timer_ic_enable(TIM3,TIM_IC1);
+        timer_ic_enable(TIM3,TIM_IC2);
+        // timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
+        // timer_enable_counter(TIM3);
 
 
   // weird... thiis doesn't work ? 
