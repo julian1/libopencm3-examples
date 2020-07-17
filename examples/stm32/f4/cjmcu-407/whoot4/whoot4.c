@@ -68,8 +68,8 @@
   https://letanphuc.net/2015/06/stm32f0-timer-tutorial-and-counter-tutorial/
 
   alternate functions are p62  of the manual.
- 
-  we only actually really need a simple button counter... 
+
+  we only actually really need a simple button counter...
 
   MAYBE SHOULD BE USING ETR --- although doesn't exist. on TIM3
     NO.
@@ -77,7 +77,7 @@
   OK. looks very good, counting pulses, using   STM32F407VG
   https://www.fmf.uni-lj.si/~ponikvar/STM32F407%20project/Ch9%20-%20Counting%20pulses%20by%20Timer%202.pdf
     Uses PA15 TIM2_ETR
-    even though there are pins for TIM2_CH1_ETR and another for the same which may be errata for TIM2_CH1_ETR 
+    even though there are pins for TIM2_CH1_ETR and another for the same which may be errata for TIM2_CH1_ETR
 
   TIM3 ETR is on pin PD2   AF2 . but there are no separate channels...
   TIM2 ETR is on pin 15
@@ -91,7 +91,7 @@
   Note the XOR block on the non-ETR inputs, p17
     https://www.st.com/content/ccc/resource/technical/document/application_note/group0/91/01/84/3f/7c/67/41/3f/DM00236305/files/DM00236305.pdf/jcr:content/translations/en.DM00236305.pdf
 
-    ETR - extended timer, edge triggered ? what the fuck 
+    ETR - extended timer, edge triggered ? what the fuck
   -----------
 
   https://letanphuc.net/2015/06/stm32f0-timer-tutorial-and-counter-tutorial/
@@ -102,7 +102,7 @@
 
   --------------
   Picture above is an example of pin PA0, which has the “TIM2_CH1” function. It
-  means that you can use this pin as an input signal for Counter TIM2. 
+  means that you can use this pin as an input signal for Counter TIM2.
 
   ------
 
@@ -115,20 +115,166 @@
   //////////
 
   Need to do,
-    - try a different channel, CH2 ... 
+    - try a different channel, CH2 ...
     - use the on-board button instead which we know works, see if can get it configured to count
     - use blocking read and write - in main control loop...
  */
 
 
 
+// it's completely hair brain drying to drop some values into half a dozen registers to get an effect.
+
+
+
+
+
+
+static int initRotaryEncoderTimer(uint32_t tim, uint32_t portA, uint16_t pinA, uint8_t afA, uint32_t portB, uint16_t pinB, uint8_t afB) {
+  /*
+    https://gitlab.cs.fau.de/diy/wiki/-/wikis/Inkrementaldrehgeber
+
+    this really should work...
+    the fact it doesn't think means - that really need to try a different board. 
+    issue with pins...
+          
+  */
+
+  gpio_mode_setup(portA, GPIO_MODE_AF, GPIO_PUPD_PULLUP, pinA);
+  gpio_set_af(portA, afA, pinA);
+
+  gpio_mode_setup(portB, GPIO_MODE_AF, GPIO_PUPD_PULLUP, pinB);
+  gpio_set_af(portB, afB, pinB);
+
+  // timer_reset(tim);
+  // rcc_periph_reset_pulse(tim); // maybe WRONG **************
+
+  timer_set_mode(tim, TIM_CR1_CKD_CK_INT, //For dead time and filter sampling, not important for now.
+   TIM_CR1_CMS_EDGE, //TIM_CR1_CMS_EDGE
+   TIM_CR1_DIR_UP);
+
+  timer_set_prescaler(tim, 0);
+  timer_set_repetition_counter(tim, 0);
+  timer_enable_preload(tim);
+  timer_continuous_mode(tim);
+
+  timer_slave_set_mode(tim, TIM_SMCR_SMS_EM3); // encoder
+
+  timer_set_oc_polarity_high(tim, TIM_OC1);
+  timer_set_oc_polarity_high(tim, TIM_OC2);
+
+  timer_ic_disable(tim, TIM_IC1);
+  timer_ic_disable(tim, TIM_IC2);
+
+  timer_ic_set_input(tim, TIM_IC1, TIM_IC_IN_TI1);
+  timer_ic_set_input(tim, TIM_IC2, TIM_IC_IN_TI1);
+
+  timer_disable_oc_output(tim, TIM_OC1);
+  timer_disable_oc_output(tim, TIM_OC2);
+
+  timer_disable_preload_complementry_enable_bits(tim);
+  timer_set_period(tim, 0xFFFFFFFF);
+
+  timer_enable_counter(tim);
+
+  return 0;
+}
+
+
+
+
+
+
 int main(void)
 {
 
-	rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
+	// rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
 
   usart_setup();
 
+
+    rcc_periph_clock_enable(RCC_GPIOA);
+   rcc_periph_clock_enable(RCC_TIM3);
+
+	// gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7 );
+
+
+  // initRotaryEncoderTimer(uint32_t tim, uint32_t portA, uint16_t pinA, uint8_t afA, uint32_t portB, uint16_t pinB, uint8_t afB) {
+  initRotaryEncoderTimer(TIM3, GPIOA, GPIO6, GPIO_AF2, GPIOA, GPIO7, GPIO_AF2) ;
+  // initRotaryEncoderTimer(TIM1, GPIOA, GPIO8, GPIO_AF1, GPIOA, GPIO9, GPIO_AF1) ; conflicts usart 1.
+
+	while (1) {
+
+      int count = timer_get_counter(TIM3);
+
+      printf("count.. %d\n", count);
+
+			__asm__("nop");
+	}
+
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+static void timer_setup_old2(void) {
+  // ETR code,
+  /* NOTE: Digital input pins have Schmitt filter. */
+
+  rcc_periph_clock_enable(RCC_TIM3);
+  //timer_reset(TIM3);
+  rcc_periph_reset_pulse(RST_TIM3);
+
+  /* Disable inputs. */
+  timer_ic_disable(TIM3, TIM_IC1);
+  timer_ic_disable(TIM3, TIM_IC2);
+  timer_ic_disable(TIM3, TIM_IC3);
+  timer_ic_disable(TIM3, TIM_IC4);
+
+  timer_ic_enable(TIM4,TIM_IC1);
+   timer_ic_enable(TIM4,TIM_IC2);
+
+  /* Disable outputs. */
+  timer_disable_oc_output(TIM3, TIM_OC1);
+  timer_disable_oc_output(TIM3, TIM_OC2);
+  timer_disable_oc_output(TIM3, TIM_OC3);
+  timer_disable_oc_output(TIM3, TIM_OC4);
+
+  /* Timer mode: no divider, edge, count up */
+  timer_disable_preload(TIM3);
+  timer_continuous_mode(TIM3);
+  timer_set_period(TIM3, 65535);
+  timer_slave_set_mode(TIM3, TIM_SMCR_SMS_ECM1);
+
+  //   TIM_IC_OFF,
+  // TIM_IC_CK_INT_N_2
+  timer_slave_set_filter(TIM3, TIM_IC_CK_INT_N_2); //filters_val[filter_current]);
+
+
+  timer_slave_set_polarity(TIM3, TIM_ET_RISING);
+  timer_slave_set_prescaler(TIM3, TIM_IC_PSC_OFF);
+  timer_slave_set_trigger(TIM3, TIM_SMCR_TS_ETRF);
+  timer_update_on_overflow(TIM3);
+
+
+  timer_set_counter(TIM3, 9999 );
+
+  // nvic_enable_irq(NVIC_TIM3_IRQ);
+  timer_enable_counter(TIM3);
+  // timer_enable_irq(TIM3, TIM_DIER_CC1IE);
+}
+
+
+static void timer_setup_old( void)
+{
   ///////////////////////
   // good, console code,  ../../stm32f429i-discovery/lcd-serial/console.c
 
@@ -137,26 +283,24 @@ int main(void)
 
 	rcc_periph_clock_enable(RCC_GPIOA);
 	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7 );
+
   // or floating...
-  gpio_set_af(GPIOA, GPIO_AF2, GPIO6 | GPIO7 );  
+  gpio_set_af(GPIOA, GPIO_AF2, GPIO6 | GPIO7 );   // AF
 
   /*
   HERES AN EXAMPLE - from RTOS
-  https://git.rnd2.org/erigas/stm32f103c8t6/src/commit/f8109e63a94f8fc8a50d9a165f27932fba148e4f/rtos/tim4_pwm_in/main.c 
+  https://git.rnd2.org/erigas/stm32f103c8t6/src/commit/f8109e63a94f8fc8a50d9a165f27932fba148e4f/rtos/tim4_pwm_in/main.c
   */
 
   // THINK - we should check the rotary encoder is actually delivering signals. on gpio pins.
-  // by modifying button code... 
+  // by modifying button code...
 
   // think we really do require this...  otherwise cannot do set_counter, and the slave_set_mode doesn't mix in a count...
    rcc_periph_clock_enable(RCC_TIM3);
 
    // TIM3:
    timer_disable_counter(TIM3);
-
-
-   // timer_reset(TIM3);
-    rcc_periph_reset_pulse(RST_TIM3);
+   rcc_periph_reset_pulse(RST_TIM3);
 
 /*
    // nvic_set_priority(NVIC_DMA1_CHANNEL3_IRQ,2);
@@ -185,6 +329,7 @@ int main(void)
 */
     // ohhh my goodness...
 
+/*
         timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
 
         timer_set_prescaler(TIM3,1);
@@ -194,43 +339,64 @@ int main(void)
         timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2);
         timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
         // timer_slave_set_mode(TIM3,TIM_SMCR_SMS_RM);
-        timer_slave_set_mode(TIM3, 7);  
+        timer_slave_set_mode(TIM3, 7);
         timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
 
-        TIM_CCER(TIM3) &= 0b110011; // .CCxP and .CCxE cleared
-        TIM_CCER(TIM3) |= 0b110001;
+        // TIM_CCER(TIM3) &= 0b110011; // .CCxP and .CCxE cleared
+        // TIM_CCER(TIM3) |= 0b110001;
 
         timer_ic_enable(TIM3,TIM_IC1);
         timer_ic_enable(TIM3,TIM_IC2);
         // timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
         // timer_enable_counter(TIM3);
+*/
+
+    //   timer_disable_counter(TIM3);
+    // timer_reset(TIM3);
+    // nvic_set_priority(NVIC_DMA1_CHANNEL3_IRQ,2);
+    // nvic_enable_irq(NVIC_TIM3_IRQ);
+     timer_set_mode(TIM3,
+      TIM_CR1_CKD_CK_INT,
+      TIM_CR1_CMS_EDGE,
+      TIM_CR1_DIR_UP);
+     // timer_set_prescaler(TIM3,72);
+     timer_set_prescaler(TIM3,1);
+     timer_ic_set_input(TIM3,TIM_IC1,TIM_IC_IN_TI1);
+     timer_ic_set_input(TIM3,TIM_IC2,TIM_IC_IN_TI1);
+     timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2);
+     timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
+     // timer_slave_set_mode(TIM3,TIM_SMCR_SMS_RM);
+     timer_slave_set_mode(TIM3,0xff);
+     timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
 
 
-  // weird... thiis doesn't work ? 
+     TIM_CCER(TIM3) &= ~(TIM_CCER_CC2P|TIM_CCER_CC2E |TIM_CCER_CC1P|TIM_CCER_CC1E);
+     TIM_CCER(TIM3) |= TIM_CCER_CC2P|TIM_CCER_CC2E|TIM_CCER_CC1E;
+     timer_ic_enable(TIM3,TIM_IC1);
+     timer_ic_enable(TIM3,TIM_IC2);
+     //timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
+     timer_enable_counter(TIM3);
+  // if can get
+
+  // weird... thiis doesn't work ?
   // because the clocking to the whole clock thing is not on...
   timer_set_counter(TIM3 , 9999 ); // OK. working now.  to do this we have to have the main clock runnning.
-                                    // which indicates should always be running...
 
    timer_enable_counter(TIM3);
-  
-	while (1) {
-
-      int count = timer_get_counter(TIM3);
-
-      printf("count.. %d\n", count);
-
-			__asm__("nop");
-	}
-
-	return 0;
 }
 
 
 
 
 
+
+
+
+
+
+
   // ck_int - is internal clock.
-  // ic = input compare, internal clock? 
+  // ic = input compare, internal clock?
    //  oc = output compare mode - correct ?
   // 77 functions... for timers....
 
@@ -241,9 +407,9 @@ int main(void)
   This mode is selected when SMS=111 in the TIMx_SMCR register. The counter can count at
   each rising or falling edge on a selected input.
   */
- 
 
-  // DO i need interrupts set. to get count on external clock? 
+
+  // DO i need interrupts set. to get count on external clock?
   // ic = input compare, or input channel
 
 
