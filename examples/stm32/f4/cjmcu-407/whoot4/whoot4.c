@@ -177,7 +177,7 @@ int main(void)
 
    timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
    // timer_slave_set_mode(TIM3,TIM_SMCR_SMS_RM);
-   timer_slave_set_mode(TIM3,3 );
+   timer_slave_set_mode(TIM3, 7);     // OK. this is a mixer - eg. can take internal or external clock.
 
    timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
 
@@ -192,8 +192,8 @@ int main(void)
 
   // weird... thiis doesn't work ? 
   // because the clocking to the whole clock thing is not on...
-  timer_set_counter(TIM3 , 9999 ); // but this doesn't work. which is weird
-                                    // OK. working now.
+  timer_set_counter(TIM3 , 9999 ); // OK. working now.  to do this we have to have the main clock runnning.
+                                    // which indicates should always be running...
 
    timer_enable_counter(TIM3);
   
