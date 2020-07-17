@@ -183,23 +183,23 @@ int main(void)
    TIM_CCER(TIM3) |= TIM_CCER_CC2P|TIM_CCER_CC2E|TIM_CCER_CC1E;
    // timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
 */
-/*
-   timer_ic_enable(TIM3,TIM_IC1);
-   timer_ic_enable(TIM3,TIM_IC2);
-  */
-
     // ohhh my goodness...
 
-          timer_set_prescaler(TIM3,1);
+        timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+
+        timer_set_prescaler(TIM3,1);
         timer_ic_set_input(TIM3,TIM_IC1,TIM_IC_IN_TI1);
-        timer_ic_set_input(TIM3,TIM_IC2,TIM_IC_IN_TI1);
+        timer_ic_set_input(TIM3,TIM_IC2,TIM_IC_IN_TI2);
+
         timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2);
         timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
         // timer_slave_set_mode(TIM3,TIM_SMCR_SMS_RM);
-        timer_slave_set_mode(TIM3, 7);
+        timer_slave_set_mode(TIM3, 7);  
         timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
+
         TIM_CCER(TIM3) &= 0b110011; // .CCxP and .CCxE cleared
         TIM_CCER(TIM3) |= 0b110001;
+
         timer_ic_enable(TIM3,TIM_IC1);
         timer_ic_enable(TIM3,TIM_IC2);
         // timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
