@@ -73,6 +73,10 @@ void exti15_10_isr(void)
   // uint16_t EXTI_PR_ = EXTI_PR;
   // if(EXTI_PR_ & GPIO15) {
 
+  // No. Think we do not have to filter,
+  // see, exti15_10_isr example here,
+  // https://github.com/geomatsi/stm32-tests/blob/master/boards/stm32f4-nucleo/apps/freertos-demo/button.c
+
 	if (exti_direction == FALLING) {
     gpio_set(GPIOE, GPIO0);
 		exti_direction = RISING;
