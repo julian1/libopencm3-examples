@@ -66,13 +66,18 @@ static void exti_setup(void)
 
 
 
-void exti15_10_isr(void) 
+void exti15_10_isr(void)
 // void exti0_isr(void)
 {
 	exti_reset_request(EXTI15);
 
+  // this might be getting other interupts also... not sure.
+
+  // see, https://sourceforge.net/p/libopencm3/mailman/libopencm3-devel/thread/CAJ%3DSVavkRD3UwzptrAGG%2B-4DXexwncp_hOqqmFXhAXgEWjc8cw%40mail.gmail.com/#msg28508251
   // uint16_t port = gpio_port_read(GPIOE);
   // if(port & GPIO1) {
+  // uint16_t EXTI_PR_ = EXTI_PR;
+  // if(EXTI_PR_ & GPIO15) {
 
 	if (exti_direction == FALLING) {
     gpio_set(GPIOE, GPIO0);
@@ -83,6 +88,8 @@ void exti15_10_isr(void)
 		exti_direction = FALLING;
 		exti_set_trigger(EXTI15, EXTI_TRIGGER_FALLING);
 	}
+
+
 }
 
 
