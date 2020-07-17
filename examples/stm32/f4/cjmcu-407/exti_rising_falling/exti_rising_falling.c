@@ -82,10 +82,7 @@ void exti15_10_isr(void)
 		exti_direction = FALLING;
 		exti_set_trigger(EXTI15, EXTI_TRIGGER_FALLING);
 	}
-
-
 }
-
 
 
 int main(void)
@@ -93,11 +90,8 @@ int main(void)
 	gpio_setup();
 	exti_setup();
 
-  // gpio_set(GPIOE, GPIO0); // JA
-
 	while (1)
 		__asm("nop");
-
 
 	return 0;
 }
