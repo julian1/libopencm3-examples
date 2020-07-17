@@ -1,5 +1,5 @@
 /*
-
+  rotary encoder. working.
  */
 
 #include <stdio.h>
