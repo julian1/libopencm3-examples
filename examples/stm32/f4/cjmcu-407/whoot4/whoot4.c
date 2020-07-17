@@ -138,8 +138,7 @@ int main(void)
 
   // PA6, PA7    AF2
 
-	rcc_periph_clock_enable(RCC_GPIOD);
-	// gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7 );
+	rcc_periph_clock_enable(RCC_GPIOA);
 	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7 );
   // or floating...
   gpio_set_af(GPIOA, GPIO_AF2, GPIO6 | GPIO7 );  
@@ -174,7 +173,7 @@ int main(void)
 
    timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
    // timer_slave_set_mode(TIM3,TIM_SMCR_SMS_RM);
-   timer_slave_set_mode(TIM3, 7);     // OK. this is a mixer - eg. can take internal or external clock.
+   timer_slave_set_mode(TIM3, 3);     // OK. this is a mixer - eg. can take internal or external clock.
 
    timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
 
