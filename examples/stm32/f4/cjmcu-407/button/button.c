@@ -46,7 +46,7 @@ static void gpio_setup(void)
 
 static void button_setup(void)
 {
-	/* Enable GPIOD clock. - for led */
+	/* Enable GPIOD clock.  */
 	rcc_periph_clock_enable(RCC_GPIOD);
 
 	/* Set GPIOD0 to 'input floating'. */
