@@ -132,34 +132,127 @@ int main(void)
 
 
   ///////////////////////
+  // good, console code,  ../../stm32f429i-discovery/lcd-serial/console.c
 
-  // board button is PD15.  AF2  TIM4_CH1, p65 of manual
+  // board button is PD15.  AF2  TIM4_CH4, p65 of manual
 
 	rcc_periph_clock_enable(RCC_GPIOD);
 	gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO15 );
   // or floating...
   gpio_set_af(GPIOD, GPIO_AF2, GPIO15 );  
 
+  // ck_int - is internal clock.
 
-  // ic = input compare, oc = output compare ?
+  // ic = input compare, internal clock? 
 
-  // 77 functions... for timers.
+   //  oc = output compare mode - correct ?
+  // 77 functions... for timers....
 
+
+  /*
+  p602,
+  External clock source mode 1
+  This mode is selected when SMS=111 in the TIMx_SMCR register. The counter can count at
+  each rising or falling edge on a selected input.
+  */
+ 
+  /* 
+  // OK. this works - to count using internal clock and generate a count,
+  rcc_periph_clock_enable(RCC_TIM4);
   rcc_periph_reset_pulse(RST_TIM4);
+  timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT_MUL_2, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+  timer_set_period(TIM4, 0xffff);   // eg. max it will count to 65535
+  timer_set_prescaler(TIM4, 1000); 
+  */ 
 
-  // timer_set_prescaler(TIM4, 3999); /* 4Mhz/1000hz - 1 */
-  timer_set_period(TIM4, 0xffff);
+  // see p603.
 
+     rcc_periph_clock_enable(RCC_TIM4);
+     timer_set_period(TIM4, 1024);
+     timer_slave_set_mode(TIM4, 0x7); // 111 in 
+                                      // This mode is selected when SMS=111 in the TIMx_SMCR register.
+     timer_ic_set_input(TIM4, TIM_IC4, TIM_IC_IN_TI4);
+
+      timer_set_mode(TIM4, TIM_CR1_CMS_MASK /*TIM_CR1_CKD_CK_INT */, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+
+
+    timer_ic_enable(TIM4, TIM_IC4 );
+
+     timer_enable_counter(TIM4);
+
+
+  // DO i need interrupts set. to get count on external clock? 
+  // ic = input compare, or input channel
+ 
+  /* 
+        timer_disable_counter(TIM4);
+        rcc_periph_reset_pulse(RST_TIM4);
+        // nvic_set_priority(NVIC_DMA1_CHANNEL3_IRQ,2);
+        nvic_set_priority(NVIC_DMA1_STREAM3_IRQ ,2);
+        nvic_enable_irq(NVIC_TIM4_IRQ);
+        timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+        // timer_set_prescaler(TIM4,72);
+        timer_set_prescaler(TIM4,1);
+        // timer_ic_set_input(TIM4,TIM_IC1,TIM_IC_IN_TI1);
+        // timer_ic_set_input(TIM4,TIM_IC2,TIM_IC_IN_TI1);
+        timer_ic_set_input(TIM4,TIM_IC1,TIM_IC_IN_TI4);
+        timer_ic_set_input(TIM4,TIM_IC2,TIM_IC_IN_TI4);
+        // timer_ic_set_filter(TIM4,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2);
+        timer_ic_set_filter(TIM4,TIM_IC_IN_TI4,TIM_IC_CK_INT_N_2);
+        timer_ic_set_prescaler(TIM4,TIM_IC1,TIM_IC_PSC_OFF);
+        timer_slave_set_mode(TIM4,TIM_SMCR_SMS_RM);
+        timer_slave_set_trigger(TIM4,TIM_SMCR_TS_TI1FP1);
+        TIM_CCER(TIM4) &= 0b110011; // .CCxP and .CCxE cleared
+        TIM_CCER(TIM4) |= 0b110001;
+        timer_ic_enable(TIM4,TIM_IC1);
+        timer_ic_enable(TIM4,TIM_IC2);
+        timer_enable_irq(TIM4,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
+        timer_enable_counter(TIM4);
+  */
+
+  /*
+      rotary example.
+       rcc_periph_clock_enable(RCC_TIM4);
+      rcc_periph_reset_pulse(RST_TIM4);
+
+         timer_set_period(TIM4, 1024);
+         timer_slave_set_mode(TIM4, 0x3); // encoder
+         // timer_ic_set_input(TIM4, TIM_IC1, TIM_IC_IN_TI1);
+         // timer_ic_set_input(TIM4, TIM_IC2, TIM_IC_IN_TI2);
+         // timer_ic_set_input(TIM4, TIM_IC3, TIM_IC_IN_TI3);
+         timer_ic_set_input(TIM4, TIM_IC4, TIM_IC_IN_TI4);
+
+         timer_ic_enable(TIM4,TIM_IC1);
+        timer_ic_enable(TIM4,TIM_IC2);
+         timer_ic_enable(TIM4,TIM_IC3);
+        timer_ic_enable(TIM4,TIM_IC4);
+  timer_enable_counter(TIM4);
+    */
+
+
+
+
+/*
+  // example from doc,
+         rcc_periph_clock_enable(RCC_TIM3);
+         timer_set_period(TIM3, 1024);
+         timer_slave_set_mode(TIM3, 0x3); // encoder
+         timer_ic_set_input(TIM3, TIM_IC1, TIM_IC_IN_TI1);
+         timer_ic_set_input(TIM3, TIM_IC2, TIM_IC_IN_TI2);
+         timer_enable_counter(TIM3);
+    timer_enable_counter(TIM4);
+*/
+
+
+
+
+/*
   timer_ic_enable(TIM4,TIM_IC4);
   timer_ic_set_input(TIM4, TIM_IC4, TIM_IC_IN_TI4);
 
   timer_ic_set_filter(TIM4,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_4); 
   timer_ic_set_prescaler(TIM4,TIM_IC1,TIM_IC_PSC_OFF);
-
-
-
-
-  timer_enable_counter(TIM4);
+*/
 
 /*
 
