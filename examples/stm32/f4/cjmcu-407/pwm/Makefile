@@ -17,7 +17,7 @@
 ## along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-BINARY = whoot3
+BINARY = whoot
 
 LDSCRIPT = ../stm32f4-discovery.ld
 

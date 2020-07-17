@@ -19,7 +19,7 @@
 
 OBJS = usart_irq_printf.o
 
-BINARY = whoot4
+BINARY = whoot
 
 LDSCRIPT = ../stm32f4-discovery.ld
 
