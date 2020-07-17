@@ -46,7 +46,7 @@ static void gpio_setup(void)
 static void exti_setup(void)
 {
 	rcc_periph_clock_enable(RCC_GPIOD);
-  rcc_periph_clock_enable(RCC_SYSCFG) ;
+  rcc_periph_clock_enable(RCC_SYSCFG); // needed for external interupts.
 
 	gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO15 );
 
