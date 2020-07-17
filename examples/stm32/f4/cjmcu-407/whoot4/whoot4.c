@@ -155,7 +155,7 @@ int main(void)
     // TI1 -> TI4
 
 
-  // think we really do require this... 
+  // think we really do require this...  otherwise cannot do set_counter, and the slave_set_mode doesn't mix in a count...
    rcc_periph_clock_enable(RCC_TIM3);
 
    // TIM3:
