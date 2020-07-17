@@ -136,15 +136,85 @@ int main(void)
 
   // board button is PD15.  AF2  TIM4_CH4, p65 of manual
 
+  // PA6, PA7    AF2
+
 	rcc_periph_clock_enable(RCC_GPIOD);
-	gpio_mode_setup(GPIOD, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO15 );
+	// gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7 );
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7 );
   // or floating...
-  gpio_set_af(GPIOD, GPIO_AF2, GPIO15 );  
+  gpio_set_af(GPIOA, GPIO_AF2, GPIO6 | GPIO7 );  
+
+  /*
+  HERES AN EXAMPLE - from RTOS
+  https://git.rnd2.org/erigas/stm32f103c8t6/src/commit/f8109e63a94f8fc8a50d9a165f27932fba148e4f/rtos/tim4_pwm_in/main.c 
+  */
+  // shit is ridiculous
+  // jjjjj
+
+    // I thin we ne actually 
+    // TI1 -> TI4
+
+
+  // think we really do require this... 
+   rcc_periph_clock_enable(RCC_TIM3);
+
+   // TIM3:
+   timer_disable_counter(TIM3);
+
+
+   // timer_reset(TIM3);
+    rcc_periph_reset_pulse(RST_TIM3);
+
+   // nvic_set_priority(NVIC_DMA1_CHANNEL3_IRQ,2);
+   // nvic_enable_irq(NVIC_TIM3_IRQ);
+   timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+   // timer_set_prescaler(TIM3,72);
+   timer_set_prescaler(TIM3, 1);
+   timer_ic_set_input(TIM3,TIM_IC1,TIM_IC_IN_TI1);
+   timer_ic_set_input(TIM3,TIM_IC2,TIM_IC_IN_TI2);
+
+   // timer_ic_set_filter(TIM3,TIM_IC_IN_TI4,TIM_IC_CK_INT_N_2);
+
+   timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
+   // timer_slave_set_mode(TIM3,TIM_SMCR_SMS_RM);
+   timer_slave_set_mode(TIM3,3 );
+
+   timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
+
+   TIM_CCER(TIM3) &= ~(TIM_CCER_CC2P|TIM_CCER_CC2E
+    |TIM_CCER_CC1P|TIM_CCER_CC1E);
+   TIM_CCER(TIM3) |= TIM_CCER_CC2P|TIM_CCER_CC2E|TIM_CCER_CC1E;
+   timer_ic_enable(TIM3,TIM_IC1);
+   timer_ic_enable(TIM3,TIM_IC2);
+   // timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
+
+
+
+  // weird... thiis doesn't work ? 
+  // because the clocking to the whole clock thing is not on...
+  timer_set_counter(TIM3 , 9999 ); // but this doesn't work. which is weird
+                                    // OK. working now.
+
+   timer_enable_counter(TIM3);
+  
+	while (1) {
+
+      int count = timer_get_counter(TIM3);
+
+      printf("count.. %d\n", count);
+
+			__asm__("nop");
+	}
+
+	return 0;
+}
+
+
+
+
 
   // ck_int - is internal clock.
-
   // ic = input compare, internal clock? 
-
    //  oc = output compare mode - correct ?
   // 77 functions... for timers....
 
@@ -156,210 +226,9 @@ int main(void)
   each rising or falling edge on a selected input.
   */
  
-  /* 
-  // OK. this works - to count using internal clock and generate a count,
-  rcc_periph_clock_enable(RCC_TIM4);
-  rcc_periph_reset_pulse(RST_TIM4);
-  timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT_MUL_2, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-  timer_set_period(TIM4, 0xffff);   // eg. max it will count to 65535
-  timer_set_prescaler(TIM4, 1000); 
-  */ 
-
-  // see p603.
-
-/*
-     rcc_periph_clock_enable(RCC_TIM4);
-     timer_set_period(TIM4, 1024);
-     timer_slave_set_mode(TIM4, 0x7); // 111 in 
-                                      // This mode is selected when SMS=111 in the TIMx_SMCR register.
-     timer_ic_set_input(TIM4, TIM_IC4, TIM_IC_IN_TI4);
-
-    // timer_slave_set_trigger(TIM4, TIM_SMCR_TS_ITR3   );
-
-      // timer_set_mode(TIM4, TIM_CR1_CMS_MASK , TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-      timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT , TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-
-    timer_ic_enable(TIM4, TIM_IC4 );
-     timer_enable_counter(TIM4);
-*/
 
   // DO i need interrupts set. to get count on external clock? 
   // ic = input compare, or input channel
-
-  /*
-  HERES AN EXAMPLE - from RTOS
-  https://git.rnd2.org/erigas/stm32f103c8t6/src/commit/f8109e63a94f8fc8a50d9a165f27932fba148e4f/rtos/tim4_pwm_in/main.c 
-  */
-  
-        timer_disable_counter(TIM4);
-        rcc_periph_reset_pulse(RST_TIM4);
-        // nvic_set_priority(NVIC_DMA1_CHANNEL3_IRQ,2);
-        // nvic_set_priority(NVIC_DMA1_STREAM3_IRQ ,2);
-        // nvic_enable_irq(NVIC_TIM4_IRQ);
-        timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-        // timer_set_prescaler(TIM4,72);
-        timer_set_prescaler(TIM4,1);
-        // timer_ic_set_input(TIM4,TIM_IC1,TIM_IC_IN_TI1);
-        // timer_ic_set_input(TIM4,TIM_IC2,TIM_IC_IN_TI1);
-        timer_ic_set_input(TIM4,TIM_IC4,TIM_IC_IN_TI1);
-        timer_ic_set_input(TIM4,TIM_IC4,TIM_IC_IN_TI1);
-        // timer_ic_set_filter(TIM4,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2);
-        timer_ic_set_filter(TIM4,TIM_IC_IN_TI4,TIM_IC_CK_INT_N_2);
-        timer_ic_set_prescaler(TIM4,TIM_IC1,TIM_IC_PSC_OFF);
-        timer_slave_set_mode(TIM4,TIM_SMCR_SMS_RM);
-        // timer_slave_set_mode(TIM4, 7 );
-
-        timer_slave_set_trigger(TIM4,TIM_SMCR_TS_TI1FP1);
-        TIM_CCER(TIM4) &= 0b110011; // .CCxP and .CCxE cleared
-        TIM_CCER(TIM4) |= 0b110001;
-        timer_ic_enable(TIM4,TIM_IC1);
-        timer_ic_enable(TIM4,TIM_IC2);
-        timer_ic_enable(TIM4,TIM_IC3);
-        timer_ic_enable(TIM4,TIM_IC4);
-
-        // timer_enable_irq(TIM4,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
-        timer_enable_counter(TIM4);
-  
-
-  /*
-      rotary example.
-       rcc_periph_clock_enable(RCC_TIM4);
-      rcc_periph_reset_pulse(RST_TIM4);
-
-         timer_set_period(TIM4, 1024);
-         timer_slave_set_mode(TIM4, 0x3); // encoder
-         // timer_ic_set_input(TIM4, TIM_IC1, TIM_IC_IN_TI1);
-         // timer_ic_set_input(TIM4, TIM_IC2, TIM_IC_IN_TI2);
-         // timer_ic_set_input(TIM4, TIM_IC3, TIM_IC_IN_TI3);
-         timer_ic_set_input(TIM4, TIM_IC4, TIM_IC_IN_TI4);
-
-         timer_ic_enable(TIM4,TIM_IC1);
-        timer_ic_enable(TIM4,TIM_IC2);
-         timer_ic_enable(TIM4,TIM_IC3);
-        timer_ic_enable(TIM4,TIM_IC4);
-  timer_enable_counter(TIM4);
-    */
-
-
-
-
-/*
-  // example from doc,
-         rcc_periph_clock_enable(RCC_TIM3);
-         timer_set_period(TIM3, 1024);
-         timer_slave_set_mode(TIM3, 0x3); // encoder
-         timer_ic_set_input(TIM3, TIM_IC1, TIM_IC_IN_TI1);
-         timer_ic_set_input(TIM3, TIM_IC2, TIM_IC_IN_TI2);
-         timer_enable_counter(TIM3);
-    timer_enable_counter(TIM4);
-*/
-
-
-
-
-/*
-  timer_ic_enable(TIM4,TIM_IC4);
-  timer_ic_set_input(TIM4, TIM_IC4, TIM_IC_IN_TI4);
-
-  timer_ic_set_filter(TIM4,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_4); 
-  timer_ic_set_prescaler(TIM4,TIM_IC1,TIM_IC_PSC_OFF);
-*/
-
-/*
-
-  rcc_periph_clock_enable(RCC_GPIOA);
-
-  // mode floating
-	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7);
-
-  // see p62...
-  gpio_set_af(GPIOA, GPIO_AF2, GPIO6 | GPIO7);  // TIM3 timer == AF2 , PA6 and PA7
-
-
-  rcc_periph_clock_enable(RCC_TIM3);
-
-
-  timer_set_period(TIM3, 1024);
-  timer_slave_set_mode(TIM3, 0x3); // encoder
-  timer_ic_set_input(TIM3, TIM_IC1, TIM_IC_IN_TI1);
-  timer_ic_set_input(TIM3, TIM_IC2, TIM_IC_IN_TI2);
-
-  timer_ic_enable(TIM3, TIM_IC1);
-  timer_ic_enable(TIM3, TIM_IC2);
-
-  timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2); 
-  timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
-
-  timer_enable_counter(TIM3);
-
-*/
-
-  /*
-  timer_set_period(TIM3, 1024);
-  // timer_slave_set_mode(TIM3, TIM_SMCR_SMS_EM3 ); // encoder
-
-  timer_ic_set_input(TIM3, TIM_IC1, TIM_IC_IN_TI1);
-  timer_ic_set_input(TIM3, TIM_IC2, TIM_IC_IN_TI2);
-  timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2); 
-  timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
-
-  timer_slave_set_mode(TIM3, TIM_SMCR_TS_TI1FP1); 
-  timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
-
-  timer_ic_enable(TIM3, TIM_IC1);
-  timer_ic_enable(TIM3, TIM_IC2);
-
-  timer_enable_counter(TIM3);
-  */
-
-  // Absolutely nothing works...
-
-  /*
-  // don't think this code is correct - because its trying to sync with a clock.
-  timer_disable_counter(TIM3);
-  // timer_reset(TIM3); // changed
-  rcc_periph_reset_pulse(RST_TIM3);
-  // nvic_set_priority(NVIC_DMA1_CHANNEL3_IRQ,2);  // changed
-  nvic_set_priority(NVIC_DMA1_STREAM3_IRQ,2);  // changed
-  nvic_enable_irq(NVIC_TIM3_IRQ);
-  timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-  timer_set_prescaler(TIM3,1);    //  JA
-  timer_ic_set_input(TIM3,TIM_IC1,TIM_IC_IN_TI1);
-  timer_ic_set_input(TIM3,TIM_IC2,TIM_IC_IN_TI1);
-  timer_ic_set_filter(TIM3,TIM_IC_IN_TI1,TIM_IC_CK_INT_N_2);
-  timer_ic_set_prescaler(TIM3,TIM_IC1,TIM_IC_PSC_OFF);
-  timer_slave_set_mode(TIM3,TIM_SMCR_SMS_RM);
-  timer_slave_set_trigger(TIM3,TIM_SMCR_TS_TI1FP1);
-  TIM_CCER(TIM3) &= ~(TIM_CCER_CC2P|TIM_CCER_CC2E
-  |TIM_CCER_CC1P|TIM_CCER_CC1E);
-  TIM_CCER(TIM3) |= TIM_CCER_CC2P|TIM_CCER_CC2E|TIM_CCER_CC1E;
-  timer_ic_enable(TIM3,TIM_IC1);
-  timer_ic_enable(TIM3,TIM_IC2);
-  timer_enable_irq(TIM3,TIM_DIER_CC1IE|TIM_DIER_CC2IE);
-  timer_enable_counter(TIM3);
-
-  */
-
-  /*
-  gpio_clear(GPIOE, GPIO0);   // on, 
-  // gpio_set(GPIOE, GPIO0);   // off
-  */
-
-	while (1) {
-
-      int count = timer_get_counter(TIM4);
-
-      printf("count %d\n", count);
-
-			__asm__("nop");
-	}
-
-	return 0;
-}
-
-
-
-
 
 
 
