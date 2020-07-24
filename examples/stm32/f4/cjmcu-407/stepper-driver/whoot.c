@@ -18,7 +18,9 @@
     might just be timer_set_continuous.
     then setting the preload. for the next time.
   ---------------
-  dis
+  disadvantage
+    we don't have the count, which records the timer position. 
+    generate an interrupt... but that's kind of useless.
  
  */
 
