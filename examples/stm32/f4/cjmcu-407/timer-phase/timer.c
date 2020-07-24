@@ -19,6 +19,77 @@
 /*
   trick here - is that we don't use the arr reload. we just toggle the outputs when they reach
   the compare value
+  --
+  we can calculate distance/position - by taking count of main counter.
+  can calculate inside an interupt. eg. schedule an interupt. and then measure in the interupt.
+  if ALL SPEED/DIRECTION changes are done in an interupt... (can be simple write of values)
+  then we have the OC value.
+
+  --
+  setting up, timer_slave_set_mode  might actually be simpler. because it
+  is reading almost directly from the different oc clock outputs... eg.
+  --
+  "input capture" <- good search term.
+  "The timers in the Stm32, in addition to the TIM6 and TIM7, have input capture
+  capabilities for other timers. This mode is usually used in the calculation of
+  the input signal frequency frequency, the duty ratio duty, the high and low
+  pulse width, has the very wide use.  --
+  https://topic.alibabacloud.com/a/stm32-timer-pwm-mode-input-capture_8_8_10261357.html
+  --
+
+  TIM_SMCR(timer_peripheral) &= ~TIM_SMCR_ETF_MASK;
+  TIM_SMCR_TS_ITR0
+   TIM_SMCR_TS_ETRF  - external trigger input
+
+  this has the advantage - that *might* be able to microstep more easily. actually not sure.
+    actually no. we only change phase relationship. for microsetp at slow speed. pwm ena and enb. use interrupts.
+      and change the pulsing.
+
+  "pwm input mode - can only be used with ch1 and ch2. due to fact only ti1fp1. and ti2fp2 are connected to
+    the slave mode controller.
+  -------------
+
+  OR. we just enable another clock to run in parallel with a divider that is equal to the prescaler * period.
+  eg. does 32bit.  there is no need to trigger.
+  eg. 65000 * 1000 - is half a step.
+  trigger would be better.
+  ---------
+
+  In the STM32F4 you can configure either TIM9 or TIM12 to act as the most
+  significant word (MSW) of a 32-bit timer, which can be connected to another
+  timer, which acts as the least significant word (LSW). The ST documentation
+  refers to this as a "Synchronization circuit to control the timer with external
+  signals and to interconnect several timers".
+
+    https://www.rapitasystems.com/blog/chaining-two-16-bit-timers-together-stm32f4
+    THIS IS VERY GOOD.
+
+    The master - flips a bit to indicate that its the master
+      TIM3->CR2 |= 0x20; /* MMS (6:4)
+
+    Then the slave sets itself up to read,
+      TIM9->SMCR |= (TIM_TS_ITR1 | TIM_SlaveMode_External1);
+
+
+  eg. there is not a complete flexible multiplexiro. instead we just do a single thing.
+  But there's an issue - that it can only could a single phase.
+  That's maybe ok.
+  - interupts can start and stop precisely....
+
+  -----------
+  VERY IMPORTANT.
+    enable pulsing - for micro-stepping/ power control. should use the same trick. have two channels on a timer.
+    but without the phase relationship. more conventional reset on ARR. 
+    - being able to run different pwm duties on different channels of the same timer is very nice
+  ------------
+  we cannot know the actual phase - with a straight count of one of the channels.
+  but we can determine it - by testing whether on an edge the other toggled channel is high or low.
+  given the 180deg out of phase.
+    - actually i think master count % 2. should give it. 
+  -------
+
+  we can work out the position using (slave count and count % 2) AND sampling the (master fast count count). 
+
 */
 
 int main(void)
