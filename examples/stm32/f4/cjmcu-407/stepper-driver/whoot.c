@@ -17,10 +17,13 @@
 
     might just be timer_set_continuous.
     then setting the preload. for the next time.
+
+    should be possible to microstep - quite easily. just vary the pulse.
   ---------------
-  disadvantage
-    we don't have the count, which records the timer position. 
-    generate an interrupt... but that's kind of useless.
+
+  WE DO HAVE THE MOTOR POSITION - we can calculate when needed by recording the time
+    it has run been run at a particular speed and direction. 
+    eg. its just a division.
  
  */
 
