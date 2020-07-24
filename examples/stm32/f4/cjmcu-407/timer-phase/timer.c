@@ -33,16 +33,20 @@ int main(void)
 
 
   timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_CENTER_1, TIM_CR1_DIR_UP);
+  timer_enable_preload(TIM4);
+  timer_enable_break_main_output(TIM4); // what does this do
+  timer_set_period(TIM4, 1000);
+
+  ////////
+
   timer_set_oc_mode(TIM4, TIM_OC1, TIM_OCM_PWM2);
   timer_enable_oc_output(TIM4, TIM_OC1);
-  timer_enable_break_main_output(TIM4);
-  timer_set_oc_value(TIM4, TIM_OC1, 100);
+  timer_set_oc_value(TIM4, TIM_OC1, 500);
 
-  timer_enable_preload(TIM4);
 
-  timer_set_period(TIM4, 1000);
+
+
   timer_enable_counter(TIM4);
-
 
 
 	while (1) {
