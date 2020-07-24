@@ -3,8 +3,71 @@
   BUT.
     Can it be run directly with a timer. with its four outputs?
     it just needs the OC values to be correctly staggered.
-    I think.
+    needs to hold the output values - if the counter is stopped - it can. they are just turned off/on
 
+      Issue is that some pins have to be started in the on condition...
+      need ramp up and down.
+      centre aligned - eg. ramp.
+    - it probably won't be a pwm control... through...
+
+    https://www.youtube.com/watch?v=zkrVHIcLGww
+    ARR - auto reload value. on overflow.
+      up count.
+      down count.
+      centre aligned. eg. sawtooth counter.
+    CCR - compare and capture register.
+
+    - So. think it can be done. but it would need to counters.
+    and they would have to be started at the same time.
+
+    mode1 - edge aligned on left.
+    mode 2 - edge aligned on right.
+
+    centre aligned. no. its not right.
+
+    CCER - can program polarity.
+      therefore - reduces problem to just having staggered of 2 signals.
+
+  looks like can start two timers at the same time.
+  timer_enable_counter(TIM2 | TIM3);
+
+  BUT - if we change period - we cannot synchronize - the prescaler.
+  "staggered"
+  0 1000
+  turn 1 on and 2 off.
+  on 250 turn 2 on and 1 off.
+
+  think can do it with centre aligned. we have one signal with OC 
+  and the otherflowing or repeating.
+  see RCR register.
+ 
+  OK. maybe much simpler.  just using up counter.
+    Can generate overflow - not on every cycle. but every second cycle.
+    eg. RCR = 2.
+
+  Or can do it - with master and slave synchronization. between timers. fuck.
+
+  1 timer - 4 channels. each channel has its own CCR register.
+  -----
+  two outputs 50 % out of phase.
+    - two timers. problem of synchronisation.
+    - using centre aligned counting - to get the offet one. and the other can use auto reload at bottom and  
+    - RCC. ? still  
+    - 
+
+  RCC=2.  one to clock on overflow. and the other on underflow.
+
+  180 phase shift.
+  staggered.
+
+  someone tries to do it with  
+    https://community.st.com/s/question/0D50X00009XkiXnSAJ/how-to-generate-two-pwm-with-180deg-phase-shift-with-stm32f30303-advance-timer
+
+  100kHz. with interrupts.
+ 
+  OK - this is looking more like it. using CCR. and phase. 
+  http://www.micromouseonline.com/2016/02/05/clock-pulses-with-variable-phase-stm32/
+ 
  */
 
 #include <libopencm3/stm32/rcc.h>
