@@ -116,7 +116,13 @@ int main(void)
 	while (1) {
 
     ++i;
-    // i += dir; // where dir = +1 or -1.
+    // i += dir; // where dir = +1 or -1, or 0 hold/microstep.
+    // can change speed in herre. easily 
+    // if i == 100, then stop, or change speed etc, run acceleration profiles.
+    // can run complete data driven profile. start stop reverse. etc.
+    // based on motor position i. or just time j.
+    // also can increase resolution - to handle pwm on enable pins - for pwm
+    // eg. use modulo %40. then have 10 steps. where microstep - using pwm.
     switch(i % 4) {
 
       case 0:
