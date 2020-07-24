@@ -10,6 +10,14 @@
 // OK. THIS IS EXACTLY THE SAME DAMN CODE. EXCEPT CHANGED FOR TIM4 
 // AF... AF2... not AF1
 
+//	timer_set_oc_polarity_high(TIM4, TIM_OC1);
+
+//	timer_continuous_mode(TIM1);
+/* Reset repetition counter value. */
+//	timer_set_repetition_counter(TIM1, 0);
+
+
+
 int main(void)
 {
 
@@ -31,13 +39,16 @@ int main(void)
                                                                // is this overflowing...
                                                                // it's rougly correct -
 
+  // CMS centre
 
-  timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_CENTER_1, TIM_CR1_DIR_UP);
+  timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+  // timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_CENTER_1, TIM_CR1_DIR_UP); 
   timer_enable_preload(TIM4);
   timer_enable_break_main_output(TIM4); // what does this do
   timer_set_period(TIM4, 1000);
 
   ////////
+  // PWM2 is saw. i think
 
   timer_set_oc_mode(TIM4, TIM_OC1, TIM_OCM_PWM2);
   timer_enable_oc_output(TIM4, TIM_OC1);
@@ -46,7 +57,7 @@ int main(void)
 
   timer_set_oc_mode(TIM4, TIM_OC2, TIM_OCM_PWM2);
   timer_enable_oc_output(TIM4, TIM_OC2);
-  timer_set_oc_value(TIM4, TIM_OC2, 500);
+  timer_set_oc_value(TIM4, TIM_OC2, 50);
 
 
 
