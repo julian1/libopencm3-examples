@@ -1,5 +1,6 @@
 /*
   THIS WORKS WITH IF fIT EXTERNAL LED to PA8  not the on-board led.
+  blinks once / second or so.
 
   PWM. good for leds, relays, motors, servos, power supplies.
 
