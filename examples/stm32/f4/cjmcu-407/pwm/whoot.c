@@ -1,4 +1,5 @@
 /*
+  THIS WORKS WITH IF fIT EXTERNAL LED to PA8  not the on-board led.
 
   PWM. good for leds, relays, motors, servos, power supplies.
 
