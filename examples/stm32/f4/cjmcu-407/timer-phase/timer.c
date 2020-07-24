@@ -27,18 +27,18 @@ int main(void)
   rcc_periph_clock_enable(RCC_TIM4);
 
 
-  gpio_mode_setup(GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO12 | GPIO13);
-  gpio_set_af(GPIOD, GPIO_AF2, GPIO12 | GPIO13); 
-  gpio_set_output_options(GPIOD, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO12 | GPIO13);
+  gpio_mode_setup(GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO12 | GPIO13 | GPIO14 | GPIO15);
+  gpio_set_af(GPIOD, GPIO_AF2, GPIO12 | GPIO13 | GPIO14 | GPIO15); 
+  gpio_set_output_options(GPIOD, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO12 | GPIO13 | GPIO14 | GPIO15);
 
 
-  rcc_periph_reset_pulse(RST_TIM4);   // is this needed
+  rcc_periph_reset_pulse(RST_TIM4);   // good practice
 	timer_set_prescaler(TIM4, 65535 ); // JA - blinks 1x/s. eg. consistent with 64MHz, which is documented .
 	// timer_set_prescaler(TIM4, (rcc_apb1_frequency * 2) / 100 );
 	// timer_set_prescaler(TIM4, (rcc_apb2_frequency ) / 10 );   // higher is faster - which makes no sense?
                                                                // is this overflowing...
                                                                // it's rougly correct -
-  timer_disable_preload(TIM4);
+  // timer_disable_preload(TIM4);
   // timer_continuous_mode(TIM4);
 
 
@@ -61,7 +61,14 @@ int main(void)
 
   timer_set_oc_mode(TIM4, TIM_OC2, TIM_OCM_TOGGLE); // OK. this inverts from PWM1. eg. its the bottom. 
   timer_enable_oc_output(TIM4, TIM_OC2);
-  timer_set_oc_value(TIM4, TIM_OC2, 1);
+  timer_set_oc_value(TIM4, TIM_OC2, 1); // 1 not zero, to catch on the upward count...
+
+
+  timer_set_oc_mode(TIM4, TIM_OC3, TIM_OCM_TOGGLE);
+  timer_enable_oc_output(TIM4, TIM_OC3);
+  timer_set_oc_value(TIM4, TIM_OC3, 1000);
+  timer_set_oc_polarity_low(TIM4, TIM_OC3); // same as OC1. except flip polarity
+
 
 
 
