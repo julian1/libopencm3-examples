@@ -67,6 +67,12 @@
  
   OK - this is looking more like it. using CCR. and phase. 
   http://www.micromouseonline.com/2016/02/05/clock-pulses-with-variable-phase-stm32/
+
+  eg. not using the OC, and ARR - as the points.
+  --------
+
+  Ok - is there an issue - that we lose our position. if we don't have a meta counter.
+    perhaps requires another slave counter? or do an interrupt for counting.
  
  */
 

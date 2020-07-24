@@ -85,8 +85,8 @@ static void tim_setup(void)
 	timer_set_oc_value(TIM2, TIM_OC1, 1 );   // could set to 1 or something?
 
 	/* Counter enable. */
-	// timer_enable_counter(TIM2);
-	timer_enable_counter(TIM2 | TIM3);  // can start two timers at the same time?
+	timer_enable_counter(TIM2);
+	// timer_enable_counter(TIM2 | TIM3);  // can start two timers at the same time?
 
 	/* Enable Channel 1 compare interrupt to recalculate compare values */
 	timer_enable_irq(TIM2, TIM_DIER_CC1IE);
