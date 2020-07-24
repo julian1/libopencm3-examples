@@ -4,8 +4,8 @@
     Can it be run directly with a timer. with its four outputs?
     it just needs the OC values to be correctly staggered.
     needs to hold the output values - if the counter is stopped - it can. they are just turned off/on
-   
-  OK - this is looking more like it. using CCR. and phase. 
+
+  OK - this is looking more like it. using CCR. and phase.
   http://www.micromouseonline.com/2016/02/05/clock-pulses-with-variable-phase-stm32/
 
   eg. not using the OC, and ARR - as the points. just CCR
@@ -17,14 +17,25 @@
 
     might just be timer_set_continuous.
     then setting the preload. for the next time.
-
     should be possible to microstep - quite easily. just vary the pulse.
+
+    OK - it's just the same configuration as the rip saw. only triggering on the value. 
+    except we use an up counter.
   ---------------
 
   WE DO HAVE THE MOTOR POSITION - we can calculate when needed by recording the time
-    it has run been run at a particular speed and direction. 
+    it has run been run at a particular speed and direction.
     eg. its just a division.
- 
+    - can set an interrupt
+      - then do the calculation inside an interrupt to be accurate.
+      - can also do a change in frequcney inside the interupt
+    
+  OR. should be ok to do slave mode. and use another counter.
+    albeit need to be careful with direction.
+
+
+    -------
+
  */
 
 #include <libopencm3/stm32/rcc.h>
