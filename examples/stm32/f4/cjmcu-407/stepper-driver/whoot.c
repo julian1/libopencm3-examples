@@ -123,6 +123,8 @@ int main(void)
     // based on motor position i. or just time j.
     // also can increase resolution - to handle pwm on enable pins - for pwm
     // eg. use modulo %40. then have 10 steps. where microstep - using pwm.
+    // controlling all of direction, power, duration, on/off, hold.
+    // also other thing
     switch(i % 4) {
 
       case 0:
