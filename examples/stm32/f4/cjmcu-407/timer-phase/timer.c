@@ -92,6 +92,7 @@
   --------
   VERY IMPORTANT
   trigger on the rise and the fall.  then use count % 4 for the phase. actually think still %2 on count.
+  reverse is still problematic. maybe record, then reset the slave count to zero.
 
 
   or just rise and mod 2, and the master clock count.

@@ -116,12 +116,8 @@ int main(void)
 	while (1) {
 
     ++i;
+    // i += dir; // where dir = +1 or -1.
     switch(i % 4) {
-    // switch(3 - (i % 4)) {
-        // reverse would just be 3 - the value
-
-      // NO... the pins are around the wrong way.
-      // the wave form pins - are different. for particular pair should never be both set or both clear.
 
       case 0:
         // gpio_set(  GPIOD, GPIO1);  gpio_clear(GPIOD, GPIO2);  gpio_set(GPIOD, GPIO3);  gpio_clear(GPIOD, GPIO4);
