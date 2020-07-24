@@ -90,7 +90,10 @@
 
   we can work out the position using (slave count and count % 2) AND sampling the (master fast count count). 
   --------
-  trigger on the rise and the fall.  then use count % 4 for the phase.
+  VERY IMPORTANT
+  trigger on the rise and the fall.  then use count % 4 for the phase. actually think still %2 on count.
+
+
   or just rise and mod 2, and the master clock count.
 
 */
