@@ -19,9 +19,9 @@ int main(void)
   rcc_periph_clock_enable(RCC_TIM4);
 
 
-  gpio_mode_setup(GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO12 );
-  gpio_set_af(GPIOD, GPIO_AF2, GPIO12 ); // AF1 == timer.
-  gpio_set_output_options(GPIOD, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO12 ); // 50is faster than 100? no. same speed
+  gpio_mode_setup(GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO12 | GPIO13);
+  gpio_set_af(GPIOD, GPIO_AF2, GPIO12 | GPIO13); 
+  gpio_set_output_options(GPIOD, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO12 | GPIO13);
 
 
   rcc_periph_reset_pulse(RST_TIM4);   // is this needed
@@ -43,6 +43,10 @@ int main(void)
   timer_enable_oc_output(TIM4, TIM_OC1);
   timer_set_oc_value(TIM4, TIM_OC1, 500);
 
+
+  timer_set_oc_mode(TIM4, TIM_OC2, TIM_OCM_PWM2);
+  timer_enable_oc_output(TIM4, TIM_OC2);
+  timer_set_oc_value(TIM4, TIM_OC2, 500);
 
 
 
