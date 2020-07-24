@@ -61,7 +61,7 @@ int main(void)
 
   timer_set_oc_mode(TIM4, TIM_OC2, TIM_OCM_TOGGLE); // OK. this inverts from PWM1. eg. its the bottom. 
   timer_enable_oc_output(TIM4, TIM_OC2);
-  timer_set_oc_value(TIM4, TIM_OC2, 500);
+  timer_set_oc_value(TIM4, TIM_OC2, 1);
 
 
 
