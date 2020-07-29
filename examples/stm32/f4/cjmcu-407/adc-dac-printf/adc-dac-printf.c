@@ -4,6 +4,7 @@
     reads adc, and prints to uart.
     should also setup dac wave
     also some lower power configuration
+    not tested since migration.  need to test - eg. short adc. watch dac.
 
  * This file is part of the libopencm3 project.
  *
