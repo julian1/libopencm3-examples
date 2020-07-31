@@ -3,6 +3,14 @@
   TRY  - LSI
   try bypass mode.
   Need - to understand what clock/ system the LSE uses.
+  TRY - The crystal oscillator driving strength can be changed at runtime using
+        the LSEDRV[1:0] bits in the Backup domain control register (RCC_BDCR) to obtain
+        the best compromise between robustne
+
+        On the TFBGA216 package when the LSE low driving capability or LSE high driving
+        capability is selected (LSEDRV[1:0]=00 or LSEDRV[1:0]=11 in the RCC_BDCR
+        register, 
+
 
   https://github.com/libopencm3/libopencm3/issues/1028
 
@@ -40,17 +48,18 @@
 
   - turning RCC_LSE rcc_osc_on, and but when call rcc_wait_for_osc_ready() it just hangs.
   - So testing the crystal on a scope - shows no oscillation.
-  - i can see 8MHz crystal on scope no problems - after configure rcc_hse_8mhz_3v3
+  - as a test, i can see 8MHz crystal on scope no problems (after configure rcc_hse_8mhz_3v3)
   - VBAT - is which is related to osc powering is connected to 3.3 according to schematic. but it should work off vdd anyway.
-  - so should replicate whatever rcc_hse_8mhz_3v3 does for the lse with power.
+  - so should replicate whatever rcc_hse_8mhz_3v3 does for the lse with power. doesn't seem to do anything.
+
+  - crystal has 10p caps, according to datasheet. another datasheet uses 4.5p. seems reasonable. 
+  - What sort of voltage output should I see?
 
   -- Everything just hangs... maybe check the pins.
 
 		return RCC_BDCR & RCC_BDCR_LSERDY;
 
-  - we need to know if the lse is on the ahb or apb.
-
-
+  - we need to know if the lse is on the ahb or apb. or unrelated. its a clock not a bus.
 
 
 This is all that should be needed... see lcd-hello.c

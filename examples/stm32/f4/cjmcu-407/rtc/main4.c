@@ -6,7 +6,10 @@
     there are adequate markings on your current selection to be able to pull a
     specification or data sheet?
 
+
   really need other discovery board. to test.
+  Or try the example - with our other board. and see if the oscillator works. even if example code is different.
+    our mini boards have rtc. we could also almost replace the crystal.
 
   --------
   On board - tested with multimeter.
@@ -14,6 +17,10 @@
       this matches the schematic.
       connect to 32k in, 32k out.
       and matches manual lqfp100. pins 8 and 9.
+
+  dm00039084-discovery-kit-with-stm32f407vg-mcu-stmicroelectronics-1.pdf
+    official discovery board uses 32.768 oscillator, with 6.8pF caps.
+    MC306-G-06Q-32.768(manufacturerJFVNY)
 
   rtc clock on PC14 and PC15 according to schematic
 
