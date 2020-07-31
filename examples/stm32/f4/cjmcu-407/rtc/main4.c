@@ -1,19 +1,4 @@
 /*
-
-  TRY  - LSI
-  try bypass mode.
-  Need - to understand what clock/ system the LSE uses.
-
-  https://github.com/libopencm3/libopencm3/issues/1028
-
-  calender functions for f4. PR. has clock configuration.
-    https://github.com/libopencm3/libopencm3/pull/1207/files
-
-  Even if the crystal is bad - should there be something measureable at the pins.
-  caps are 10p for the 32khz. 22p for 8mhz
-
-
-
   OK. maybe the crystal is no good. its a budget board.
 
     The oscillator circuits on the STM32 are a bit fussy. You'd want to
@@ -39,12 +24,12 @@
     "When using the PC13 to PC15 GPIOs in output mode"
 
   - turning RCC_LSE rcc_osc_on, and but when call rcc_wait_for_osc_ready() it just hangs.
-  - So testing the crystal on a scope - shows no oscillation.
+  - So testing the crystal on a scope - shows no oscillation. 
   - i can see 8MHz crystal on scope no problems - after configure rcc_hse_8mhz_3v3
   - VBAT - is which is related to osc powering is connected to 3.3 according to schematic. but it should work off vdd anyway.
   - so should replicate whatever rcc_hse_8mhz_3v3 does for the lse with power.
 
-  -- Everything just hangs... maybe check the pins.
+  -- Everything just hangs... maybe check the pins.  
 
 		return RCC_BDCR & RCC_BDCR_LSERDY;
 
@@ -56,7 +41,7 @@
 This is all that should be needed... see lcd-hello.c
 For some reason it hangs however,
 
-Maybe need
+Maybe need 
 
 void rcc_osc_ready_int_enable(enum rcc_osc osc)
 
@@ -121,13 +106,27 @@ in the RCC_BDCR register. The LSE has priority over the GPIO function.
   see AF functions.
   see hse setup code, see what it does.
 
+  calender functions for f4. PR. has clock configuration.
+    https://github.com/libopencm3/libopencm3/pull/1207/files
  */
 
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
+
 #include <libopencm3/stm32/rtc.h>
 #include <libopencm3/stm32/pwr.h>
+
+
+
+
+
+
+static void led_setup(void)
+{
+  rcc_periph_clock_enable(RCC_GPIOE); // JA
+  gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
+}
 
 static void rtc_calendar_config(void)
 {
@@ -138,39 +137,47 @@ static void rtc_calendar_config(void)
   RCC_BDCR |= (1<<8); /* RTCSEL at 0b01 */
   RCC_BDCR &= ~(1<<9); /* RTCSEL at 0b01 */
 
+  // Other example code...
+  //RCC_BDCR &= ~((1 << 8) | (1 << 9));
+  // RCC_BDCR |= RCC_BDCR_RTCSEL_LSE;
+
   while(!(RCC_BDCR & RCC_BDCR_LSERDY));   // hangs
 
   pwr_enable_backup_domain_write_protect();
 }
 
-static void led_setup(void)
-{
-  rcc_periph_clock_enable(RCC_GPIOE); // JA
-  gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
+static void setupRTC(void){
+    RCC_APB1ENR |= (RCC_APB1ENR_PWREN /*| RCC_APB1ENR_BKPENi*/ ); //Enable the power and backup interface clocks by setting the PWREN and BKPEN bitsin the RCC_APB1ENR register
+    PWR_CR |= PWR_CR_DBP;                     //Enable access to the backup registers and the RTC.
+    RCC_BDCR |= RCC_BDCR_LSEON;               //External Low Speed oscillator enable 
+    while((RCC_BDCR & RCC_BDCR_LSERDY) == 0); //Wait until external oscillisator is stabilised
 }
+
 
 int main(void)
 {
 
   // rcc_periph_clock_enable(RCC_GPIOC); // needed?
   // don't enable GPIO?
-  rcc_periph_clock_enable(RCC_PWR);
-  rcc_periph_clock_enable(RCC_LSE);
   rcc_periph_clock_enable(RCC_RTC);
+  rcc_periph_clock_enable(RCC_PWR);
+  rcc_periph_clock_enable(RCC_LSE); // needed?
 
-  RCC_APB1ENR  |= RCC_APB1ENR_PWREN ;
+   RCC_APB1ENR  |= RCC_APB1ENR_PWREN ; 
 
-  PWR_CR |= PWR_CR_DBP; // 1<<8. enable access 
-  //PWR_CR |= (1UL << 8);
+  // this works. no hang
+//     if((PWR_CR & PWR_CR_DBP) ==0)
+  //    {
+         PWR_CR |= PWR_CR_DBP;
+         while((PWR_CR & PWR_CR_DBP)==0);
 
-  // domain reset
-  /*
-    RCC_BDCR |= RCC_BDCR_BDRST;
-    RCC_BDCR &= ~RCC_BDCR_BDRST;
-  */
+ //     }
+
 
 	led_setup();
-  rtc_calendar_config();    // hangs...
+  rtc_calendar_config();  // just hangs...
+
+  // setupRTC();
 
 	while (1) {
     int i;
