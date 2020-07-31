@@ -1,9 +1,4 @@
 /*
-
-  On board - tested with multimeter.
-    pins 8 and 9.  connect to outer oscillator.  inner both appear to go to ground.
-      this matches the schematic.
-
   rtc clock on PC14 and PC15 according to schematic
 
   PC14/OSC32_IN I/O (PC14) FT EVENTOUT OSC32_IN
@@ -17,8 +12,7 @@
   - i can see 8MHz crystal on scope no problems - after configure rcc_hse_8mhz_3v3
   - VBAT - is which is related to osc powering is connected to 3.3 according to schematic. but it should work off vdd anyway.
   - so should replicate whatever rcc_hse_8mhz_3v3 does for the lse with power.
-
-  -- Everything just hangs... maybe check the pins.  
+  
 
 		return RCC_BDCR & RCC_BDCR_LSERDY;
 
@@ -102,10 +96,13 @@ The PC14 and PC15 I/Os are only configured as LSE oscillator pins OSC32_IN and O
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 
+
+
 #include <libopencm3/stm32/rtc.h>
-#include <libopencm3/stm32/pwr.h>
 
 
+#include <libopencm3/cm3/nvic.h>
+#include <libopencm3/stm32/exti.h>
 
 
 
@@ -114,54 +111,128 @@ static void led_setup(void)
 {
   rcc_periph_clock_enable(RCC_GPIOE); // JA
   gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
+
+
 }
 
-static void rtc_calendar_config(void)
+
+
+
+
+// NVIC_RTC_WKUP_IRQ <- // this is the irq.
+// white configures
+
+#if 0
+static void rtc_setup(void)
 {
-  pwr_disable_backup_domain_write_protect();
-  /* Enable LSE for using calendar */
-  RCC_BDCR |= RCC_BDCR_LSEON;
-  RCC_BDCR |= RCC_BDCR_RTCEN;
-  RCC_BDCR |= (1<<8); /* RTCSEL at 0b01 */
-  RCC_BDCR &= ~(1<<9); /* RTCSEL at 0b01 */
+    rcc_periph_clock_enable(RCC_PWR);
+    pwr_disable_backup_domain_write_protect();
+    RCC_BDCR |= (1<<16);
+    RCC_BDCR &= ~(1<<16);
+    // rcc_osc_on(LSI); // JA
+    rcc_wait_for_osc_ready(LSI);
+    RCC_BDCR &= ~(RCC_BDCR_RTCSEL_HSE|RCC_BDCR_RTCSEL_LSE);
+    RCC_BDCR |= RCC_BDCR_RTCSEL_LSI;
+    RCC_BDCR |= (1<<15); //RTC enable
 
-  while(!(RCC_BDCR & RCC_BDCR_LSERDY));   // hangs
+---
+    rcc_periph_clock_enable(RCC_RTC);
 
-  pwr_enable_backup_domain_write_protect();
+*    rtc_unlock();
+    RTC_ISR |=RTC_ISR_INIT;
+    while ((RTC_ISR & RTC_ISR_INITF) != RTC_ISR_INITF)__asm__("nop");
+    rtc_set_prescaler(127, 212);
+    RTC_ISR &= ~(RTC_ISR_INIT);
+    PWR_CR &= ~PWR_CR_PDDS;
+    PWR_CR &= ~PWR_CR_LPDS;
+    PWR_CSR |= PWR_CSR_EWUP;
+    // SCB_SCR |= SCB_SCR_SLEEPDEEP; // JA
+    DBGMCU_CR |= DBGMCU_CR_STOP;
+    DBGMCU_CR |= DBGMCU_CR_STANDBY;
+    DBGMCU_CR |= DBGMCU_CR_SLEEP;
+*    rtc_lock();
+
+
+    RCC_BDCR |= (1<<15); //RTC enable
+    rcc_periph_clock_enable(RCC_RTC);
+    rtc_wait_for_synchro();
+    exti_enable_request(EXTI17);
+    exti_set_trigger(EXTI17,EXTI_TRIGGER_RISING);
+    nvic_enable_irq(NVIC_RTC_IRQ);
+    rtc_unlock();
+    RTC_CR &= ~RTC_CR_ALRAE;
+    while((RTC_ISR & RTC_ISR_ALRAWF)!=RTC_ISR_ALRAWF);
+    RTC_ALRMAR = RTC_ALRMXR_MSK4|RTC_ALRMXR_MSK3|RTC_ALRMXR_MSK2|RTC_ALRMXR_MSK1;
+    RTC_ALRMASSR |= ((3)<<24);
+    //RTC_TAFCR|=((1<<18)|(1<<19));
+    RTC_CR = RTC_CR_ALRAIE|RTC_CR_ALRAE;//|RTC_CR_COE|RTC_CR_COSEL;
+    RTC_ISR &= ~(RTC_ISR_ALRAF|RTC_ISR_ALRAWF);
+    rtc_lock();
+*    rtc_wait_for_synchro();
 }
-
-static void setupRTC(void){
-    RCC_APB1ENR |= (RCC_APB1ENR_PWREN /*| RCC_APB1ENR_BKPENi*/ ); //Enable the power and backup interface clocks by setting the PWREN and BKPEN bitsin the RCC_APB1ENR register
-    PWR_CR |= PWR_CR_DBP;                     //Enable access to the backup registers and the RTC.
-    RCC_BDCR |= RCC_BDCR_LSEON;               //External Low Speed oscillator enable 
-    while((RCC_BDCR & RCC_BDCR_LSERDY) == 0); //Wait until external oscillisator is stabilised
-}
+#endif
 
 
-int main(void)
+/*
+  VBAT supply. ?? is it connected???
+    according to oc. yes.
+
+"The LSE clock source normally comes from a 32.768kHz external crystal This
+clock is in the backup domain and so continues to run when only the V_BAT
+supply is present. A prescaler value of 7FFF will give a 1 second count
+quantum."
+
+It really should be working by default - with sensible valuesi - because it's meant 
+to run - even after mcu poweroff.
+  
+
+*/
+
+
+static int main(void)
 {
-  // rcc_periph_clock_enable(RCC_GPIOC); // needed?
-  rcc_periph_clock_enable(RCC_RTC);
-  rcc_periph_clock_enable(RCC_PWR);
-  rcc_periph_clock_enable(RCC_LSE); // needed?
 
-   RCC_APB1ENR /*RCC_APB1ENR1*/ |= RCC_APB1ENR_PWREN ; //RCC_APB1ENR1_PWREN;
-
-  RCC_BDCR &= ~((1 << 8) | (1 << 9));
-  RCC_BDCR |= RCC_BDCR_RTCSEL_LSE;
-
-     if((PWR_CR & PWR_CR_DBP) ==0)
-      {
-         PWR_CR |= PWR_CR_DBP;
-         while((PWR_CR & PWR_CR_DBP)==0);
-
-      }
-
+  rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
 
 	led_setup();
-  // rtc_calendar_config();  // just hangs...
 
-  setupRTC();
+
+  rcc_periph_clock_enable(RCC_GPIOC); // needed?
+
+  rcc_periph_clock_enable(RCC_PWR);
+  // rcc_periph_clock_enable(RCC_LSE); // ?
+
+
+  // RCC_CSR_LSEON;  // there is RCC_CSR_LSION but no RCC_CSR_LSEON ?????
+
+
+  //Enable the power and backup interface clocks by setting the PWREN and BKPEN bitsin the RCC_APB1ENR register
+   // RCC_APB1ENR |= (RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN); 
+  
+ 
+  pwr_disable_backup_domain_write_protect ();
+
+
+  RCC_APB1ENR |= (RCC_APB1ENR_PWREN ); // enable power 
+  // RCC_BDCR |= RCC_BDCR_RTCEN; // enable rtc
+
+	rcc_osc_on(RCC_LSE);
+	// rcc_wait_for_osc_ready(RCC_LSE);      // THIS STILL HANGS????
+                                          // WHY...
+
+	// rcc_rtc_select_clock(RCC_CSR_RTCSEL_LSE);        // JA
+	// RCC_CSR |= RCC_CSR_RTCEN; JA	/* Enable RTC clock */
+	pwr_enable_backup_domain_write_protect ();
+
+
+
+    // see,
+    //  rcc_set_rtc_clock_source(enum rcc_osc clk)
+      // @brief RCC Set the Source for the RTC clock
+		//RCC_BDCR =  RCC_BDCR_RTCSEL_LSE;
+   //rcc_enable_rtc_clock();
+
+
 
 	while (1) {
     int i;
@@ -175,5 +246,4 @@ int main(void)
 
   return 0;
 }
-
 
