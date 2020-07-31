@@ -20,7 +20,9 @@
 
   dm00039084-discovery-kit-with-stm32f407vg-mcu-stmicroelectronics-1.pdf
     official discovery board uses 32.768 oscillator, with 6.8pF caps.
-    MC306-G-06Q-32.768(manufacturerJFVNY)
+    X3 MC306-G-06Q-32.768(manufacturerJFVNY)
+    BUT - says that X3 is 'not fitted' ?????
+    AND - the board picture shows 2x 8MHz but, no crystal or caps at X3. BIZZARE.????
 
   rtc clock on PC14 and PC15 according to schematic
 
