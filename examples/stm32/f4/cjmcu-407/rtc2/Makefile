@@ -19,7 +19,7 @@
 
 BINARY = main
 
-OBJS = rtc.o
+# OBJS = rtc.o
 
 DEVICE=STM32F407VG
 

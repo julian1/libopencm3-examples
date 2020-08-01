@@ -110,7 +110,6 @@ int main(void)
   // RTC_CR is a configuration register.
 
 	while (1) {
-    // if( RTC_TR % 10 == 0)
     if( RTC_TR % 2 == 0)
       gpio_clear(GPIOE, GPIO0);
     else
