@@ -186,6 +186,9 @@ int main(void)
 	led_setup();
   rtc_calendar_config();  // just hangs...
 
+
+  RTC_CR ;
+
   // setupRTC();
 
 	while (1) {

@@ -1,5 +1,5 @@
 /*
-  OK. put it in bypass mode. 
+  OK. put it in bypass mode.
   and then inject 30khz with a sig-gen and we can get past the hang.
   and it continues to work between resets so long as there is power. eg. because it remembers the sync
 
@@ -33,10 +33,10 @@
 
 
   while ((LSERDY_bit == 0) && (RTC_Wait_ctr < 150));
-  {   
+  {
        delay_us(1);
        RTC_Wait_ctr++;
-  }   
+  }
 
 #endif
 
@@ -47,8 +47,8 @@ static void rtc_calendar_config(void)
 
   pwr_disable_backup_domain_write_protect();
 
-  RCC_BDCR &= ~RCC_BDCR_LSEBYP;		// 	bypass off	(1 << 2)
-  // RCC_BDCR |= RCC_BDCR_LSEBYP;		// 	bypass on (1 << 2)
+  // RCC_BDCR &= ~RCC_BDCR_LSEBYP;		// 	bypass off	(1 << 2)
+  RCC_BDCR |= RCC_BDCR_LSEBYP;		// 	bypass on (1 << 2)
 
     //  RCC_BDCR |= (1<<8); /* RTCSEL at 0b01 */  // eg. RCC_BDCR_RTCSEL_LSE << RCC_BDCR_RTCSEL_SHIFT;
   // RCC_BDCR &= ~(1<<9); /* RTCSEL at 0b01 */    // eg. RCC_BDCR_RTCSEL_LSI <<RCC_BDCR_RTCSEL_SHIFT
@@ -62,7 +62,7 @@ static void rtc_calendar_config(void)
 #define RCC_BDCR_RTCSEL_HSE			3
 */
   RCC_BDCR &= ~(RCC_BDCR_RTCSEL_LSI << RCC_BDCR_RTCSEL_SHIFT);    // 2 << shift
-  RCC_BDCR |= RCC_BDCR_RTCSEL_LSE << RCC_BDCR_RTCSEL_SHIFT;       // eg. 1 << shift 
+  RCC_BDCR |= RCC_BDCR_RTCSEL_LSE << RCC_BDCR_RTCSEL_SHIFT;       // eg. 1 << shift
 
   RCC_BDCR |= RCC_BDCR_LSEON;   // IS THIS CORRECTLY BITSHIFTED???? ok. (1 << 0)
   RCC_BDCR |= RCC_BDCR_RTCEN;     // #define RCC_BDCR_RTCEN				(1 << 15)
@@ -95,7 +95,7 @@ int main(void)
   rcc_periph_clock_enable(RCC_RTC);
 
 
-  // PWR_CR |= PWR_CR_DBP; // 1<<8. enable access 
+  // PWR_CR |= PWR_CR_DBP; // 1<<8. enable access
   //PWR_CR |= (1UL << 8);
 
   // domain reset
@@ -106,6 +106,17 @@ int main(void)
 
 	led_setup();
   rtc_calendar_config();    // hangs...
+
+  // RTC_CR is a configuration register.
+
+	while (1) {
+    // if( RTC_TR % 10 == 0)
+    if( RTC_TR % 2 == 0)
+      gpio_clear(GPIOE, GPIO0);
+    else
+      gpio_set(GPIOE, GPIO0);
+ 	}
+
 
 	while (1) {
     int i;

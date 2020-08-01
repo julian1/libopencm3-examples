@@ -19,6 +19,8 @@
 
 BINARY = main
 
+OBJS = rtc.o
+
 DEVICE=STM32F407VG
 
 include ../../Makefile.include

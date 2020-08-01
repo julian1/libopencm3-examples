@@ -149,6 +149,10 @@ static void rtc_calendar_config(void)
   RCC_BDCR |= (1<<8); /* RTCSEL at 0b01 */
   RCC_BDCR &= ~(1<<9); /* RTCSEL at 0b01 */
 
+
+  // high drive
+  RCC_BDCR |= RCC_BDCR_LSEDRV_HIGH;
+
   while(!(RCC_BDCR & RCC_BDCR_LSERDY));   // hangs
 
   pwr_enable_backup_domain_write_protect();
