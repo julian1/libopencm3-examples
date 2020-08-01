@@ -1,9 +1,20 @@
 /*
   OK. put it in bypass mode.
-  and then inject 30khz with a sig-gen and we can get past the hang.
-  and it continues to work between resets so long as there is power. eg. because it remembers the sync
+  and then inject 30khz with a sig-gen and we can get past the hang. and blinky works.
+  and it continues to work between resets so long as there is power. eg. because it remembers the sync.
 
   Can actually do the same thing - in non-bypass mode.
+  ---
+  So 200mV on each side. only.  even if there was no crystal. does not seem to match the 8Mhz which was at 2V .
+  so suspect power configuration.
+  resistance is 27M ohm.
+
+  In line with doc, that suggests 32.768 kHz 10 to 25 MΩ, p12.
+    cd00221665-oscillator-design-guide-for-stm8af-al-s-stm32-mcus-and-mpus-stmicroelectronics.pdf
+
+  "The startup time of a 32.768kHz crystal ranges from 1 to 5s."
+
+  issue drive level? or drive level doesn't match the specific crystal.
 
  */
 
