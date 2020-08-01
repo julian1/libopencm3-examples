@@ -13,8 +13,19 @@
     cd00221665-oscillator-design-guide-for-stm8af-al-s-stm32-mcus-and-mpus-stmicroelectronics.pdf
 
   "The startup time of a 32.768kHz crystal ranges from 1 to 5s."
+  
+  STM32 oscillator tends to be on the weak side.  There's a recommended part to use -- higher ESR / lower C.
+  Probably the GD version is even more marginal?
+  issues in choosing capacitors, https://www.eevblog.com/forum/microcontrollers/crystals-and-caps/msg2486832/#msg2486832
 
   issue drive level? or drive level doesn't match the specific crystal.
+
+  I think PWR_CR - is for starting and stopping regulators. and going into sleep mode.
+  -------------
+
+  APB1ENR in Stm32 has Power interface clock enable bit (Bit 28).
+  It enables registers described in chapter Power control (PWR).
+
 
  */
 
@@ -54,12 +65,14 @@
 
 static void rtc_calendar_config(void)
 {
-  RCC_APB1ENR  |= RCC_APB1ENR_PWREN ;
+
+ RCC_APB1ENR  |= RCC_APB1ENR_PWREN ;  // (1 << 28) // enables registers described in chapter Power control (PWR).
+                                  
 
   pwr_disable_backup_domain_write_protect();
 
-  // RCC_BDCR &= ~RCC_BDCR_LSEBYP;		// 	bypass off	(1 << 2)
-  RCC_BDCR |= RCC_BDCR_LSEBYP;		// 	bypass on (1 << 2)
+  RCC_BDCR &= ~RCC_BDCR_LSEBYP;		// 	bypass off	(1 << 2)
+  // RCC_BDCR |= RCC_BDCR_LSEBYP;		// 	bypass on (1 << 2)
 
     //  RCC_BDCR |= (1<<8); /* RTCSEL at 0b01 */  // eg. RCC_BDCR_RTCSEL_LSE << RCC_BDCR_RTCSEL_SHIFT;
   // RCC_BDCR &= ~(1<<9); /* RTCSEL at 0b01 */    // eg. RCC_BDCR_RTCSEL_LSI <<RCC_BDCR_RTCSEL_SHIFT
@@ -79,7 +92,8 @@ static void rtc_calendar_config(void)
   RCC_BDCR |= RCC_BDCR_RTCEN;     // #define RCC_BDCR_RTCEN				(1 << 15)
 
 
-  // PWR_CR = 0x53;
+  // PWR_CR |= (1UL << 8);
+  // RCC_BDCR |= 3 << 3;  /* RCC_BDCR[4:3]: LSEDRV */
 
   while(!(RCC_BDCR & RCC_BDCR_LSERDY));   // hangs
 
@@ -101,7 +115,7 @@ int main(void)
 
   // rcc_periph_clock_enable(RCC_GPIOC); // needed?
   // don't enable GPIO?
-  rcc_periph_clock_enable(RCC_PWR);
+  rcc_periph_clock_enable(RCC_PWR); // possible this sets the bit..
   rcc_periph_clock_enable(RCC_LSE);
   rcc_periph_clock_enable(RCC_RTC);
 
@@ -127,7 +141,7 @@ int main(void)
       gpio_set(GPIOE, GPIO0);
  	}
 
-
+/*
 	while (1) {
     int i;
 
@@ -137,6 +151,7 @@ int main(void)
 			__asm__("nop");
 		}
 	}
+*/
 
   return 0;
 }
