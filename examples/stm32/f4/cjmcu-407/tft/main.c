@@ -1,5 +1,7 @@
 /*
 
+This doesn't work. spi is sd-card, not ili9486.
+
 spi2
   pb12- pb15  pb9,pb10,   pe14,pd14,pi2,pi3
 
@@ -8,12 +10,66 @@ spi2
   pb14 - miso - grey
   pb15 - mosi - purple
 
-  pe11 - wr - orange 
+  pe11 - wr - orange
   pe12 - rs - yellow
   pe13 - rst - green
 
   we need to map these by name. #define WR PE
-  actually not sure. it's messy given the 
+  actually not sure. it's messy given the
+
+  ---
+  http://www.lcdwiki.com/3.5inch_Arduino_Display-Mega2560
+
+  RS  LCD register / data selection signal
+    Low level: register, high level: command
+
+  WR  LCD write control signal
+  RST  LCD reset control signal, low reset
+  CLK  SPI bus clock signal
+  ----
+
+  Ok see p24 of manual,
+
+  bus to use - looks like its determined by IM pins - which are not exposed.
+
+  https://www.waveshare.com/w/upload/7/78/ILI9486_Datasheet.pdf
+
+  SO... we either try to use in 16 bit.
+    And wire everything up - Perhaps using full bus would be faster/ cool?
+
+  Wonder if it even needs a clock.
+
+  Use razor to cut.
+  Getting rid of the arduino shield and just using the flex would be good.
+
+  cut the side edges with razor blade. - but cut sides of flex.
+  acetone underneath to peel glue off.
+  then heat gun to lift the flex. work from one side to the other.
+
+  flex is 0.8mm. and it doesn't bloody fit on our breakout.
+  that's ok. only things are touch feedback.
+
+  pin 8 is GND. 39, 44.
+  pin 10 is power - from 5402. and tracing the 3.3V from the shield to pin 10.
+
+  pin 1 is anode for leds. eg. not GND.
+  pin 2-7 cathode.
+
+
+  OK. BUT HANG ON. what about the selection pins....
+  FUCK. I think it is possible *it* is preconfigured with the flex for 16bit. parallel.
+
+  OK. there is *NO* mosi or miso . according to,
+    http://www.lcdwiki.com/res/MAR3501/QD-TFT3502%20specification_v1.1.pdf
+
+  therefore it *has* to be run in 16bit mode.
+  eg. the ILI9486 - can be configured. several ways. but the flex circuit of QD3504 has already done this,
+    for 16bit parallel, instead of spi.
+    the flex does bring out the touch however.
+
+  OK. good to find that out.
+  search for 3.5 tft spi. and we get what look like spi boards.
+
  */
 
 
@@ -77,7 +133,7 @@ static inline void lcdWriteReg(uint8_t reg)
   SPI.transfer(reg);
 #endif
 
-	gpio_clear(GPIOE, LCD_RS);	// make sure in command mode 
+	gpio_clear(GPIOE, LCD_RS);	// make sure in command mode
 	(void) spi_xfer(LCD_SPI, 0 );
 	(void) spi_xfer(LCD_SPI, reg );
  }
@@ -131,7 +187,7 @@ static void initializeLcd(void)
   //  Experimentally, any less than this and the initial screen clear is incomplete.
   delay(65);
 #endif
-  
+
   // appears to do the right thing on the pins. but lcd doesn't change.
 
   gpio_set(GPIOE, LCD_RST);   // high
@@ -157,7 +213,7 @@ static void initializeLcd(void)
 
    lcdWriteCommand(0xB4, 0x02);        //  Display Z Inversion
 
-   lcdWriteReg(0xB6);                  //  Display Control Function      
+   lcdWriteReg(0xB6);                  //  Display Control Function
    lcdWriteData(0x00);
    lcdWriteDataContinue(0x42);
    lcdWriteDataContinue(0x3B);
@@ -265,7 +321,7 @@ static void invertDisplay(bool i)
 // OK. mosi we got a good. lot of pulses.
 
 // something weird with chip select. it is low. but its turned on about 60ms too early. it works but increasibly slow.
-// 60ms .... 
+// 60ms ....
 
 // maybe issue with transceivers - need to check they are propagating signal...
 // easy - just blink a pin - then use multimeter.
@@ -280,9 +336,11 @@ static void invertDisplay(bool i)
   ok mosi pin looks good
   clk looks good
   nss looks good albeit slow
-  command data looks good.
+  rs command data looks good.
   --
-  need to connect 5V power 
+  need to connect 5V power
+
+  The weird jumper resistor.
 */
 
 int main(void)
@@ -296,15 +354,15 @@ int main(void)
 
 
   // general registers
-  gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_WR | LCD_RS | LCD_RST ); 
+  gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_WR | LCD_RS | LCD_RST );
 
-  // 
+  //
   // OK. in the example lcd-spi.c it looks like only mosi and clk are set AF. not cs. or miso.
   // spi2 is AF5
   gpio_mode_setup(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, LCD_SCK | LCD_MOSI );
   gpio_set_af(GPIOB, GPIO_AF5, LCD_SCK | LCD_MOSI );
 
-  gpio_mode_setup(GPIOB, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_NSS); 
+  gpio_mode_setup(GPIOB, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_NSS);
 
 
   rcc_periph_clock_enable(RCC_SPI2);
@@ -318,7 +376,7 @@ int main(void)
 
 
   gpio_clear(GPIOE, LCD_WR); // pull low, select WR for board transceivers
-                            // checked low. maybe check if must be high. 
+                            // checked low. maybe check if must be high.
 
   initializeLcd();
 
@@ -329,7 +387,7 @@ int main(void)
     invertDisplay(i);
     i = !i;
 
-    // gpio_toggle(GPIOE, LCD_WR); 
+    // gpio_toggle(GPIOE, LCD_WR);
     msleep(300);
 	}
 
