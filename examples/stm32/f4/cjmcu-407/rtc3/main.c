@@ -30,7 +30,7 @@ static void rtc_calendar_config(void)
   // PWR_CR |= (1UL << 8);
   // RCC_BDCR |= 3 << 3;  /* RCC_BDCR[4:3]: LSEDRV */
 
-  while(!(RCC_BDCR & RCC_BDCR_LSERDY));   // hangs
+  while(!(RCC_BDCR & RCC_BDCR_LSERDY));   // wait for oscillator to sync
 
   pwr_enable_backup_domain_write_protect();
 }
@@ -52,9 +52,9 @@ int main(void)
 
   // RCC_APB1ENR  |= RCC_APB1ENR_PWREN ;  // (1 << 28) // enables registers described in chapter Power control (PWR).
                                         // not needed here, but required for standby etc.
- 
+
 	led_setup();
-  rtc_calendar_config();    // hangs...
+  rtc_calendar_config();
 
   // RTC_CR is a configuration register.
 
