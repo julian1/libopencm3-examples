@@ -50,7 +50,7 @@ static void led_setup(void)
 
 
 
-inline void startWrite( void)
+static inline void startWrite( void)
  {
 #if 0
   SPI.beginTransaction(_tftSpiSettingsWrite);
@@ -59,7 +59,7 @@ inline void startWrite( void)
 	gpio_clear(GPIOB, LCD_NSS);	/* Select the LCD */  // pull low
  }
 
-void endWrite()
+static inline void endWrite(void)
  {
 #if 0
   digitalWrite(LCD_CS, HIGH);
@@ -69,7 +69,7 @@ void endWrite()
 	gpio_set(GPIOB, LCD_NSS);	// deslect, pull high
  }
 
- inline void lcdWriteReg(uint8_t reg)
+static inline void lcdWriteReg(uint8_t reg)
  {
 #if 0
   digitalWrite(LCD_DC, LOW);
@@ -82,7 +82,7 @@ void endWrite()
 	(void) spi_xfer(LCD_SPI, reg );
  }
 
- inline void lcdWriteData(uint8_t data)
+static inline void lcdWriteData(uint8_t data)
  {
 #if 0
   digitalWrite(LCD_DC, HIGH);
@@ -94,20 +94,20 @@ void endWrite()
 	(void) spi_xfer(LCD_SPI, data );
  }
 
-inline void lcdWriteDataContinue(uint8_t data)
+static inline void lcdWriteDataContinue(uint8_t data)
  {
   // eg. no change of RS
 	(void) spi_xfer(LCD_SPI, 0 );
 	(void) spi_xfer(LCD_SPI, data );
  }
 
- inline void lcdWriteCommand(uint8_t reg, uint8_t data)
+static inline void lcdWriteCommand(uint8_t reg, uint8_t data)
  {
   lcdWriteReg(reg);
   lcdWriteData(data);
  }
 
- inline void lcdWriteCommand2(uint8_t reg, uint8_t data, uint8_t data2)
+static inline void lcdWriteCommand2(uint8_t reg, uint8_t data, uint8_t data2)
  {
   lcdWriteReg(reg);
   lcdWriteData(data);
@@ -116,7 +116,7 @@ inline void lcdWriteDataContinue(uint8_t data)
 
 
 
-void initializeLcd()
+static void initializeLcd(void)
  {
 #if 0
   //  Trigger hardware reset.
@@ -139,6 +139,7 @@ void initializeLcd()
   gpio_clear(GPIOE, LCD_RST); // low
   msleep(5);  // milli, should be mico
   gpio_set(GPIOE, LCD_RST);   // high
+
   msleep(65);  // milli
 
 
@@ -252,7 +253,37 @@ void initializeLcd()
  }
 
 
+static void invertDisplay(bool i)
+ {
+  startWrite();
+  {
+   lcdWriteReg(i ? 0x21 : 0x20);
+  }
+  endWrite();
+ }
 
+// OK. mosi we got a good. lot of pulses.
+
+// something weird with chip select. it is low. but its turned on about 60ms too early. it works but increasibly slow.
+// 60ms .... 
+
+// maybe issue with transceivers - need to check they are propagating signal...
+// easy - just blink a pin - then use multimeter.
+
+// try msb.
+// try WR high instead.
+// try swap mosi miso.
+// check leading 8 0 bits.
+// implement drawing routine - so actually fills screen with something else..
+// verify RS register.
+/*
+  ok mosi pin looks good
+  clk looks good
+  nss looks good albeit slow
+  command data looks good.
+  --
+  need to connect 5V power 
+*/
 
 int main(void)
 {
@@ -281,18 +312,24 @@ int main(void)
     SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
     SPI_CR1_CPHA_CLK_TRANSITION_1,
     SPI_CR1_DFF_8BIT,
-    SPI_CR1_MSBFIRST);
+    SPI_CR1_MSBFIRST);              // check.
   spi_enable_ss_output(LCD_SPI);
   spi_enable(LCD_SPI);
 
 
   gpio_clear(GPIOE, LCD_WR); // pull low, select WR for board transceivers
-
+                            // checked low. maybe check if must be high. 
 
   initializeLcd();
 
+  bool i = 0;
 	while (1) {
     gpio_toggle(GPIOE, GPIO0);  // toggle led
+
+    invertDisplay(i);
+    i = !i;
+
+    // gpio_toggle(GPIOE, LCD_WR); 
     msleep(300);
 	}
 
