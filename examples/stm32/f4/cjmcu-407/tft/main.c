@@ -97,10 +97,18 @@ spi2
 
   OK - looks reasonble    PE7-PE15(D4-D15), PD14,15(D0,D1)  PD0,PD1(D2,D3)
     available on lqfp100
+    datasheet says FSMC_Dx
     If it is correct.
+    what about address lines? no all the shield example code must be multiplexing, because only have D0-D15.
 
   How does. regi
   It should be easy to verify - by just putting scope.
+  ------------
+  OKK. hang on. it's using  R2-R7, G2-G7, B2-B7  - eg. RGB. eg. 3x6 = 18 lines.
+  While the common boards availble are 16 lines
+
+  So I think it cannot work. it's not a generic 16bit bus.
+  Code example can only be used - on Discovery f429i
 
  */
 
