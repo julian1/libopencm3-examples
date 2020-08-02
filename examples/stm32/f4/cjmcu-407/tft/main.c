@@ -48,45 +48,26 @@ static void led_setup(void)
 
 // https://github.com/ImpulseAdventure/Waveshare_ILI9486/blob/master/src/Waveshare_ILI9486.cpp
 
-void initializeLcd()
- {
-#if 0
-  //  Trigger hardware reset.
-  digitalWrite(LCD_RST, HIGH);
-  delay(5);
-  digitalWrite(LCD_RST, LOW);
-  delayMicroseconds(20);
-  digitalWrite(LCD_RST, HIGH);
-
-  //  TO-DO - how long after a reset until the screen can be used?  Doesn't seem to be
-  //  specified in the datasheet.
-  //  Experimentally, any less than this and the initial screen clear is incomplete.
-  delay(65);
-#endif
-  
-  // appears to do the right thing on the pins. but lcd doesn't change.
-
-  gpio_set(GPIOE, LCD_RST);   // high
-  msleep(5);  // milli
-  gpio_clear(GPIOE, LCD_RST); // low
-  msleep(5);  // milli
-  gpio_set(GPIOE, LCD_RST);   // high
-  msleep(65);  // milli
-}
 
 
-void startWrite()
+inline void startWrite( void)
  {
 #if 0
   SPI.beginTransaction(_tftSpiSettingsWrite);
   digitalWrite(LCD_CS, LOW);
 #endif
-
 	gpio_clear(GPIOB, LCD_NSS);	/* Select the LCD */  // pull low
-
  }
 
+void endWrite()
+ {
+#if 0
+  digitalWrite(LCD_CS, HIGH);
+  SPI.endTransaction();
+#endif
 
+	gpio_set(GPIOB, LCD_NSS);	// deslect, pull high
+ }
 
  inline void lcdWriteReg(uint8_t reg)
  {
@@ -132,6 +113,144 @@ inline void lcdWriteDataContinue(uint8_t data)
   lcdWriteData(data);
   lcdWriteDataContinue(data2);
  }
+
+
+
+void initializeLcd()
+ {
+#if 0
+  //  Trigger hardware reset.
+  digitalWrite(LCD_RST, HIGH);
+  delay(5);
+  digitalWrite(LCD_RST, LOW);
+  delayMicroseconds(20);
+  digitalWrite(LCD_RST, HIGH);
+
+  //  TO-DO - how long after a reset until the screen can be used?  Doesn't seem to be
+  //  specified in the datasheet.
+  //  Experimentally, any less than this and the initial screen clear is incomplete.
+  delay(65);
+#endif
+  
+  // appears to do the right thing on the pins. but lcd doesn't change.
+
+  gpio_set(GPIOE, LCD_RST);   // high
+  msleep(5);  // milli. should be micro
+  gpio_clear(GPIOE, LCD_RST); // low
+  msleep(5);  // milli, should be mico
+  gpio_set(GPIOE, LCD_RST);   // high
+  msleep(65);  // milli
+
+
+  startWrite();
+
+{
+   //  Power control settings
+   lcdWriteCommand2(0xC0, 0x19, 0x1a);
+   lcdWriteCommand2(0xC1, 0x45, 0x00);
+   lcdWriteCommand(0xC2, 0x33);        //  Power/Reset on default
+
+   lcdWriteCommand2(0xC5, 0x00, 0x28);  //  VCOM control
+
+   lcdWriteCommand2(0xB1, 0xA0, 0x11);  //  Frame rate control
+
+   lcdWriteCommand(0xB4, 0x02);        //  Display Z Inversion
+
+   lcdWriteReg(0xB6);                  //  Display Control Function      
+   lcdWriteData(0x00);
+   lcdWriteDataContinue(0x42);
+   lcdWriteDataContinue(0x3B);
+
+   lcdWriteReg(0xE0);                  //  Positive Gamma control
+   lcdWriteData(0x1F);
+   lcdWriteDataContinue(0x25);
+   lcdWriteDataContinue(0x22);
+   lcdWriteDataContinue(0x0B);
+   lcdWriteDataContinue(0x06);
+   lcdWriteDataContinue(0x0A);
+   lcdWriteDataContinue(0x4E);
+   lcdWriteDataContinue(0xC6);
+   lcdWriteDataContinue(0x39);
+   lcdWriteDataContinue(0x00);
+   lcdWriteDataContinue(0x00);
+   lcdWriteDataContinue(0x00);
+   lcdWriteDataContinue(0x00);
+   lcdWriteDataContinue(0x00);
+   lcdWriteDataContinue(0x00);
+
+   lcdWriteReg(0XE1);                  //  Negative Gamma control
+   lcdWriteData(0x1F);
+   lcdWriteDataContinue(0x3F);
+   lcdWriteDataContinue(0x3F);
+   lcdWriteDataContinue(0x0F);
+   lcdWriteDataContinue(0x1F);
+   lcdWriteDataContinue(0x0F);
+   lcdWriteDataContinue(0x46);
+   lcdWriteDataContinue(0x49);
+   lcdWriteDataContinue(0x31);
+   lcdWriteDataContinue(0x05);
+   lcdWriteDataContinue(0x09);
+   lcdWriteDataContinue(0x03);
+   lcdWriteDataContinue(0x1C);
+   lcdWriteDataContinue(0x1A);
+   lcdWriteDataContinue(0x00);
+
+   //  From original driver, but register numbers don't make any sense.
+   if (0)
+   {
+    lcdWriteReg(0XF1);
+    lcdWriteData(0x36);
+    lcdWriteDataContinue(0x04);
+    lcdWriteDataContinue(0x00);
+    lcdWriteDataContinue(0x3C);
+    lcdWriteDataContinue(0x0F);
+    lcdWriteDataContinue(0x0F);
+    lcdWriteDataContinue(0xA4);
+    lcdWriteDataContinue(0x02);
+
+    lcdWriteReg(0XF2);
+    lcdWriteData(0x18);
+    lcdWriteDataContinue(0xA3);
+    lcdWriteDataContinue(0x12);
+    lcdWriteDataContinue(0x02);
+    lcdWriteDataContinue(0x32);
+    lcdWriteDataContinue(0x12);
+    lcdWriteDataContinue(0xFF);
+    lcdWriteDataContinue(0x32);
+    lcdWriteDataContinue(0x00);
+
+    lcdWriteReg(0XF4);
+    lcdWriteData(0x40);
+    lcdWriteDataContinue(0x00);
+    lcdWriteDataContinue(0x08);
+    lcdWriteDataContinue(0x91);
+    lcdWriteDataContinue(0x04);
+
+    lcdWriteReg(0XF8);
+    lcdWriteData(0x21);
+    lcdWriteDataContinue(0x04);
+   }
+
+   lcdWriteCommand(0x3A, 0x55);
+
+   //  Set initial rotation to match AFX defaults - tall / narrow
+   lcdWriteCommand2(0xB6, 0x00, 0x22);
+   lcdWriteCommand(0x36, 0x08);
+
+   lcdWriteReg(0x11); // Sleep out
+
+/*
+
+    JA
+   //  Fill screen to black
+   writeFillRect2(0, 0, LCD_WIDTH, LCD_HEIGHT, 0x0000);
+*/
+
+   lcdWriteReg(0x29);  // Turn on display
+  }
+  endWrite();
+ }
+
 
 
 
