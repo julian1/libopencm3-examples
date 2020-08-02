@@ -85,6 +85,35 @@ static void lcd_command(uint8_t cmd, int delay, int n_args, const uint8_t *args)
 
 
 
+// https://github.com/ImpulseAdventure/Waveshare_ILI9486/blob/master/src/Waveshare_ILI9486.cpp
+
+void initializeLcd()
+ {
+#if 0
+  //  Trigger hardware reset.
+  digitalWrite(LCD_RST, HIGH);
+  delay(5);
+  digitalWrite(LCD_RST, LOW);
+  delayMicroseconds(20);
+  digitalWrite(LCD_RST, HIGH);
+
+  //  TO-DO - how long after a reset until the screen can be used?  Doesn't seem to be
+  //  specified in the datasheet.
+  //  Experimentally, any less than this and the initial screen clear is incomplete.
+  delay(65);
+#endif
+  
+  // appears to do the right thing on the pins. but lcd doesn't change.
+
+  gpio_set(GPIOE, LCD_RST);   // high
+  msleep(5);  // milli
+  gpio_clear(GPIOE, LCD_RST); // low
+  msleep(5);  // milli
+  gpio_set(GPIOE, LCD_RST);   // high
+  msleep(65);  // milli
+}
+
+
 
 int main(void)
 {
@@ -120,17 +149,13 @@ int main(void)
 
   gpio_clear(GPIOE, LCD_WR); // pull low, select WR for board transceivers
 
+
+
+  initializeLcd();
+
 	while (1) {
-    //int i;
-
     gpio_toggle(GPIOE, GPIO0);  // toggle led
-
     msleep(300);
-/*
-    for (i = 0; i < 3000000; i++) {
-			__asm__("nop");
-		}
-*/
 	}
 
   return 0;
