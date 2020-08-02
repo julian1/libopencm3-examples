@@ -19,7 +19,7 @@
 
 BINARY = main
 
-# OBJS = rtc.o
+OBJS = clock.o
 
 DEVICE=STM32F407VG
 

@@ -21,6 +21,8 @@ spi2
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 
+#include "clock.h"
+
 // GPIOB
 #define LCD_NSS   GPIO12 // not AF
 #define LCD_SCK   GPIO13
@@ -63,6 +65,7 @@ static void lcd_command(uint8_t cmd, int delay, int n_args, const uint8_t *args)
 	}
 #endif
 
+  int i;
 
 	gpio_clear(GPIOB, LCD_NSS);	/* Select the LCD */  // pull low
 	(void) spi_xfer(LCD_SPI, cmd);
@@ -86,6 +89,7 @@ static void lcd_command(uint8_t cmd, int delay, int n_args, const uint8_t *args)
 int main(void)
 {
 
+  clock_setup();
   led_setup();
 
   rcc_periph_clock_enable( RCC_GPIOE );
@@ -114,16 +118,19 @@ int main(void)
   spi_enable(LCD_SPI);
 
 
-  gpio_clear(GPIOE, LCD_WR ); // pull low, select WR for transceivers
+  gpio_clear(GPIOE, LCD_WR); // pull low, select WR for board transceivers
 
 	while (1) {
-    int i;
+    //int i;
 
     gpio_toggle(GPIOE, GPIO0);  // toggle led
 
+    msleep(300);
+/*
     for (i = 0; i < 3000000; i++) {
 			__asm__("nop");
 		}
+*/
 	}
 
   return 0;
