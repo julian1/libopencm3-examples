@@ -35,23 +35,20 @@ spi2
   https://www.waveshare.com/w/upload/7/78/ILI9486_Datasheet.pdf
 
   SO... we either try to use in 16 bit.
-    And wire everything up - Perhaps using full bus would be faster/ cool?
+  And wire everything up - Perhaps using full bus would be faster/ cool?
 
-  Wonder if it even needs a clock.
 
-  Use razor to cut.
-  Getting rid of the arduino shield and just using the flex would be good.
-
-  cut the side edges with razor blade. - but cut sides of flex.
-  acetone underneath to peel glue off.
-  then heat gun to lift the flex. work from one side to the other.
+  steps,
+  - use razor to cut the double sided tape - holding tft and shcield. must take care not to cut deep or will cut the sides of the flex.
+  - acetone underneath/and backside to disolve glue holding flex to board.
+  - then heat gun (370C) to desolder/lift the flex. work from one side to the other. peel away.
+  - clean up with solder wick.
 
   flex is 0.8mm. and it doesn't bloody fit on our breakout.
   that's ok. only things are touch feedback.
 
   pin 8 is GND. 39, 44.
-  pin 10 is power - from 5402. and tracing the 3.3V from the shield to pin 10.
-
+  pin 10 is power - from 5402 datasheet. and confirmed tracing the 3.3V from the shield to pin 10.
   pin 1 is anode for leds. eg. not GND.
   pin 2-7 cathode.
 
@@ -63,12 +60,20 @@ spi2
     http://www.lcdwiki.com/res/MAR3501/QD-TFT3502%20specification_v1.1.pdf
 
   therefore it *has* to be run in 16bit mode.
-  eg. the ILI9486 - can be configured. several ways. but the flex circuit of QD3504 has already done this,
+  eg. the ILI9486 - can be configured. multiple different ways. but the flex circuit of QD3504 has already done this,
     for 16bit parallel, instead of spi.
     the flex does bring out the touch however.
 
   OK. good to find that out.
   search for 3.5 tft spi. and we get what look like spi boards.
+
+  R1 - appears to be for led cathode.
+
+  Getting rid of the arduino shield and just using the flex would be good. anyway.
+    - for single pcb board.
+    - provides access to touch.
+    - ok. but not required now.
+
 
  */
 
