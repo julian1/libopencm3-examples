@@ -45,45 +45,6 @@ static void led_setup(void)
 
 
 
-static void lcd_command(uint8_t cmd, int delay, int n_args, const uint8_t *args)
-{
-#if 0
-	int i;
-
-	gpio_clear(GPIOC, GPIO2);	/* Select the LCD */
-	(void) spi_xfer(LCD_SPI, cmd);
-	if (n_args) {
-		gpio_set(GPIOD, GPIO13);	/* Set the D/CX pin */
-		for (i = 0; i < n_args; i++) {
-			(void) spi_xfer(LCD_SPI, *(args+i));
-		}
-	}
-	gpio_set(GPIOC, GPIO2);		/* Turn off chip select */
-	gpio_clear(GPIOD, GPIO13);	/* always reset D/CX */
-	if (delay) {
-		msleep(delay);		/* wait, if called for */
-	}
-#endif
-
-  int i;
-
-	gpio_clear(GPIOB, LCD_NSS);	/* Select the LCD */  // pull low
-	(void) spi_xfer(LCD_SPI, cmd);
-	if (n_args) {
-		gpio_set(GPIOE, LCD_RS);	/* Set the D/CX pin */
-		for (i = 0; i < n_args; i++) {
-			(void) spi_xfer(LCD_SPI, *(args+i));  // IMPORTANT **** ignores first argument????? *******
-		}
-	}
-	gpio_set(GPIOB, LCD_NSS);		/* Turn off chip select */ // pull high
-	gpio_clear(GPIOE, LCD_RS);	/* always reset D/CX */ // pull low
-	if (delay) {
-		msleep(delay);		/* wait, if called for */
-	}
-
-}
-
-
 
 // https://github.com/ImpulseAdventure/Waveshare_ILI9486/blob/master/src/Waveshare_ILI9486.cpp
 
@@ -112,6 +73,65 @@ void initializeLcd()
   gpio_set(GPIOE, LCD_RST);   // high
   msleep(65);  // milli
 }
+
+
+void startWrite()
+ {
+#if 0
+  SPI.beginTransaction(_tftSpiSettingsWrite);
+  digitalWrite(LCD_CS, LOW);
+#endif
+
+	gpio_clear(GPIOB, LCD_NSS);	/* Select the LCD */  // pull low
+
+ }
+
+
+
+ inline void lcdWriteReg(uint8_t reg)
+ {
+#if 0
+  digitalWrite(LCD_DC, LOW);
+  SPI.transfer(0);
+  SPI.transfer(reg);
+#endif
+
+	gpio_clear(GPIOE, LCD_RS);	// make sure in command mode 
+	(void) spi_xfer(LCD_SPI, 0 );
+	(void) spi_xfer(LCD_SPI, reg );
+ }
+
+ inline void lcdWriteData(uint8_t data)
+ {
+#if 0
+  digitalWrite(LCD_DC, HIGH);
+  SPI.transfer(0);
+  SPI.transfer(data);
+#endif
+  gpio_set(GPIOE, LCD_RS);	/* Set the D/CX pin */
+	(void) spi_xfer(LCD_SPI, 0 );
+	(void) spi_xfer(LCD_SPI, data );
+ }
+
+inline void lcdWriteDataContinue(uint8_t data)
+ {
+  // eg. no change of RS
+	(void) spi_xfer(LCD_SPI, 0 );
+	(void) spi_xfer(LCD_SPI, data );
+ }
+
+ inline void lcdWriteCommand(uint8_t reg, uint8_t data)
+ {
+  lcdWriteReg(reg);
+  lcdWriteData(data);
+ }
+
+ inline void lcdWriteCommand2(uint8_t reg, uint8_t data, uint8_t data2)
+ {
+  lcdWriteReg(reg);
+  lcdWriteData(data);
+  lcdWriteDataContinue(data2);
+ }
 
 
 
@@ -148,7 +168,6 @@ int main(void)
 
 
   gpio_clear(GPIOE, LCD_WR); // pull low, select WR for board transceivers
-
 
 
   initializeLcd();
