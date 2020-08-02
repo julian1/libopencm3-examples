@@ -45,6 +45,7 @@ static void led_setup(void)
 
 static void lcd_command(uint8_t cmd, int delay, int n_args, const uint8_t *args)
 {
+#if 0
 	int i;
 
 	gpio_clear(GPIOC, GPIO2);	/* Select the LCD */
@@ -60,6 +61,23 @@ static void lcd_command(uint8_t cmd, int delay, int n_args, const uint8_t *args)
 	if (delay) {
 		msleep(delay);		/* wait, if called for */
 	}
+#endif
+
+
+	gpio_clear(GPIOB, LCD_NSS);	/* Select the LCD */  // pull low
+	(void) spi_xfer(LCD_SPI, cmd);
+	if (n_args) {
+		gpio_set(GPIOE, LCD_RS);	/* Set the D/CX pin */
+		for (i = 0; i < n_args; i++) {
+			(void) spi_xfer(LCD_SPI, *(args+i));  // IMPORTANT **** ignores first argument????? *******
+		}
+	}
+	gpio_set(GPIOB, LCD_NSS);		/* Turn off chip select */ // pull high
+	gpio_clear(GPIOE, LCD_RS);	/* always reset D/CX */ // pull low
+	if (delay) {
+		msleep(delay);		/* wait, if called for */
+	}
+
 }
 
 
@@ -96,6 +114,7 @@ int main(void)
   spi_enable(LCD_SPI);
 
 
+  gpio_clear(GPIOE, LCD_WR ); // pull low, select WR for transceivers
 
 	while (1) {
     int i;
