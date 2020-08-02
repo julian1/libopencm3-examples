@@ -1,6 +1,6 @@
 /*
 
-This doesn't work. spi is sd-card, not ili9486.
+This doesn't work. spi is for the sd-card, not the ili9486, which is configured by flex for 16 bit bus.
 
 spi2
   pb12- pb15  pb9,pb10,   pe14,pd14,pi2,pi3
@@ -109,6 +109,7 @@ static void led_setup(void)
 
 // https://github.com/ImpulseAdventure/Waveshare_ILI9486/blob/master/src/Waveshare_ILI9486.cpp
 
+// https://github.com/juj/fbcp-ili9341/blob/master/ili9486.cpp
 
 
 static inline void startWrite( void)
