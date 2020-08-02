@@ -73,7 +73,34 @@ spi2
     - for single pcb board.
     - provides access to touch.
     - ok. but not required now.
+  --------
+  So our choices are
+    to bit bang the 16 bit bus.
+    fsmc - looks complicated
+    get a spi board. - perhaps slower.
+  ------
 
+  board - has 9341
+    very common board.
+    same as discovery board. and there is libopencm3 code for an spi example (also with dma) but the board doesn't support.
+  https://www.ebay.com.au/itm/2-8-Inch-ILI9341-240x320-SPI-TFT-LCD-Display-Touch-Panel-SPI-Serial-Port-Module/383654746105?hash=item59539ad7f9:g:JK4AAOSwRTJfIVbv&frcectupt=true#shpCntId
+
+  need to understand - how the db16 bus is wired. how many mcu pins - in order to know if it is desirable versus spi.
+
+  pin assignments in lcd-dma.c are hideous. uses
+    uses PA(3,6,11,12), PB, PC(6,7,10 / AF14), PD, PG
+    we don't have PG. but maybe replicated on another pin
+
+  looks like discovery f429i - also has different pinout mappings. eg AF14 doesn't match.
+  PC6-12 ->
+  ------------
+
+  OK - looks reasonble    PE7-PE15(D4-D15), PD14,15(D0,D1)  PD0,PD1(D2,D3)
+    available on lqfp100
+    If it is correct.
+
+  How does. regi
+  It should be easy to verify - by just putting scope.
 
  */
 
