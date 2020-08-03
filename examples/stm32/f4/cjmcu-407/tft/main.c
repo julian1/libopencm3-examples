@@ -109,6 +109,18 @@ spi2
 
   So I think it cannot work. it's not a generic 16bit bus.
   Code example can only be used - on Discovery f429i
+  ------------
+
+  So we would have to bit-bash.  
+    we can use the millisec msleep to begin with.
+    add a nop loop would be easy enough.
+
+  Note - rather than setting gpio individually - would have to left/shift values into place for the bus.
+    but would likely be pretty damn fast.
+
+  --
+  jc - 3.5" is likely to be 8 pralell bit - to support arduino, not mega. how to clock the other bits?
+  jc - 128x128 - serial. 1.8"  ST7735 Chipset.  should perhaps try.
 
  */
 
@@ -139,7 +151,7 @@ static void led_setup(void)
 }
 
 
-
+// int x = 0b1111;  // c supports binay nice...
 
 
 // https://github.com/ImpulseAdventure/Waveshare_ILI9486/blob/master/src/Waveshare_ILI9486.cpp
