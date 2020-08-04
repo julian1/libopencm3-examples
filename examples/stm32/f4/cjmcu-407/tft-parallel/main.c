@@ -81,8 +81,8 @@ static inline void delay( uint16_t x )
 
 static void send8( uint8_t x )
 {
-  gpio_clear(LCD_PORT, LCD_WR);         // clear write strobe
   gpio_port_write(LCD_DATA_PORT, x);    // setup port
+  gpio_clear(LCD_PORT, LCD_WR);         // clear write strobe. falling edge. host asserts.
   delay(1);
   gpio_set(LCD_PORT, LCD_WR);           // write on rising edge
   delay(1);
