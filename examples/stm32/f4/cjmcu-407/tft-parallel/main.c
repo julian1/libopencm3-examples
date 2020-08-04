@@ -99,7 +99,7 @@ static inline void delay( uint16_t x )
 
 static void send16( uint16_t x )
 {
-    gpio_clear(LCD_PORT, LCD_WR);   // clear write strobe
+    gpio_clear(LCD_PORT, LCD_WR);         // clear write strobe
     delay(1);
     gpio_port_write(LCD_DATA_PORT, x);    // low bytes first
     gpio_set(LCD_PORT, LCD_WR);           // write on rising edge
@@ -108,24 +108,27 @@ static void send16( uint16_t x )
     gpio_clear(LCD_PORT, LCD_WR);         // clear write strobe
     delay(1);
     gpio_port_write(LCD_DATA_PORT, x >> 8);   // high bytes
-    gpio_set(LCD_PORT, LCD_WR);       // write on rising edge
+    gpio_set(LCD_PORT, LCD_WR);           // write on rising edge
     delay(1);
 }
 
 
 static void sendCommand16(uint16_t commandWord, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
-
-    gpio_clear(LCD_PORT, LCD_CS); // assert chip select
+    gpio_clear(LCD_PORT, LCD_CS);   // assert chip select
 
     gpio_clear(LCD_PORT, LCD_RS);   // assert command
     send16(commandWord);
 
     gpio_set(LCD_PORT, LCD_RS);     // assert data
 
-    // OKK. the data is 8 bytes... that's not very clear 
-    send16(commandWord);
+    // OKK. the data is 8 bytes... that's not very clear
+    for(unsigned i = 0; i < numDataBytes; ++i) {
+      uint16_t x = dataBytes[ i ];  // widen
+      send16(x);
+    }
 
+    gpio_set(LCD_PORT, LCD_CS);     // deassert chip select
 }
 
 
@@ -138,22 +141,13 @@ int main(void)
   rcc_periph_clock_enable( RCC_GPIOE );
   rcc_periph_clock_enable( RCC_GPIOD );
 
-  // #define GPIO12                              (1 << 12)
 
-  gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, 0xff ); // JA first 8 bits.
-
-  // gpio_set does not clear.... it does oring operations...
-  // set everything to 0
-  gpio_clear(GPIOD, 0xff);  // next 8 bits.
-
-  // so to write the register needs a clear first. then set the positive values.
-  // gpio_set is not | in the register it is doing something more....
-  // gpio_set(GPIOD, GPIO5 );  // turn on, referenced to gnd
-  // gpio_set(GPIOD, 0b0000000000000000);  // turn on ????
-  // gpio_set(GPIOD, 1 << 12 );  // turn on ????
+  gpio_mode_setup(LCD_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, 0xff ); // JA first 8 bits.
+  gpio_mode_setup(LCD_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
 
 
-  // gpio_port_write(GPIOD, 1 << 5);   // not sure that atomic, but more useful...
+
+
 
  	while (1) {
 
