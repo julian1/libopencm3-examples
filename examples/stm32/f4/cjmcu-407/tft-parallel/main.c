@@ -46,11 +46,11 @@
 // GPIOE
 #define LCD_PORT  GPIOE
 
-#define LCD_RST   GPIO2
-#define LCD_CS    GPIO3
-#define LCD_RS    GPIO4
-#define LCD_WR    GPIO5
-#define LCD_RD    GPIO6
+#define LCD_RST   GPIO2   // reset
+#define LCD_CS    GPIO3   // chip select
+#define LCD_RS    GPIO4   // register select
+#define LCD_WR    GPIO5   // write strobe
+#define LCD_RD    GPIO6   // read
 
 
 #define LCD_DATA_PORT  GPIOD
@@ -90,18 +90,21 @@ static void send8( uint8_t x )
   gpio_clear(LCD_PORT, LCD_WR);         // clear write strobe
 }
 
+// OK. screen does same thing - whether we asset chip select or not.
+// So, think we want to check...
 
 static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
-  gpio_clear(LCD_PORT, LCD_CS);   // assert chip select
+  gpio_clear(LCD_PORT, LCD_CS);   // assert chip select, check.
 
-  gpio_clear(LCD_PORT, LCD_RS);   // assert command
+  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send8(command);
 
-  gpio_set(LCD_PORT, LCD_RS);     // assert data
+  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
   for(unsigned i = 0; i < numDataBytes; ++i) {
     send8(dataBytes[ i ]);
   }
+
 
   //gpio_set(LCD_PORT, LCD_CS);     // deassert chip select
 }
@@ -226,6 +229,8 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
 #define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
 #define MADCTL_MH 0x04  ///< LCD refresh right to left
 
+// OKK. try to read some data out of the thing.
+// 
 
 int main(void)
 {
@@ -241,11 +246,11 @@ int main(void)
 
 
   // hardware reset - review
-  gpio_set(  LCD_PORT, LCD_RST);   
+  gpio_set(  LCD_PORT, LCD_RST);    // high
   msleep(150);
-  gpio_clear(LCD_PORT, LCD_RST);   
+  gpio_clear(LCD_PORT, LCD_RST);   // low
   msleep(150);
-  gpio_set(  LCD_PORT, LCD_RST);   
+  gpio_set(  LCD_PORT, LCD_RST);   // high
   msleep(150);
 
 
@@ -266,8 +271,6 @@ int main(void)
     // normal orientation
     uint8_t m = (MADCTL_MX | MADCTL_BGR);
     sendCommand(ILI9341_MADCTL, &m, 1);
-
-
 
 
     ILI9341_DrawPixel(50, 50, 0xf777 ); 
