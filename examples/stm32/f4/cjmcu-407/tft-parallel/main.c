@@ -82,7 +82,7 @@ static inline void delay( uint16_t x )
 static void send8( uint8_t x )
 {
   gpio_clear(LCD_PORT, LCD_WR);         // clear write strobe
-  gpio_port_write(LCD_DATA_PORT, x);    // bytes
+  gpio_port_write(LCD_DATA_PORT, x);    // setup port
   delay(1);
   gpio_set(LCD_PORT, LCD_WR);           // write on rising edge
   delay(1);
@@ -93,9 +93,14 @@ static void send8( uint8_t x )
 // OK. screen does same thing - whether we asset chip select or not.
 // So, think we want to check...
 
+// is the screen flickering a power supply issue?
+
 static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
   gpio_clear(LCD_PORT, LCD_CS);   // assert chip select, check.
+  // gpio_set(LCD_PORT, LCD_RD);     // hiigh to indicate not reading . ok setting this and it doesn't blink
+                                      // weird. would expect priority.
+                                        // 
 
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send8(command);
