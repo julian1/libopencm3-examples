@@ -25,9 +25,7 @@
 
   Note - rather than setting gpio individually - would have to left/shift values into place for the bus.
     but would likely be pretty damn fast.
-
   --
-
  */
 
 
@@ -38,10 +36,15 @@
 #include "clock.h"
 
 
+
+
 // GPIOE
-#define LCD_WR    GPIO11
-#define LCD_RS    GPIO12
-#define LCD_RST   GPIO13
+#define LCD_RST   GPIO2
+#define LCD_CS    GPIO3
+#define LCD_RS    GPIO4
+#define LCD_WR    GPIO5
+#define LCD_RD    GPIO6
+
 
 
 static void led_setup(void)
