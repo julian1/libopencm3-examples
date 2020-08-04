@@ -98,9 +98,10 @@ static void send8( uint8_t x )
 static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
   gpio_clear(LCD_PORT, LCD_CS);   // assert chip select, check.
-  // gpio_set(LCD_PORT, LCD_RD);     // hiigh to indicate not reading . ok setting this and it doesn't blink
+  // gpio_set(LCD_PORT, LCD_RD);     // high to indicate not reading . ok setting this and it doesn't blink
                                       // weird. would expect priority.
-                                        // 
+                                      // because when it's high the tranceivers block?
+                                      // maybe we won't be able to read?
 
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send8(command);
@@ -218,8 +219,6 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
 
 
     sendCommand(ILI9341_RAMWR, data , sizeof(data)  ); // 2C
-
-
 }
 
 
@@ -234,9 +233,13 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
 #define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
 #define MADCTL_MH 0x04  ///< LCD refresh right to left
 
-// OKK. try to read some data out of the thing. check registers. to know that comms are working.
-// need serial.
-
+/*
+  - OKK. try to read some data out of the thing. check registers. to know that comms are working.
+      - would confirm that can write registers and data correctly. 
+  - need uart serial.
+  - unhook the other stm32... to get the bus pirate?
+  - check data on other side of tranceiver pins. with scope.
+*/
 // or adjust the backlighting.
 
 // or is there someting needed to refresh...
