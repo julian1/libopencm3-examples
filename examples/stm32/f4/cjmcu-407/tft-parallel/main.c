@@ -234,8 +234,12 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
 #define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
 #define MADCTL_MH 0x04  ///< LCD refresh right to left
 
-// OKK. try to read some data out of the thing.
-// 
+// OKK. try to read some data out of the thing. check registers. to know that comms are working.
+// need serial.
+
+// or adjust the backlighting.
+
+// or is there someting needed to refresh...
 
 int main(void)
 {
@@ -273,22 +277,22 @@ int main(void)
       delay(150);
   }
 
-    // normal orientation
-    uint8_t m = (MADCTL_MX | MADCTL_BGR);
-    sendCommand(ILI9341_MADCTL, &m, 1);
+  // normal orientation
+  uint8_t m = (MADCTL_MX | MADCTL_BGR);
+  sendCommand(ILI9341_MADCTL, &m, 1);
 
 
-    ILI9341_DrawPixel(50, 50, 0xf777 ); 
+  ILI9341_DrawPixel(50, 50, 0xf777 ); 
 
 
-  bool invert = 0;
+  // bool invert = 0;
  	while (1) {
 
     // gpio_toggle(GPIOD, 1 << 5 );  // blink
 
     // sendCommand(invert ? ILI9341_INVON : ILI9341_INVOFF, 0 , 0 );
     // sendCommand(invert ? ILI9341_DISPON : ILI9341_DISPOFF , 0 , 0 );
-    invert = ! invert;
+    // invert = ! invert;
 
 
 
