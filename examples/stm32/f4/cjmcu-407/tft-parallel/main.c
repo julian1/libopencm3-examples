@@ -96,20 +96,32 @@ static void send8( uint8_t x )
 // is the screen flickering a power supply issue?
 /*
   p11.
-  When DCX = ’1’, data is selected. When DCX = ’0’, command is selected.
+
+  DCX
+  This pin is used to select “Data or Command” in the parallel interface or
+  4-wire 8-bit serial data interface. When DCX = ’1’, data is selected. When DCX
+  = ’0’, command is selected. This pin is used serial interface clock in 3-wire
+  9-bit / 4-wire 8-bit serial data interface
 
   RDX I MCU (VDDI/VSS)   8080-    /8080I-II system (RDX): Serves as a read
     signal and MCU read data at the rising edge. Fix to VDDI level when not in use.
 
-  WRX (D/CX) I MCU (VDDI/VSS) - 8080-    /8080I-II system (WRX): Serves as a write signal and writes data at the rising edge. - 4-line system (D/CX): Serves as command or parameter selec
+  WRX (D/CX) I MCU (VDDI/VSS) - 8080-    /8080I-II system (WRX): Serves as a
+  write signal and writes data at the rising edge. - 4-line system (D/CX): Serves
+  as command or parameter selec
+
+  RESX I MCU (VDDI/VSS) This signal will reset the device and must be applied
+  to properly initialize the chip. Signal is active low.
+
+  CSX I MCU (VDDI/VSS) Chip select input pin (“Low” enable). This pin can be
+  permanently fixed “Low” in MPU interface mode only.* note1,2
+
 */
 
 static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
   gpio_clear(LCD_PORT, LCD_CS);   // assert chip select, check.
   
-
-
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send8(command);
 
@@ -118,11 +130,20 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
     send8(dataBytes[ i ]);
   }
 
-
-  //gpio_set(LCD_PORT, LCD_CS);     // deassert chip select
 }
 
 
+static void sendCommand0(uint8_t command)
+{
+  gpio_clear(LCD_PORT, LCD_CS);   // assert chip select, check.
+  
+  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  send8(command);
+}
+
+
+
+// https://github.com/juj/fbcp-ili9341/blob/master/ili9341.cpp  <- explains more
 
 // static const uint8_t PROGMEM initcmd[] = {
 static uint8_t initcmd[] = {
@@ -246,6 +267,11 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
   - need uart serial.
   - unhook the other stm32... to get the bus pirate?
   - check data on other side of tranceiver pins. with scope.
+
+  - make sure there is voltage on the 5V rail also. eg. there is analog and digital circuits.
+        and may expect 5V.
+
+  - somethingnn to do to flush the buffers, or sync the output, or update?
 */
 // or adjust the backlighting.
 
@@ -275,6 +301,31 @@ int main(void)
   gpio_set(  LCD_PORT, LCD_RST);   // high
   msleep(150);
 
+  // not sure that the correct commands and data are being sent...
+  // display off, or changing the brightness should have done something.
+
+#if 0
+     SPI_TRANSFER(0x01/*Software Reset*/);
+    usleep(5*1000);
+    SPI_TRANSFER(0x28/*Display OFF*/);
+#endif
+/*
+  sendCommand0(0x01 ); // software reset
+  msleep(5);
+  sendCommand0(0x28 ); // display off
+*/
+  // OK. this should have dimmed stuff...
+ #if 0 
+  {
+    uint8_t data[] = { 0x0/*VCOMH=4.250V*/, 0x0/*VCOML=-1.500V*/ };
+    sendCommand(0xC5/*VCOM Control 1*/, data, sizeof(data) );   
+  }
+  {
+    uint8_t data[] = { 0x0 /*VCOMH=VMH-58,VCOML=VML-58*/ };
+     sendCommand(0xC7/*VCOM Control 2*/, data, sizeof(data) );
+    msleep(1000);
+  }
+  #endif
 
   // ok running this - changes the screen brightness down a bit. or something
   //  
