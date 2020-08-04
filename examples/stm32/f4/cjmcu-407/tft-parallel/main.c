@@ -158,7 +158,7 @@ int main(void)
   msleep(150);
 
 
-  // ok running this - changes the screen res. or something
+  // ok running this - changes the screen brightness down a bit. or something
   //  
   uint8_t cmd, x, numArgs;
   const uint8_t *addr = initcmd;
@@ -173,10 +173,13 @@ int main(void)
   }
 
 
+  bool invert = 0;
  	while (1) {
 
     // gpio_toggle(GPIOD, 1 << 5 );  // blink
 
+    sendCommand(invert ? ILI9341_INVON : ILI9341_INVOFF, 0 , 0 );
+    invert = ! invert;
 
     gpio_toggle(GPIOE, GPIO0);  // toggle led
     msleep(300);
