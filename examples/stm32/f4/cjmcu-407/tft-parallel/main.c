@@ -12,7 +12,7 @@
 
   simple,
   https://github.com/adafruit/Adafruit_ILI9341
-  
+
   primitives
     https://github.com/adafruit/Adafruit-GFX-Library/blob/master/Adafruit_SPITFT.cpp
 
@@ -36,9 +36,9 @@
 #include "clock.h"
 
 
-
-
 // GPIOE
+#define LCD_PORT  GPIOE
+
 #define LCD_RST   GPIO2
 #define LCD_CS    GPIO3
 #define LCD_RS    GPIO4
@@ -46,6 +46,9 @@
 #define LCD_RD    GPIO6
 
 
+#define LCD_DATA_PORT  GPIOD
+
+// LCD
 
 static void led_setup(void)
 {
@@ -53,24 +56,6 @@ static void led_setup(void)
   gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
 }
 
-/*
-  gpio_common_all.c
-
-void gpio_set(uint32_t gpioport, uint16_t gpios)
-{
-	GPIO_BSRR(gpioport) = gpios;
-}
-
-void  gpio_clear(uint32_t gpioport, uint16_t gpios)
-{
-	GPIO_BSRR(gpioport) = (gpios << 16);
-}
-
-void gpio_port_write(uint32_t gpioport, uint16_t data)
-{
-	GPIO_ODR(gpioport) = data;
-}
-*/
 
 // should put control registers on different port - this would allow 16 bit parallel bit bashing
 // without hardly any code changes.
@@ -105,29 +90,42 @@ void Adafruit_SPITFT::sendCommand16(uint16_t commandWord,
 #endif
 
 
-static void sendCommand16(uint16_t commandWord, const uint8_t *dataBytes, uint8_t numDataBytes) {
-/*
-  SPI_BEGIN_TRANSACTION();
-  if (_cs >= 0)
-    SPI_CS_LOW();
 
-  if (numDataBytes == 0) {
-    SPI_DC_LOW();             // Command mode
-    SPI_WRITE16(commandWord); // Send the command word
-    SPI_DC_HIGH();            // Data mode
-  }
-  for (int i = 0; i < numDataBytes; i++) {
-    SPI_DC_LOW();             // Command mode
-    SPI_WRITE16(commandWord); // Send the command word
-    SPI_DC_HIGH();            // Data mode
-    commandWord++;
-    SPI_WRITE16((uint16_t)pgm_read_byte(dataBytes++));
-  }
 
-  if (_cs >= 0)
-    SPI_CS_HIGH();
-  SPI_END_TRANSACTION();
-*/
+static inline void delay( uint16_t x )
+{
+  msleep(x);
+}
+
+static void send16( uint16_t x )
+{
+    gpio_clear(LCD_PORT, LCD_WR);   // clear write strobe
+    delay(1);
+    gpio_port_write(LCD_DATA_PORT, x);    // low bytes first
+    gpio_set(LCD_PORT, LCD_WR);           // write on rising edge
+    delay(1);
+
+    gpio_clear(LCD_PORT, LCD_WR);         // clear write strobe
+    delay(1);
+    gpio_port_write(LCD_DATA_PORT, x >> 8);   // high bytes
+    gpio_set(LCD_PORT, LCD_WR);       // write on rising edge
+    delay(1);
+}
+
+
+static void sendCommand16(uint16_t commandWord, const uint8_t *dataBytes, uint8_t numDataBytes)
+{
+
+    gpio_clear(LCD_PORT, LCD_CS); // assert chip select
+
+    gpio_clear(LCD_PORT, LCD_RS);   // assert command
+    send16(commandWord);
+
+    gpio_set(LCD_PORT, LCD_RS);     // assert data
+
+    // OKK. the data is 8 bytes... that's not very clear 
+    send16(commandWord);
+
 }
 
 
@@ -155,7 +153,7 @@ int main(void)
   // gpio_set(GPIOD, 1 << 12 );  // turn on ????
 
 
-  gpio_port_write(GPIOD, 1 << 5);   // not sure that atomic, but more useful...
+  // gpio_port_write(GPIOD, 1 << 5);   // not sure that atomic, but more useful...
 
  	while (1) {
 
