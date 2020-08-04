@@ -6,6 +6,8 @@
     which byte is loaded first.
 
 
+  - gfx library seems to be a library using a canvas rather than direct draw.
+      eg. may be buffering change.
 
   - general
     https://controllerstech.com/interface-tft-display-with-stm32/
@@ -84,6 +86,8 @@ static void send8( uint8_t x )
   delay(1);
   gpio_set(LCD_PORT, LCD_WR);           // write on rising edge
   delay(1);
+
+  gpio_clear(LCD_PORT, LCD_WR);         // clear write strobe
 }
 
 
@@ -99,7 +103,7 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
     send8(dataBytes[ i ]);
   }
 
-  gpio_set(LCD_PORT, LCD_CS);     // deassert chip select
+  //gpio_set(LCD_PORT, LCD_CS);     // deassert chip select
 }
 
 
@@ -137,6 +141,92 @@ static uint8_t initcmd[] = {
 static uint8_t pgm_read_byte(const uint8_t *addr) { return *addr; } 
 
 
+
+
+
+
+
+
+
+static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+#if 0
+    // column address set
+    ILI9341_WriteCommand(0x2A); // CASET
+    {
+        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
+        ILI9341_WriteData(data, sizeof(data));
+    }
+
+    // row address set
+    ILI9341_WriteCommand(0x2B); // RASET
+    {
+        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
+        ILI9341_WriteData(data, sizeof(data));
+    }
+
+    // write to RAM
+    ILI9341_WriteCommand(0x2C); // RAMWR
+#endif
+    {
+        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
+        // ILI9341_WriteData(data, sizeof(data));
+        sendCommand(ILI9341_CASET, data, sizeof(data) ); // 2A
+    }
+
+    // ILI9341_WriteCommand(0x2B); // RASET
+    {
+        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
+        sendCommand(ILI9341_PASET, data, sizeof(data) ); // 2B
+        // ILI9341_WriteData(data, sizeof(data));
+    }
+
+    //
+
+    // write to RAM
+    // ILI9341_WriteCommand(0x2C); // RAMWR
+    // sendCommand(ILI9341_RAMWR, 0 , 0 ); // 2C
+}
+
+
+
+static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
+    // if((x >= ILI9341_WIDTH) || (y >= ILI9341_HEIGHT))
+    //  return;
+/*
+
+    ILI9341_Select();
+
+    ILI9341_SetAddressWindow(x, y, x+1, y+1);
+    uint8_t data[] = { color >> 8, color & 0xFF };
+    ILI9341_WriteData(data, sizeof(data));
+
+    ILI9341_Unselect();
+*/
+
+    ILI9341_SetAddressWindow(x, y, x+50, y+50);
+    uint8_t data[] = { color >> 8, color & 0xFF };
+
+    // ILI9341_WriteData(data, sizeof(data));
+
+
+    sendCommand(ILI9341_RAMWR, data , sizeof(data)  ); // 2C
+
+
+}
+
+
+// Good example, https://github.com/afiskon/stm32-ili9341/blob/master/Lib/ili9341/ili9341.c
+
+
+#define MADCTL_MY 0x80  ///< Bottom to top
+#define MADCTL_MX 0x40  ///< Right to left
+#define MADCTL_MV 0x20  ///< Reverse Mode
+#define MADCTL_ML 0x10  ///< LCD refresh Bottom to top
+#define MADCTL_RGB 0x00 ///< Red-Green-Blue pixel order
+#define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
+#define MADCTL_MH 0x04  ///< LCD refresh right to left
+
+
 int main(void)
 {
   clock_setup();
@@ -150,8 +240,9 @@ int main(void)
   gpio_mode_setup(LCD_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
 
 
-  // reset
+  // hardware reset - review
   gpio_set(  LCD_PORT, LCD_RST);   
+  msleep(150);
   gpio_clear(LCD_PORT, LCD_RST);   
   msleep(150);
   gpio_set(  LCD_PORT, LCD_RST);   
@@ -172,14 +263,26 @@ int main(void)
       delay(150);
   }
 
+    // normal orientation
+    uint8_t m = (MADCTL_MX | MADCTL_BGR);
+    sendCommand(ILI9341_MADCTL, &m, 1);
+
+
+
+
+    ILI9341_DrawPixel(50, 50, 0xf777 ); 
+
 
   bool invert = 0;
  	while (1) {
 
     // gpio_toggle(GPIOD, 1 << 5 );  // blink
 
-    sendCommand(invert ? ILI9341_INVON : ILI9341_INVOFF, 0 , 0 );
+    // sendCommand(invert ? ILI9341_INVON : ILI9341_INVOFF, 0 , 0 );
+    // sendCommand(invert ? ILI9341_DISPON : ILI9341_DISPOFF , 0 , 0 );
     invert = ! invert;
+
+
 
     gpio_toggle(GPIOE, GPIO0);  // toggle led
     msleep(300);
