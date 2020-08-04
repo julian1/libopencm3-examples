@@ -94,14 +94,21 @@ static void send8( uint8_t x )
 // So, think we want to check...
 
 // is the screen flickering a power supply issue?
+/*
+  p11.
+  When DCX = ’1’, data is selected. When DCX = ’0’, command is selected.
+
+  RDX I MCU (VDDI/VSS)   8080-    /8080I-II system (RDX): Serves as a read
+    signal and MCU read data at the rising edge. Fix to VDDI level when not in use.
+
+  WRX (D/CX) I MCU (VDDI/VSS) - 8080-    /8080I-II system (WRX): Serves as a write signal and writes data at the rising edge. - 4-line system (D/CX): Serves as command or parameter selec
+*/
 
 static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
   gpio_clear(LCD_PORT, LCD_CS);   // assert chip select, check.
-  // gpio_set(LCD_PORT, LCD_RD);     // high to indicate not reading . ok setting this and it doesn't blink
-                                      // weird. would expect priority.
-                                      // because when it's high the tranceivers block?
-                                      // maybe we won't be able to read?
+  
+
 
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send8(command);
@@ -256,6 +263,9 @@ int main(void)
   gpio_mode_setup(LCD_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, 0xff ); // JA first 8 bits.
   gpio_mode_setup(LCD_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
 
+
+  gpio_clear(LCD_PORT, LCD_RD);   // doesn't like to be high. think that tranceivers block.
+                                   // lcd will not blink or do anything... when high. 
 
   // hardware reset - review
   gpio_set(  LCD_PORT, LCD_RST);    // high
