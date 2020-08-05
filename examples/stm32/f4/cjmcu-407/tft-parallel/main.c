@@ -344,58 +344,12 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
   current is now respectable 150mA. and doesn't flutter.
   
   OK. need to see if perhaps transceivers are broken.
+  -------------
+
+  sending command to sleep doesn't change power
 
 */
 
-int main1(void)
-{
-  clock_setup();
-  led_setup();
-
-  rcc_periph_clock_enable( RCC_GPIOE );
-  rcc_periph_clock_enable( RCC_GPIOD );
-
-
-  gpio_mode_setup(LCD_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0 | GPIO1 | GPIO2 | GPIO3 | GPIO4 | GPIO5 | GPIO6 | GPIO7  ); // JA first 8 bits.
-  gpio_mode_setup(LCD_PORT,      GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
-
-  gpio_set(LCD_PORT, LCD_RD);   // turn read off. operates both the transceiver and the lcd which reads on rising edge. 
-                                // this will end up sinking current. and gave illusion of stuff happening due to power supply issues. 
-                                // when set to read - then if gpio is output - it will sink all the output voltage. very bad.
-
-  // hardware reset - review
-  gpio_set(  LCD_PORT, LCD_RST);    // high
-  msleep(150);
-  gpio_clear(LCD_PORT, LCD_RST);   // low
-  msleep(150);
-  gpio_set(  LCD_PORT, LCD_RST);   // high
-  msleep(150);
-
-
-  // assert chip select, check.
-  gpio_set(LCD_PORT, LCD_CS);
-  gpio_set(LCD_PORT, LCD_WR);
-
-
-  // gpio_port_write(LCD_DATA_PORT, 0b01010101);    // setup port
-  gpio_port_write(LCD_DATA_PORT, 0b10101010);    // setup port
-
-  bool on = 0;
- 	while (1) {
-
-    if(on) {
-      gpio_set(GPIOE, GPIO0);
-    }
-    else {
-      gpio_clear(GPIOE, GPIO0);
-    }
-    on = ! on;
-    msleep(500);
-	}
-
-
-  return 0;
-}
 
 
 // 
@@ -490,31 +444,76 @@ int main(void)
 
     // gpio_toggle(GPIOD, 1 << 5 );  // blink
 
-    // sendCommand(on ? ILI9341_INVON : ILI9341_INVOFF, 0 , 0 );
-    // sendCommand(on ? ILI9341_DISPON : ILI9341_DISPOFF , 0 , 0 );
-
-    // sendCommand0( SLPIN);
-
     // freaking weird - on
 
     if(on) {
       // led on draws more power... how...
       gpio_set(GPIOE, GPIO0);
-      // sendCommand0( ILI9341_SLPOUT);
-      ILI9341_DrawPixel(50, 50, 0xf777 );
+      sendCommand0( ILI9341_SLPIN);
+      // sendCommand0(ILI9341_INVOFF );
+      // ILI9341_DrawPixel(50, 50, 0xf777 );
     }
     else {
       gpio_clear(GPIOE, GPIO0);
-      // sendCommand0( ILI9341_SLPIN);
-      ILI9341_DrawPixel(50, 50, 0x7700 );
+      sendCommand0( ILI9341_SLPOUT);
+      // sendCommand0(ILI9341_INVON);
+      // ILI9341_DrawPixel(50, 50, 0x7700 );
     }
     on = ! on;
 
-
-    msleep(1500);
+    msleep(500);
 	}
 
   return 0;
 }
 
 
+int main1(void)
+{
+  clock_setup();
+  led_setup();
+
+  rcc_periph_clock_enable( RCC_GPIOE );
+  rcc_periph_clock_enable( RCC_GPIOD );
+
+
+  gpio_mode_setup(LCD_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0 | GPIO1 | GPIO2 | GPIO3 | GPIO4 | GPIO5 | GPIO6 | GPIO7  ); // JA first 8 bits.
+  gpio_mode_setup(LCD_PORT,      GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
+
+  gpio_set(LCD_PORT, LCD_RD);   // turn read off. operates both the transceiver and the lcd which reads on rising edge. 
+                                // this will end up sinking current. and gave illusion of stuff happening due to power supply issues. 
+                                // when set to read - then if gpio is output - it will sink all the output voltage. very bad.
+
+  // hardware reset - review
+  gpio_set(  LCD_PORT, LCD_RST);    // high
+  msleep(150);
+  gpio_clear(LCD_PORT, LCD_RST);   // low
+  msleep(150);
+  gpio_set(  LCD_PORT, LCD_RST);   // high
+  msleep(150);
+
+
+  // assert chip select, check.
+  gpio_set(LCD_PORT, LCD_CS);
+  gpio_set(LCD_PORT, LCD_WR);
+
+
+  // gpio_port_write(LCD_DATA_PORT, 0b01010101);    // setup port
+  gpio_port_write(LCD_DATA_PORT, 0b10101010);    // setup port
+
+  bool on = 0;
+ 	while (1) {
+
+    if(on) {
+      gpio_set(GPIOE, GPIO0);
+    }
+    else {
+      gpio_clear(GPIOE, GPIO0);
+    }
+    on = ! on;
+    msleep(500);
+	}
+
+
+  return 0;
+}
