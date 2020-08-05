@@ -1,14 +1,36 @@
 /*
-  8-bit parallel.
+  8-bit parallel. think its uc5408 which is very similar to ili9320
 
-  8230 that thought was ILI9341.
+  in forum - gets it working with id = 5408. 
+    SPFD5408 
+      case 0x5408:
+        _lcd_capable = 0 | REV_SCREEN | READ_BGR; //Red 2.4" thanks jorgenv, Ardlab_Gent
+//        _lcd_capable = 0 | REV_SCREEN | READ_BGR | INVERT_GS; //Blue 2.8" might be different
+        goto common_9320;
 
-  trying to work it out,
-  https://forum.arduino.cc/index.php?topic=438292.0
+  So just treats it as 9320...
 
-  https://github.com/prenticedavid/MCUFRIEND_kbv/blob/master/MCUFRIEND_kbv.cpp
-    
-    if (_lcd_ID == 0x8230) {    // UC8230 has strange BGR and READ_BGR behaviour
+
+  OK. think we really need to read the registers... that will
+  tell us if our commands are working, and provide some info.
+  ---------
+
+  8 bit mode,
+  The i80/8-bit system interface is selected [...] When writing the 16-bit
+  register, the data is divided into upper byte (8 bits and LSB is not used)
+  lower byte and the upper byte is transferred first. The display data is also
+  divided in upper byte (8 bits) and lower byte, and the upper byte is
+  transferred first. T
+
+    https://cdn-shop.adafruit.com/datasheets/ILI9325.pdf
+
+  register meaning command? it has to be 16 bit.
+  so register and data are both 16 bit.
+  ---------------
+
+  some example code here, 
+    https://github.com/grossws/stm32-lcd
+
 
 
  */
@@ -95,68 +117,68 @@ static void sendCommand16(uint16_t cmd, uint16_t data)
 
 #define TFTLCD_DELAY 0xFFFF
 
-   static const uint16_t ILI9320_regValues[] = {
-            0x00e5, 0x8000,
-            0x0000, 0x0001,
-            0x0001, 0x100,
-            0x0002, 0x0700,
-            0x0003, 0x1030,
-            0x0004, 0x0000,
-            0x0008, 0x0202,
-            0x0009, 0x0000,
-            0x000A, 0x0000,
-            0x000C, 0x0000,
-            0x000D, 0x0000,
-            0x000F, 0x0000,
-            //-----Power On sequence-----------------------
-            0x0010, 0x0000,
-            0x0011, 0x0007,
-            0x0012, 0x0000,
-            0x0013, 0x0000,
-            TFTLCD_DELAY, 50,
-            0x0010, 0x17B0,  //SAP=1, BT=7, APE=1, AP=3
-            0x0011, 0x0007,  //DC1=0, DC0=0, VC=7
-            TFTLCD_DELAY, 10,
-            0x0012, 0x013A,  //VCMR=1, PON=3, VRH=10
-            TFTLCD_DELAY, 10,
-            0x0013, 0x1A00,  //VDV=26
-            0x0029, 0x000c,  //VCM=12
-            TFTLCD_DELAY, 10,
-            //-----Gamma control-----------------------
-            0x0030, 0x0000,
-            0x0031, 0x0505,
-            0x0032, 0x0004,
-            0x0035, 0x0006,
-            0x0036, 0x0707,
-            0x0037, 0x0105,
-            0x0038, 0x0002,
-            0x0039, 0x0707,
-            0x003C, 0x0704,
-            0x003D, 0x0807,
-            //-----Set RAM area-----------------------
-            0x0060, 0xA700,     //GS=1
-            0x0061, 0x0001,
-            0x006A, 0x0000,
-            0x0021, 0x0000,
-            0x0020, 0x0000,
-            //-----Partial Display Control------------
-            0x0080, 0x0000,
-            0x0081, 0x0000,
-            0x0082, 0x0000,
-            0x0083, 0x0000,
-            0x0084, 0x0000,
-            0x0085, 0x0000,
-            //-----Panel Control----------------------
-            0x0090, 0x0010,
-            0x0092, 0x0000,
-            0x0093, 0x0003,
-            0x0095, 0x0110,
-            0x0097, 0x0000,
-            0x0098, 0x0000,
-            //-----Display on-----------------------
-            0x0007, 0x0173,
-            TFTLCD_DELAY, 50,
-        };
+static const uint16_t ILI9320_regValues[] = {
+  0x00e5, 0x8000,
+  0x0000, 0x0001,
+  0x0001, 0x100,
+  0x0002, 0x0700,
+  0x0003, 0x1030,
+  0x0004, 0x0000,
+  0x0008, 0x0202,
+  0x0009, 0x0000,
+  0x000A, 0x0000,
+  0x000C, 0x0000,
+  0x000D, 0x0000,
+  0x000F, 0x0000,
+  //-----Power On sequence-----------------------
+  0x0010, 0x0000,
+  0x0011, 0x0007,
+  0x0012, 0x0000,
+  0x0013, 0x0000,
+  TFTLCD_DELAY, 50,
+  0x0010, 0x17B0,  //SAP=1, BT=7, APE=1, AP=3
+  0x0011, 0x0007,  //DC1=0, DC0=0, VC=7
+  TFTLCD_DELAY, 10,
+  0x0012, 0x013A,  //VCMR=1, PON=3, VRH=10
+  TFTLCD_DELAY, 10,
+  0x0013, 0x1A00,  //VDV=26
+  0x0029, 0x000c,  //VCM=12
+  TFTLCD_DELAY, 10,
+  //-----Gamma control-----------------------
+  0x0030, 0x0000,
+  0x0031, 0x0505,
+  0x0032, 0x0004,
+  0x0035, 0x0006,
+  0x0036, 0x0707,
+  0x0037, 0x0105,
+  0x0038, 0x0002,
+  0x0039, 0x0707,
+  0x003C, 0x0704,
+  0x003D, 0x0807,
+  //-----Set RAM area-----------------------
+  0x0060, 0xA700,     //GS=1
+  0x0061, 0x0001,
+  0x006A, 0x0000,
+  0x0021, 0x0000,
+  0x0020, 0x0000,
+  //-----Partial Display Control------------
+  0x0080, 0x0000,
+  0x0081, 0x0000,
+  0x0082, 0x0000,
+  0x0083, 0x0000,
+  0x0084, 0x0000,
+  0x0085, 0x0000,
+  //-----Panel Control----------------------
+  0x0090, 0x0010,
+  0x0092, 0x0000,
+  0x0093, 0x0003,
+  0x0095, 0x0110,
+  0x0097, 0x0000,
+  0x0098, 0x0000,
+  //-----Display on-----------------------
+  0x0007, 0x0173,
+  TFTLCD_DELAY, 50,
+};
 
 
 
@@ -217,14 +239,6 @@ static void lcd_fill(uint32_t color) {
     lcd_set_window(0, 0, 320 , 200);
     lcd_set_cursor(0, 0);
 
-    // _lcd_select(); // what does this do? sets the register... just cs.
-                  // 
-/*
-    _lcd_tx_reg(0x22);
-    for(u32 i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
-        _lcd_tx_data(data);
-    }
-*/
 
     gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
     send16(0x22);
@@ -233,12 +247,9 @@ static void lcd_fill(uint32_t color) {
 
     for(uint32_t i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
         // _lcd_tx_data(data);
-        send16(data );
+        send16(i + 999 );
     }
-
-    // _lcd_deselect();
 }
-
 
 
 
@@ -421,33 +432,6 @@ static void sendData0(uint8_t data)
   
   code looks decent, - all reg values are 16 bit though?
   https://github.com/MichalKs/STM32F4_ILI9320/blob/master/STM32F4_ILI9320/app/src/ili9320.c
-
-  in forum - gets it working with id = 5408. 
-    SPFD5408 
-
-      case 0x5408:
-        _lcd_capable = 0 | REV_SCREEN | READ_BGR; //Red 2.4" thanks jorgenv, Ardlab_Gent
-//        _lcd_capable = 0 | REV_SCREEN | READ_BGR | INVERT_GS; //Blue 2.8" might be different
-        goto common_9320;
-
-  So just treats it as 9320...
-
-
-  OK. think we really need to read the registers... that will
-  tell us if our commands are working, and provide some info.
-  ---------
-
-  8 bit mode,
-  The i80/8-bit system interface is selected [...] When writing the 16-bit
-  register, the data is divided into upper byte (8 bits and LSB is not used)
-  lower byte and the upper byte is transferred first. The display data is also
-  divided in upper byte (8 bits) and lower byte, and the upper byte is
-  transferred first. T
-
-    https://cdn-shop.adafruit.com/datasheets/ILI9325.pdf
-
-  register meaning command? it has to be 16 bit.
-  so register and data are both 16 bit.
 
 */
 
