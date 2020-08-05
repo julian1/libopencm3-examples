@@ -35,65 +35,6 @@
 
 
 
-
-// https://github.com/MichalKs/STM32F4_ILI9320/blob/master/STM32F4_ILI9320/app/src/ili9320.c
-
-/*
- * ILI9320 driver commands/registers
- */
-#define ILI9320_START_OSCILLATION 0x00
-#define ILI9320_READ_ID           0x00
-#define ILI9320_DRIVER_OUTPUT     0x01
-#define ILI9320_DRIVING_WAVE      0x02
-#define ILI9320_ENTRY_MODE        0x03
-#define ILI9320_RESIZE            0x04
-#define ILI9320_DISP1             0x07
-#define ILI9320_DISP2             0x08
-#define ILI9320_DISP3             0x09
-#define ILI9320_DISP4             0x0a
-#define ILI9320_RGB_DISP1         0x0c
-#define ILI9320_FRAME_MARKER      0x0d
-#define ILI9320_RGB_DISP2         0x0f
-#define ILI9320_POWER1            0x10
-#define ILI9320_POWER2            0x11
-#define ILI9320_POWER3            0x12
-#define ILI9320_POWER4            0x13
-#define ILI9320_HOR_GRAM_ADDR     0x20
-#define ILI9320_VER_GRAM_ADDR     0x21
-#define ILI9320_WRITE_TO_GRAM     0x22
-#define ILI9320_POWER7            0x29
-#define ILI9320_FRAME_RATE        0x2b
-#define ILI9320_GAMMA1            0x30
-#define ILI9320_GAMMA2            0x31
-#define ILI9320_GAMMA3            0x32
-#define ILI9320_GAMMA4            0x35
-#define ILI9320_GAMMA5            0x36
-#define ILI9320_GAMMA6            0x37
-#define ILI9320_GAMMA7            0x38
-#define ILI9320_GAMMA8            0x39
-#define ILI9320_GAMMA9            0x3c
-#define ILI9320_GAMMA10           0x3d
-#define ILI9320_HOR_ADDR_START    0x50
-#define ILI9320_HOR_ADDR_END      0x51
-#define ILI9320_VER_ADDR_START    0x52
-#define ILI9320_VER_ADDR_END      0x53
-#define ILI9320_DRIVER_OUTPUT2    0x60
-#define ILI9320_BASE_IMAGE        0x61
-#define ILI9320_VERTICAL_SCROLL   0x6a
-#define ILI9320_PARTIAL1_POS      0x80
-#define ILI9320_PARTIAL1_START    0x81
-#define ILI9320_PARTIAL1_END      0x82
-#define ILI9320_PARTIAL2_POS      0x83
-#define ILI9320_PARTIAL2_START    0x84
-#define ILI9320_PARTIAL2_END      0x85
-#define ILI9320_PANEL_INTERFACE1  0x90
-#define ILI9320_PANEL_INTERFACE2  0x92
-#define ILI9320_PANEL_INTERFACE3  0x93
-#define ILI9320_PANEL_INTERFACE4  0x95
-#define ILI9320_PANEL_INTERFACE5  0x97
-#define ILI9320_PANEL_INTERFACE6  0x98
-
-
 // LCD
 
 static void led_setup(void)
@@ -129,6 +70,23 @@ static void send8( uint8_t x )
   // gpio_clear(LCD_PORT, LCD_WR);         // clear write strobe
 }
 
+
+static void sendCommand16(uint16_t cmd, uint16_t data)
+{
+  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  send8(cmd >> 8);   // Check
+  send8(cmd & 0xFF);
+
+/*
+      sendData0( color >> 8 );
+      sendData0( color & 0xFF );
+*/
+  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
+  send8(data >> 8);   // Check
+  send8(data & 0xFF);
+}
+
+
 // OK. screen does same thing - whether we asset chip select or not.
 // So, think we want to check...
 
@@ -161,6 +119,24 @@ static void send8( uint8_t x )
   // note also that reading, involves a write from host first to select what to read.
 */
 
+
+#if 0
+static void sendCommand16(uint8_t command, uint16_t data)
+{
+  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  send8(command);
+  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
+/*
+      sendData0( color >> 8 );
+      sendData0( color & 0xFF );
+*/
+  send8(data >> 8);   // Check
+  send8(data & 0xFF);
+}
+#endif
+
+
+#if 0
 static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
 
@@ -175,21 +151,6 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
 }
 
 
-static void sendCommand16(uint8_t command, uint16_t data)
-{
-  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  send8(command);
-  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
-/*
-      sendData0( color >> 8 );
-      sendData0( color & 0xFF );
-*/
-  send8(data >> 8);   // Check
-  send8(data & 0xFF);
-}
-
-
-#if 0
 static void sendCommand0(uint8_t command)
 {
 
@@ -243,136 +204,114 @@ static void sendData0(uint8_t data)
 
   So just treats it as 9320...
 
-  https://github.com/prenticedavid/MCUFRIEND_kbv/blob/master/MCUFRIEND_kbv.cpp
 
+  OK. think we really need to read the registers... that will
+  tell us if our commands are working, and provide some info.
+  ---------
+
+  8 bit mode,
+  The i80/8-bit system interface is selected [...] When writing the 16-bit
+  register, the data is divided into upper byte (8 bits and LSB is not used)
+  lower byte and the upper byte is transferred first. The display data is also
+  divided in upper byte (8 bits) and lower byte, and the upper byte is
+  transferred first. T
+
+  register meaning command? it has to be 16 bit.
 
 */
 
 
 
-// 
+// https://github.com/prenticedavid/MCUFRIEND_kbv/blob/master/MCUFRIEND_kbv.cpp
+
+#define TFTLCD_DELAY 0xFFFF
+
+   static const uint16_t ILI9320_regValues[] = {
+            0x00e5, 0x8000,
+            0x0000, 0x0001,
+            0x0001, 0x100,
+            0x0002, 0x0700,
+            0x0003, 0x1030,
+            0x0004, 0x0000,
+            0x0008, 0x0202,
+            0x0009, 0x0000,
+            0x000A, 0x0000,
+            0x000C, 0x0000,
+            0x000D, 0x0000,
+            0x000F, 0x0000,
+            //-----Power On sequence-----------------------
+            0x0010, 0x0000,
+            0x0011, 0x0007,
+            0x0012, 0x0000,
+            0x0013, 0x0000,
+            TFTLCD_DELAY, 50,
+            0x0010, 0x17B0,  //SAP=1, BT=7, APE=1, AP=3
+            0x0011, 0x0007,  //DC1=0, DC0=0, VC=7
+            TFTLCD_DELAY, 10,
+            0x0012, 0x013A,  //VCMR=1, PON=3, VRH=10
+            TFTLCD_DELAY, 10,
+            0x0013, 0x1A00,  //VDV=26
+            0x0029, 0x000c,  //VCM=12
+            TFTLCD_DELAY, 10,
+            //-----Gamma control-----------------------
+            0x0030, 0x0000,
+            0x0031, 0x0505,
+            0x0032, 0x0004,
+            0x0035, 0x0006,
+            0x0036, 0x0707,
+            0x0037, 0x0105,
+            0x0038, 0x0002,
+            0x0039, 0x0707,
+            0x003C, 0x0704,
+            0x003D, 0x0807,
+            //-----Set RAM area-----------------------
+            0x0060, 0xA700,     //GS=1
+            0x0061, 0x0001,
+            0x006A, 0x0000,
+            0x0021, 0x0000,
+            0x0020, 0x0000,
+            //-----Partial Display Control------------
+            0x0080, 0x0000,
+            0x0081, 0x0000,
+            0x0082, 0x0000,
+            0x0083, 0x0000,
+            0x0084, 0x0000,
+            0x0085, 0x0000,
+            //-----Panel Control----------------------
+            0x0090, 0x0010,
+            0x0092, 0x0000,
+            0x0093, 0x0003,
+            0x0095, 0x0110,
+            0x0097, 0x0000,
+            0x0098, 0x0000,
+            //-----Display on-----------------------
+            0x0007, 0x0173,
+            TFTLCD_DELAY, 50,
+        };
 
 
-static void ILI9320_Initializtion(void) {
-
-/*
-  ILI9320_HAL_HardInit(); // GPIO and FSMC init
-
-  // Reset the LCD
-  ILI9320_HAL_ResetOff();
-  TIMER_Delay(50);
-  ILI9320_HAL_ResetOn();
-  TIMER_Delay(50);
-  ILI9320_HAL_ResetOff();
-  TIMER_Delay(50);
-
-  SendCommand16(ILI9320_START_OSCILLATION, 0x0001);
-  TIMER_Delay(20);
-
-  // Read LCD ID
-  unsigned int id;
-  id = ILI9320_HAL_ReadReg(ILI9320_READ_ID);
-
-  printf("ID TFT LCD = %x\r\n", id);
 
 
-  // Add more LCD init codes here
-  if (id == 0x9320) {
-*/
+static void init( void ) {
 
-    sendCommand16(ILI9320_START_OSCILLATION, 0x0001);
-    msleep(20);
+  for( unsigned i = 0; i < sizeof( ILI9320_regValues) / sizeof(uint16_t)  ; i += 2 )  {
+    
+    uint16_t cmd = ILI9320_regValues[ i ]; 
+    uint16_t data = ILI9320_regValues[ i + 1];
 
-
-
-    sendCommand16(ILI9320_DRIVER_OUTPUT, 0x0100); // SS = 1 - coordinates from left to right
-    sendCommand16(ILI9320_DRIVING_WAVE, 0x0700);  // Line inversion
-    sendCommand16(ILI9320_ENTRY_MODE, 0x1018);    //
-    sendCommand16(ILI9320_RESIZE, 0x0000);
-    sendCommand16(ILI9320_DISP1, 0x0000);
-    sendCommand16(ILI9320_DISP2, 0x0202); // two lines back porch, two line front porch
-    sendCommand16(ILI9320_DISP3, 0x0000);
-    sendCommand16(ILI9320_DISP4, 0x0000);
-    sendCommand16(ILI9320_RGB_DISP1, 0x0001);
-    sendCommand16(ILI9320_FRAME_MARKER, 0x0000); // 0th line for frame marker
-    sendCommand16(ILI9320_RGB_DISP2, 0x0000);
-    sendCommand16(ILI9320_DISP1, 0x0101);
-    sendCommand16(ILI9320_POWER1, 0x10c0);
-    sendCommand16(ILI9320_POWER2, 0x0007);
-    sendCommand16(ILI9320_POWER3, 0x0110);
-    sendCommand16(ILI9320_POWER4, 0x0b00);
-    sendCommand16(ILI9320_POWER7, 0x0000);
-    sendCommand16(ILI9320_FRAME_RATE, 0x4010);
-
-    // Set window
-    sendCommand16(ILI9320_HOR_ADDR_START, 0);
-    sendCommand16(ILI9320_HOR_ADDR_END, 239);
-    sendCommand16(ILI9320_VER_ADDR_START, 0);
-    sendCommand16(ILI9320_VER_ADDR_END, 319);
-
-    sendCommand16(ILI9320_DRIVER_OUTPUT2, 0x2700);
-    sendCommand16(ILI9320_BASE_IMAGE, 0x0001);
-    sendCommand16(ILI9320_VERTICAL_SCROLL, 0x0000);
-    sendCommand16(ILI9320_PARTIAL1_POS, 0x0000);
-    sendCommand16(ILI9320_PARTIAL1_START, 0x0000);
-    sendCommand16(ILI9320_PARTIAL1_END, 0x0000);
-    sendCommand16(ILI9320_PARTIAL2_POS, 0x0000);
-    sendCommand16(ILI9320_PARTIAL2_START, 0x0000);
-    sendCommand16(ILI9320_PARTIAL2_END, 0x0000);
-    sendCommand16(ILI9320_PANEL_INTERFACE1, 0x0010);
-    sendCommand16(ILI9320_PANEL_INTERFACE2, 0x0000);
-    sendCommand16(ILI9320_PANEL_INTERFACE3, 0x0001);
-    sendCommand16(ILI9320_PANEL_INTERFACE4, 0x0110);
-    sendCommand16(ILI9320_PANEL_INTERFACE5, 0x0000);
-    sendCommand16(ILI9320_PANEL_INTERFACE6, 0x0000);
-    sendCommand16(ILI9320_DISP1, 0x0173);
-
-  // }
-
-  // TIMER_Delay(100);
-
-  msleep(100);
-}
-
-
-static void ILI9320_SetCursor(uint16_t x, uint16_t y) {
-
- sendCommand16(ILI9320_HOR_GRAM_ADDR, y);
- sendCommand16(ILI9320_VER_GRAM_ADDR, x);
-
-}
-/**
- * @brief Draws a pixel on the LCD.
- * @param x X coordinate of pixel.
- * @param y Y coordinate of pixel.
- * @param r Red color value.
- * @param g Green color value.
- * @param b Blue color value.
- */
-// static void ILI9320_DrawPixel(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b) {
-static void ILI9320_DrawPixel(uint16_t x, uint16_t y) {
-
-  // calling this makes it flicker terribly - so there's someting not right.
-
-  ILI9320_SetCursor(x, y);
-  // sendCommand16(ILI9320_WRITE_TO_GRAM, ILI9320_RGBDecode(r, g, b));
-  // sendCommand16(ILI9320_WRITE_TO_GRAM, 0xf0f0 );
-  sendCommand16(ILI9320_WRITE_TO_GRAM, 0xff00 );
-}
-
-// color is grey...
-// like it's only painting a single byte?
-
-static void GRAPH_DrawRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-
-  int i, j;
-  // Fill rectangle with color
-  for (i = x; i < x + w; i++) {
-    for (j = y; j < y + h; j++) {
-      ILI9320_DrawPixel(i, j );//, currentColor.r, currentColor.g, currentColor.b);
+    if(cmd == TFTLCD_DELAY) {
+      // printf("delay %d\n", data );
+      msleep(data);
+    } 
+    else {
+      // printf("cmd %x   data %x\n", cmd, data);
+      sendCommand16(cmd, data);
     }
   }
 }
+
+
+
 
 
 
@@ -407,29 +346,14 @@ int main(void)
   gpio_set(  LCD_PORT, LCD_RST);   // high
   msleep(150);
 
-  ILI9320_Initializtion();
 
-  // Does the same weird crap - with or without the Initialisation...
-  // so initialialisation is no good.
+  init();
 
-  ILI9320_DrawPixel(50, 50); 
-  GRAPH_DrawRectangle(50, 50, 5, 5); 
-
-
-  // not sure that the correct commands and data are being sent...
-  // display off, or changing the brightness should have done something.
-
-  // OK. nothing looks like its working...
-
-
-/*
-    // OK this actually does something.
-    sendCommand0(0x68  );
-    sendData0(0x9 );
-*/
-
-
-
+  // reverse - doesn't seem right
+  // WriteCmdData(0x61, _lcd_rev);
+  // sendCommand16 (0x61, 0x1 ); // leaves it flickerinig
+  // sendCommand16 (0x61, 0xff ); // freaking weird. 
+  // sendCommand16 (0x61, 0x0 ); // freaking weird. 
 
   ///////////
 
