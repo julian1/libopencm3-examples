@@ -18,12 +18,19 @@ item
 
   many variants like 9320
 
-  in forum - gets it working with id = 5408.
-    SPFD5408
-      case 0x5408:
-        _lcd_capable = 0 | REV_SCREEN | READ_BGR; //Red 2.4" thanks jorgenv, Ardlab_Gent
-//        _lcd_capable = 0 | REV_SCREEN | READ_BGR | INVERT_GS; //Blue 2.8" might be different
+  forum - gets it working with id = 5408.
+  https://forum.arduino.cc/index.php?topic=438292.0
+
+    "The Registers and bitfields seem to be in the same places as ILI9320 / SPFD5408."
+
+    case 0x8230:
+        _lcd_capable = 0 | REV_SCREEN | INVERT_GS | INVERT_RGB;
         goto common_9320;
+
+    case 0x5408:
+      _lcd_capable = 0 | REV_SCREEN | READ_BGR; //Red 2.4" thanks jorgenv, Ardlab_Gent
+      // _lcd_capable = 0 | REV_SCREEN | READ_BGR | INVERT_GS; //Blue 2.8" might be different
+      goto common_9320;
 
   So just treats it as 9320...
 
@@ -41,7 +48,7 @@ item
   divided in upper byte (8 bits) and lower byte, and the upper byte is
   transferred first. The written data is expanded into 18 bits internally (see
   the figure below) and then written into GRAM. The unused DB[9:0] pins must be
-  tied to AGND.  
+  tied to AGND.
 
   https://www.rockbox.org/wiki/pub/Main/GSoCSansaView/ILI9320DS_V0.55.pdf
 
