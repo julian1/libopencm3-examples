@@ -33,13 +33,17 @@ item
   ---------
 
   8 bit mode,
-  The i80/8-bit system interface is selected [...] When writing the 16-bit
+
+  The i80/8-bit system interface is selected by setting the IM[3:0] as “0011”
+  and the DB17~DB10 pins are used to transfer the data. When writing the 16-bit
   register, the data is divided into upper byte (8 bits and LSB is not used)
   lower byte and the upper byte is transferred first. The display data is also
   divided in upper byte (8 bits) and lower byte, and the upper byte is
-  transferred first. T
+  transferred first. The written data is expanded into 18 bits internally (see
+  the figure below) and then written into GRAM. The unused DB[9:0] pins must be
+  tied to AGND.  
 
-    https://cdn-shop.adafruit.com/datasheets/ILI9325.pdf
+  https://www.rockbox.org/wiki/pub/Main/GSoCSansaView/ILI9320DS_V0.55.pdf
 
   register meaning command? it has to be 16 bit.
   so register and data are both 16 bit.
@@ -47,8 +51,12 @@ item
 
   some example code here,
     https://github.com/grossws/stm32-lcd
+
+  another simple example,
+    https://github.com/claiff/ili9320/tree/clear/src
+
   -------------
-  ok everything powered at 3.3V which is good.
+  ok everything powered on at 3.3V which is good. don't need the transceivers though
 
 
  */
