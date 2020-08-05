@@ -117,14 +117,14 @@ static void send8( uint8_t x )
   permanently fixed “Low” in MPU interface mode only.* note1,2
   -------
 
-  
+
   // p28 is the best. at showing the levels of everything
   // note also that reading, involves a write from host first to select what to read.
 */
 
 static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
-  
+
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send8(command);
 
@@ -138,7 +138,7 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
 
 static void sendCommand0(uint8_t command)
 {
-  
+
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send8(command);
 }
@@ -186,7 +186,7 @@ static uint8_t initcmd[] = {
 };
 
 
-static uint8_t pgm_read_byte(const uint8_t *addr) { return *addr; } 
+static uint8_t pgm_read_byte(const uint8_t *addr) { return *addr; }
 
 
 
@@ -277,7 +277,7 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
     - but what about the tranceivers and 5V. need to check.
 
   - OKK. try to read some data out of the thing. check registers. to know that comms are working.
-      - would confirm that can write registers and data correctly. 
+      - would confirm that can write registers and data correctly.
   - need uart serial.
   - unhook the other stm32... to get the bus pirate?
   - check data on other side of tranceiver pins. with scope.
@@ -289,7 +289,7 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
   ----------
   we really need to check if we are writing regs correctly. before anything more complicated.
 
-  
+
 */
 // or adjust the backlighting.
 
@@ -309,7 +309,7 @@ int main(void)
 
 
   gpio_clear(LCD_PORT, LCD_RD);   // doesn't like to be high. think that tranceivers block.
-                                   // lcd will not blink or do anything... when high. 
+                                   // lcd will not blink or do anything... when high.
 
 
   // hardware reset - review
@@ -322,36 +322,37 @@ int main(void)
 
 
   // assert chip select, check.
-  gpio_clear(LCD_PORT, LCD_CS);   
+  gpio_clear(LCD_PORT, LCD_CS);
 
   // not sure that the correct commands and data are being sent...
   // display off, or changing the brightness should have done something.
 
+  // OK. nothing looks like its working...
+
 #if 0
-     SPI_TRANSFER(0x01/*Software Reset*/);
-    usleep(5*1000);
-    SPI_TRANSFER(0x28/*Display OFF*/);
-#endif
-/*
+
   sendCommand0(0x01 ); // software reset
   msleep(5);
-  sendCommand0(0x28 ); // display off
-*/
+  sendCommand0(0x28 ); // display off. doesn't
+  msleep(500);
+
+#endif
+
+#if 1
   // OK. this should have dimmed stuff...
- #if 0 
   {
     uint8_t data[] = { 0x0/*VCOMH=4.250V*/, 0x0/*VCOML=-1.500V*/ };
-    sendCommand(0xC5/*VCOM Control 1*/, data, sizeof(data) );   
+    sendCommand(0xC5/*VCOM Control 1*/, data, sizeof(data) );
   }
   {
     uint8_t data[] = { 0x0 /*VCOMH=VMH-58,VCOML=VML-58*/ };
      sendCommand(0xC7/*VCOM Control 2*/, data, sizeof(data) );
     msleep(1000);
   }
-  #endif
+#endif
 
   // ok running this - changes the screen brightness down a bit. or something
-  //  
+  //
   uint8_t cmd, x, numArgs;
   const uint8_t *addr = initcmd;
   while ((cmd = pgm_read_byte(addr++)) > 0) {
@@ -364,44 +365,45 @@ int main(void)
       delay(150);
   }
 
-/*  
-    // EXIT SLEEP
-    // ILI9341_WriteCommand(0x11);
-    // HAL_Delay(120);
-    sendCommand0(0x11);
-    msleep( 120);
-
-    // TURN ON DISPLAY
-    // ILI9341_WriteCommand(0x29);
-    sendCommand0(0x29);
-    msleep( 120);
-*/
-
+/*
   // normal orientation
   uint8_t m = (MADCTL_MX | MADCTL_BGR);
   sendCommand(ILI9341_MADCTL, &m, 1);
+*/
 
+  ILI9341_DrawPixel(50, 50, 0xf777 );
 
-  // OK. its very slow... running... because there are a lot of pixels to send
+  // OK. its very slow... running... because there are a lot of pixel data to send
 
-  bool invert = 0;
+  // screen is blinking off and on??? why???? power supply issue?
+
+  bool on = 0;
  	while (1) {
 
     // gpio_toggle(GPIOD, 1 << 5 );  // blink
 
-    // sendCommand(invert ? ILI9341_INVON : ILI9341_INVOFF, 0 , 0 );
-    // sendCommand(invert ? ILI9341_DISPON : ILI9341_DISPOFF , 0 , 0 );
-    if(invert) {
-      ILI9341_DrawPixel(50, 50, 0xf777 ); 
+    // sendCommand(on ? ILI9341_INVON : ILI9341_INVOFF, 0 , 0 );
+    // sendCommand(on ? ILI9341_DISPON : ILI9341_DISPOFF , 0 , 0 );
+
+    // sendCommand0( SLPIN);
+
+    // freaking weird - on
+
+    if(on) {
+      // led on draws more power... how...
+      gpio_set(GPIOE, GPIO0);
+      sendCommand0( ILI9341_SLPOUT);
+      // ILI9341_DrawPixel(50, 50, 0xf777 );
     }
     else {
-      ILI9341_DrawPixel(50, 50, 0x7700 ); 
+      gpio_clear(GPIOE, GPIO0);
+      sendCommand0( ILI9341_SLPIN);
+      // ILI9341_DrawPixel(50, 50, 0x7700 );
     }
-    invert = ! invert;
+    on = ! on;
 
 
-    gpio_toggle(GPIOE, GPIO0);  // toggle led
-    msleep(300);
+    msleep(1500);
 	}
 
   return 0;
