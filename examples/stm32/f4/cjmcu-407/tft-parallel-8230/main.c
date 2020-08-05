@@ -189,7 +189,7 @@ static void sendCommand16(uint8_t command, uint16_t data)
 }
 
 
-
+#if 0
 static void sendCommand0(uint8_t command)
 {
 
@@ -203,7 +203,7 @@ static void sendData0(uint8_t data)
   gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
   send8(data);
 }
-
+#endif
 
 
 
@@ -271,6 +271,11 @@ static void ILI9320_Initializtion(void) {
   // Add more LCD init codes here
   if (id == 0x9320) {
 */
+
+    sendCommand16(ILI9320_START_OSCILLATION, 0x0001);
+    msleep(20);
+
+
 
     sendCommand16(ILI9320_DRIVER_OUTPUT, 0x0100); // SS = 1 - coordinates from left to right
     sendCommand16(ILI9320_DRIVING_WAVE, 0x0700);  // Line inversion
@@ -344,8 +349,11 @@ static void ILI9320_DrawPixel(uint16_t x, uint16_t y) {
   ILI9320_SetCursor(x, y);
   // sendCommand16(ILI9320_WRITE_TO_GRAM, ILI9320_RGBDecode(r, g, b));
   // sendCommand16(ILI9320_WRITE_TO_GRAM, 0xf0f0 );
-  sendCommand16(ILI9320_WRITE_TO_GRAM, 0x3333 );
+  sendCommand16(ILI9320_WRITE_TO_GRAM, 0xff00 );
 }
+
+// color is grey...
+// like it's only painting a single byte?
 
 static void GRAPH_DrawRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
 
@@ -393,9 +401,11 @@ int main(void)
 
   ILI9320_Initializtion();
 
+  // Does the same weird crap - with or without the Initialisation...
+  // so initialialisation is no good.
 
   ILI9320_DrawPixel(50, 50); 
-  GRAPH_DrawRectangle(50, 50, 200, 200); 
+  GRAPH_DrawRectangle(50, 50, 5, 5); 
 
 
   // not sure that the correct commands and data are being sent...
