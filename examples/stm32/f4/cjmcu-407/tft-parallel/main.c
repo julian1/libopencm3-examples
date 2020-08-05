@@ -326,6 +326,19 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
   board is weird - without 5V the back light wouldn't come on. maybe other things also connected.
 
   issue with linear regulator perhaps?
+  
+  IS sOMEONE - serial wire debug - using port D?  no. because it works when unplugged.
+  
+  OR its broken???? somehow?
+
+  Guy has transceivers and similar board. just hooks it up. 
+    https://www.youtube.com/watch?v=UTeNyY_g5i0
+
+  Makes no sense. unless never designed for PUPD. 
+  ------------------------
+
+  OK - it's thinking it should be reading the pins.  OK extreme. set RS to high. as instructed
+
 */
 
 int main1(void)
@@ -340,9 +353,9 @@ int main1(void)
   gpio_mode_setup(LCD_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0 | GPIO1 | GPIO2 | GPIO3 | GPIO4 | GPIO5 | GPIO6 | GPIO7  ); // JA first 8 bits.
   gpio_mode_setup(LCD_PORT,      GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
 
-
-  gpio_clear(LCD_PORT, LCD_RD);   // doesn't like to be high. think that tranceivers block.
-                                   // lcd will not blink or do anything... when high.
+  gpio_set(LCD_PORT, LCD_RD);   // turn read off. operates both the transceiver and the lcd which reads on rising edge. 
+                                // this will end up sinking current. and gave illusion of stuff happening due to power supply issues. 
+                                // when set to read - then if gpio is output - it will sink all the output voltage. very bad.
 
   // hardware reset - review
   gpio_set(  LCD_PORT, LCD_RST);    // high
@@ -374,6 +387,7 @@ int main1(void)
     msleep(500);
 	}
 
+
   return 0;
 }
 
@@ -393,8 +407,11 @@ int main(void)
   gpio_mode_setup(LCD_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
 
 
-  gpio_clear(LCD_PORT, LCD_RD);   // doesn't like to be high. think that tranceivers block.
-                                   // lcd will not blink or do anything... when high.
+  gpio_set(LCD_PORT, LCD_RD);   // turn read off. operates both the transceiver and the lcd which reads on rising edge. 
+                                // this will end up sinking current. and gave illusion of stuff happening due to power supply issues. 
+                                // when set to read - then if gpio is output - it will sink all the output voltage. very bad.
+
+
 
 
   // hardware reset - review
