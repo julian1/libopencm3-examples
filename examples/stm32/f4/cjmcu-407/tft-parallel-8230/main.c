@@ -1,8 +1,20 @@
 /*
-  8-bit parallel. think its uc5408 which is very similar to ili9320
+  8-bit parallel. think code is uc5408 which is very similar to ili9320
 
-  in forum - gets it working with id = 5408. 
-    SPFD5408 
+item
+  jaycar doc/manual says UC8230
+    https://www.jaycar.com.au/medias/sys_master/images/images/9404693544990/XC4630-manualMain.pdf
+
+  https://forum.arduino.cc/index.php?topic=438292.0
+    looks exactly like this,
+      https://www.amazon.it/Arduino-Mega2560-320x240-pollici-lettore/dp/B01C3RDFN6/
+
+--------
+
+  many variants like 9320
+
+  in forum - gets it working with id = 5408.
+    SPFD5408
       case 0x5408:
         _lcd_capable = 0 | REV_SCREEN | READ_BGR; //Red 2.4" thanks jorgenv, Ardlab_Gent
 //        _lcd_capable = 0 | REV_SCREEN | READ_BGR | INVERT_GS; //Blue 2.8" might be different
@@ -28,9 +40,10 @@
   so register and data are both 16 bit.
   ---------------
 
-  some example code here, 
+  some example code here,
     https://github.com/grossws/stm32-lcd
-
+  -------------
+  ok everything powered at 3.3V which is good.
 
 
  */
@@ -55,7 +68,7 @@
 #define LCD_DATA_PORT  GPIOD
 
 
-#define LCD_WIDTH 30 
+#define LCD_WIDTH 30
 #define LCD_HEIGHT 30
 
 // LCD
@@ -186,14 +199,14 @@ static const uint16_t ILI9320_regValues[] = {
 static void init( void ) {
 
   for( unsigned i = 0; i < sizeof( ILI9320_regValues) / sizeof(uint16_t)  ; i += 2 )  {
-    
-    uint16_t cmd = ILI9320_regValues[ i ]; 
+
+    uint16_t cmd = ILI9320_regValues[ i ];
     uint16_t data = ILI9320_regValues[ i + 1];
 
     if(cmd == TFTLCD_DELAY) {
       // printf("delay %d\n", data );
       msleep(data);
-    } 
+    }
     else {
       // printf("cmd %x   data %x\n", cmd, data);
       sendCommand16(cmd, data);
@@ -233,8 +246,8 @@ static void lcd_set_window(uint16_t left, uint16_t top, uint16_t right, uint16_t
 
 static void lcd_fill(uint32_t color) {
     // uint16_t data = lcd_pixel_from_rgb32(color);
-    // uint16_t data = 0xf7f7; 
-    uint16_t data = 0x2200; 
+    // uint16_t data = 0xf7f7;
+    uint16_t data = 0x2200;
 
     lcd_set_window(0, 0, 320 , 200);
     lcd_set_cursor(0, 0);
@@ -243,7 +256,7 @@ static void lcd_fill(uint32_t color) {
     gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
     send16(0x22);
 
-    gpio_set(LCD_PORT, LCD_RS);   // high data 
+    gpio_set(LCD_PORT, LCD_RS);   // high data
 
     for(uint32_t i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
         // _lcd_tx_data(data);
@@ -268,7 +281,7 @@ int main(void)
   gpio_mode_setup(LCD_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
 
 
-  gpio_set(LCD_PORT, LCD_RD);   // turn read off. operates both the transceiver and the lcd which reads on rising edge. 
+  gpio_set(LCD_PORT, LCD_RD);   // turn read off. operates both the transceiver and the lcd which reads on rising edge.
                                 // when set to read - then if gpio is output - it will sink all the output voltage. very bad.
                                 // screen flashing resulted from drop in power supply
 
@@ -294,8 +307,8 @@ int main(void)
   // reverse - doesn't seem right
   // WriteCmdData(0x61, _lcd_rev);
   // sendCommand16 (0x61, 0x1 ); // leaves it flickerinig
-  // sendCommand16 (0x61, 0xff ); // freaking weird. 
-  // sendCommand16 (0x61, 0x0 ); // freaking weird. 
+  // sendCommand16 (0x61, 0xff ); // freaking weird.
+  // sendCommand16 (0x61, 0x0 ); // freaking weird.
 
   ///////////
 
@@ -359,77 +372,25 @@ int main(void)
 */
 
 
-#if 0
-static void sendCommand16(uint8_t command, uint16_t data)
-{
-  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  send8(command);
-  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
-/*
-      sendData0( color >> 8 );
-      sendData0( color & 0xFF );
-*/
-  send8(data >> 8);   // Check
-  send8(data & 0xFF);
-}
-#endif
-
-
-#if 0
-static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
-{
-
-  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  send8(command);
-
-  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
-  for(unsigned i = 0; i < numDataBytes; ++i) {
-    send8(dataBytes[ i ]);
-  }
-
-}
-
-
-static void sendCommand0(uint8_t command)
-{
-
-  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  send8(command);
-}
-
-static void sendData0(uint8_t data)
-{
-  // advantage is that it can be done in a loop. without allocating stack for buffer.
-  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
-  send8(data);
-}
-#endif
-
 
 /*
 
   fucking manual doesn't even say,
     https://www.jaycar.com.au/medias/sys_master/images/images/9404693577758/XC4630-dataSheetMain.pdf
-    
+
   but other doc says its UC8230
     https://www.jaycar.com.au/medias/sys_master/images/images/9404693544990/XC4630-manualMain.pdf
-
-  https://forum.arduino.cc/index.php?topic=438292.0
-    looks exactly like this, 
-      https://www.amazon.it/Arduino-Mega2560-320x240-pollici-lettore/dp/B01C3RDFN6/
-
   -----------------
-    
-    The UC8230S register set "looks" very similar to an ILI9320.
+
+  The UC8230S register set "looks" very similar to an ILI9320.
 
   very similar to ILI9320 supposedly...
-  
+
   Yes,  the UC8230 is in the same class as ILI9320.   i.e. no Band Scroll.
-  
+
   I have only managed to find a "Register list" for the UC8230.   Not a full datasheet.
   The Registers and bitfields seem to be in the same places as ILI9320 / SPFD5408.
 
-  
   code looks decent, - all reg values are 16 bit though?
   https://github.com/MichalKs/STM32F4_ILI9320/blob/master/STM32F4_ILI9320/app/src/ili9320.c
 
