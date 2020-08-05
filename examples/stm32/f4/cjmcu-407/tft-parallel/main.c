@@ -295,6 +295,84 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
 
 // or is there someting needed to refresh...
 
+/*
+// ok -very weird port is only showing 0.8V as high... why? arduino?
+// confirmed with multimeter.
+
+// other pins are OK...
+
+// Ahhhh. is this because 
+// also power consumption is weird. seems to high...
+
+// OK. unpower the lcd and - we have the 3.3V as expected.
+
+  // so when the board is powered. - it sucks all the power on the data lines. too weird.
+  // because of 5V supply... meaning it's trying to pull it up to that?
+
+
+  should check the WR RS etc... look fine - and they also go to tranceiver?????
+
+  the increase in the power - supply - when every the pins go to 1V is suspicious.
+    indicates shorted...
+
+  OK. and turn off - the power to the LCD - and the pins are nice and clean 
+  
+  maybe the tranceivers really require 5V inputs. 
+    must check.
+*/
+
+int main1(void)
+{
+  clock_setup();
+  led_setup();
+
+  rcc_periph_clock_enable( RCC_GPIOE );
+  rcc_periph_clock_enable( RCC_GPIOD );
+
+
+  gpio_mode_setup(LCD_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0 | GPIO1 | GPIO2 | GPIO3 | GPIO4 | GPIO5 | GPIO6 | GPIO7  ); // JA first 8 bits.
+  gpio_mode_setup(LCD_PORT,      GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
+
+
+  gpio_clear(LCD_PORT, LCD_RD);   // doesn't like to be high. think that tranceivers block.
+                                   // lcd will not blink or do anything... when high.
+
+  // hardware reset - review
+  gpio_set(  LCD_PORT, LCD_RST);    // high
+  msleep(150);
+  gpio_clear(LCD_PORT, LCD_RST);   // low
+  msleep(150);
+  gpio_set(  LCD_PORT, LCD_RST);   // high
+  msleep(150);
+
+
+  // assert chip select, check.
+  gpio_set(LCD_PORT, LCD_CS);
+  gpio_set(LCD_PORT, LCD_WR);
+
+
+  // gpio_port_write(LCD_DATA_PORT, 0b01010101);    // setup port
+  gpio_port_write(LCD_DATA_PORT, 0b10101010);    // setup port
+
+  bool on = 0;
+ 	while (1) {
+
+    if(on) {
+      gpio_set(GPIOE, GPIO0);
+    }
+    else {
+      gpio_clear(GPIOE, GPIO0);
+    }
+    on = ! on;
+    msleep(500);
+	}
+
+  return 0;
+}
+
+
+
+
 int main(void)
 {
   clock_setup();
@@ -338,7 +416,7 @@ int main(void)
 
 #endif
 
-#if 1
+#if 0
   // OK. this should have dimmed stuff...
   {
     uint8_t data[] = { 0x0/*VCOMH=4.250V*/, 0x0/*VCOML=-1.500V*/ };
@@ -392,13 +470,13 @@ int main(void)
     if(on) {
       // led on draws more power... how...
       gpio_set(GPIOE, GPIO0);
-      sendCommand0( ILI9341_SLPOUT);
-      // ILI9341_DrawPixel(50, 50, 0xf777 );
+      // sendCommand0( ILI9341_SLPOUT);
+      ILI9341_DrawPixel(50, 50, 0xf777 );
     }
     else {
       gpio_clear(GPIOE, GPIO0);
-      sendCommand0( ILI9341_SLPIN);
-      // ILI9341_DrawPixel(50, 50, 0x7700 );
+      // sendCommand0( ILI9341_SLPIN);
+      ILI9341_DrawPixel(50, 50, 0x7700 );
     }
     on = ! on;
 
