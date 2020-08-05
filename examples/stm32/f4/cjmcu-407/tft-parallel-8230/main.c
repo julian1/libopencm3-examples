@@ -9,6 +9,11 @@ item
     looks exactly like this,
       https://www.amazon.it/Arduino-Mega2560-320x240-pollici-lettore/dp/B01C3RDFN6/
 
+  VERY IMPORTANT
+
+  has specific 8230 init list. (distinct from 9320)
+    https://github.com/prenticedavid/MCUFRIEND_kbv/blob/master/MCUFRIEND_kbv.cpp
+
 --------
 
   many variants like 9320
@@ -283,7 +288,7 @@ int main(void)
 
   gpio_set(LCD_PORT, LCD_RD);   // turn read off. operates both the transceiver and the lcd which reads on rising edge.
                                 // when set to read - then if gpio is output - it will sink all the output voltage. very bad.
-                                // screen flashing resulted from drop in power supply
+                                // screen flashing resulted from drop in power supply, not initialisation.
 
 
   // assert chip select, with low
@@ -304,34 +309,8 @@ int main(void)
 
   lcd_fill(0xf7f7 );
 
-  // reverse - doesn't seem right
-  // WriteCmdData(0x61, _lcd_rev);
-  // sendCommand16 (0x61, 0x1 ); // leaves it flickerinig
-  // sendCommand16 (0x61, 0xff ); // freaking weird.
-  // sendCommand16 (0x61, 0x0 ); // freaking weird.
-
-  ///////////
-
-  bool on = 0;
  	while (1) {
-
-    // gpio_toggle(GPIOD, 1 << 5 );  // blink
-
-    // freaking weird - on
-
-    if(on) {
-      // led on draws more power... how...
-      gpio_set(GPIOE, GPIO0);
-      // sendCommand0(ILI9341_INVOFF );
-      // ILI9341_DrawPixel(50, 50, 0xf777 );
-    }
-    else {
-      gpio_clear(GPIOE, GPIO0);
-      // sendCommand0(ILI9341_INVON);
-      // ILI9341_DrawPixel(50, 50, 0x7700 );
-    }
-    on = ! on;
-
+    gpio_toggle(GPIOE, GPIO0);
     msleep(500);
 	}
 
@@ -339,10 +318,6 @@ int main(void)
 }
 
 
-// OK. screen does same thing - whether we asset chip select or not.
-// So, think we want to check...
-
-// is the screen flickering a power supply issue?
 /*
   p11.
 
