@@ -124,7 +124,6 @@ static void send8( uint8_t x )
 
 static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
-  gpio_clear(LCD_PORT, LCD_CS);   // assert chip select, check.
   
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send8(command);
@@ -139,11 +138,19 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
 
 static void sendCommand0(uint8_t command)
 {
-  gpio_clear(LCD_PORT, LCD_CS);   // assert chip select, check.
   
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send8(command);
 }
+
+static void sendData0(uint8_t data)
+{
+  // advantage is that it can be done in a loop. without allocating stack for buffer.
+  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
+  send8(data);
+}
+
+
 
 
 
@@ -232,24 +239,20 @@ static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint
 static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
     // if((x >= ILI9341_WIDTH) || (y >= ILI9341_HEIGHT))
     //  return;
-/*
-
-    ILI9341_Select();
-
-    ILI9341_SetAddressWindow(x, y, x+1, y+1);
-    uint8_t data[] = { color >> 8, color & 0xFF };
-    ILI9341_WriteData(data, sizeof(data));
-
-    ILI9341_Unselect();
-*/
-
-    ILI9341_SetAddressWindow(x, y, x+50, y+50);
-    uint8_t data[] = { color >> 8, color & 0xFF };
-
-    // ILI9341_WriteData(data, sizeof(data));
 
 
-    sendCommand(ILI9341_RAMWR, data , sizeof(data)  ); // 2C
+    ILI9341_SetAddressWindow(x, y, x+20, y+20);
+    // uint8_t data[] = { color >> 8, color & 0xFF };
+
+
+    // send command
+    sendCommand0(ILI9341_RAMWR ); // 2C
+
+    int i;
+    for( i = 0; i < 20 * 20; ++i) {
+      sendData0( color >> 8 );
+      sendData0( color & 0xFF );
+    }
 }
 
 
@@ -269,6 +272,10 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
 
 /*
   - try 5V instead with 3.3 signals
+    - actually just bridge - so all connections get 3.3V.
+    - analog high-power needs 2.8-3.3V. p10.. so it could only get that after the ref.
+    - but what about the tranceivers and 5V. need to check.
+
   - OKK. try to read some data out of the thing. check registers. to know that comms are working.
       - would confirm that can write registers and data correctly. 
   - need uart serial.
@@ -304,6 +311,7 @@ int main(void)
   gpio_clear(LCD_PORT, LCD_RD);   // doesn't like to be high. think that tranceivers block.
                                    // lcd will not blink or do anything... when high. 
 
+
   // hardware reset - review
   gpio_set(  LCD_PORT, LCD_RST);    // high
   msleep(150);
@@ -311,6 +319,10 @@ int main(void)
   msleep(150);
   gpio_set(  LCD_PORT, LCD_RST);   // high
   msleep(150);
+
+
+  // assert chip select, check.
+  gpio_clear(LCD_PORT, LCD_CS);   
 
   // not sure that the correct commands and data are being sent...
   // display off, or changing the brightness should have done something.
@@ -370,18 +382,22 @@ int main(void)
   sendCommand(ILI9341_MADCTL, &m, 1);
 
 
-  ILI9341_DrawPixel(50, 50, 0xf777 ); 
+  // OK. its very slow... running... because there are a lot of pixels to send
 
-
-  // bool invert = 0;
+  bool invert = 0;
  	while (1) {
 
     // gpio_toggle(GPIOD, 1 << 5 );  // blink
 
     // sendCommand(invert ? ILI9341_INVON : ILI9341_INVOFF, 0 , 0 );
     // sendCommand(invert ? ILI9341_DISPON : ILI9341_DISPOFF , 0 , 0 );
-    // invert = ! invert;
-
+    if(invert) {
+      ILI9341_DrawPixel(50, 50, 0xf777 ); 
+    }
+    else {
+      ILI9341_DrawPixel(50, 50, 0x7700 ); 
+    }
+    invert = ! invert;
 
 
     gpio_toggle(GPIOE, GPIO0);  // toggle led
