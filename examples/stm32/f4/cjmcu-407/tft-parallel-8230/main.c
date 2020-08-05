@@ -220,48 +220,48 @@ static void init( void ) {
 
 
 static uint16_t min(uint16_t a, uint16_t b) {
-    return (a > b) ? b : a;
+  return (a > b) ? b : a;
 }
 
 static uint16_t max(uint16_t a, uint16_t b) {
-    return (a > b) ? a : b;
+  return (a > b) ? a : b;
 }
 
 static uint16_t sat(uint16_t val, uint16_t vmin, uint16_t vmax) {
-    return min(vmax, max(vmin, val));
+  return min(vmax, max(vmin, val));
 }
 
 static void lcd_set_cursor(uint16_t x, uint16_t y) {
-    sendCommand16(0x20, x);
-    sendCommand16(0x21, y);
+  sendCommand16(0x20, x);
+  sendCommand16(0x21, y);
 }
 
 
 static void lcd_set_window(uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
-    sendCommand16(0x50, sat(left, 0, LCD_WIDTH-1));
-    sendCommand16(0x51, sat(right-1, 0, LCD_WIDTH-1));
-    sendCommand16(0x52, sat(top, 0, LCD_HEIGHT-1));
-    sendCommand16(0x53, sat(bottom-1, 0, LCD_HEIGHT-1));
+  sendCommand16(0x50, sat(left, 0, LCD_WIDTH-1));
+  sendCommand16(0x51, sat(right-1, 0, LCD_WIDTH-1));
+  sendCommand16(0x52, sat(top, 0, LCD_HEIGHT-1));
+  sendCommand16(0x53, sat(bottom-1, 0, LCD_HEIGHT-1));
 }
 
 static void lcd_fill(uint32_t color) {
-    // uint16_t data = lcd_pixel_from_rgb32(color);
-    // uint16_t data = 0xf7f7;
-    uint16_t data = 0x2200;
+  // uint16_t data = lcd_pixel_from_rgb32(color);
+  // uint16_t data = 0xf7f7;
+  uint16_t data = 0x2200;
 
-    lcd_set_window(0, 0, 320 , 200);
-    lcd_set_cursor(0, 0);
+  lcd_set_window(0, 0, 320 , 200);
+  lcd_set_cursor(0, 0);
 
 
-    gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-    send16(0x22);
+  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  send16(0x22);
 
-    gpio_set(LCD_PORT, LCD_RS);   // high data
+  gpio_set(LCD_PORT, LCD_RS);   // high data
 
-    for(uint32_t i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
-        // _lcd_tx_data(data);
-        send16(i + 999 );
-    }
+  for(uint32_t i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
+      // _lcd_tx_data(data);
+      send16(i + 999 );
+  }
 }
 
 
