@@ -84,17 +84,8 @@ static void sendCommand16(uint16_t cmd, uint16_t data)
 {
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
   send16(cmd);
-  // send8(cmd >> 8);   // Check
-  // send8(cmd & 0xFF);
-
-/*
-      sendData0( color >> 8 );
-      sendData0( color & 0xFF );
-*/
   gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
   send16(data);
-  // send8(data >> 8);   // Check
-  // send8(data & 0xFF);
 }
 
 
@@ -220,7 +211,8 @@ static void lcd_set_window(uint16_t left, uint16_t top, uint16_t right, uint16_t
 
 static void lcd_fill(uint32_t color) {
     // uint16_t data = lcd_pixel_from_rgb32(color);
-    uint16_t data = 0xf7f7; 
+    // uint16_t data = 0xf7f7; 
+    uint16_t data = 0x2200; 
 
     lcd_set_window(0, 0, 320 , 200);
     lcd_set_cursor(0, 0);
