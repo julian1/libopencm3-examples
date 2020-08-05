@@ -33,7 +33,8 @@
 #define LCD_DATA_PORT  GPIOD
 
 
-
+#define LCD_WIDTH 10 
+#define LCD_HEIGHT 10
 
 // LCD
 
@@ -71,19 +72,29 @@ static void send8( uint8_t x )
 }
 
 
+static void send16( uint16_t x )
+{
+  send8(x >> 8);   // Check
+  send8(x & 0xFF);
+
+}
+
+
 static void sendCommand16(uint16_t cmd, uint16_t data)
 {
   gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  send8(cmd >> 8);   // Check
-  send8(cmd & 0xFF);
+  send16(cmd);
+  // send8(cmd >> 8);   // Check
+  // send8(cmd & 0xFF);
 
 /*
       sendData0( color >> 8 );
       sendData0( color & 0xFF );
 */
   gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
-  send8(data >> 8);   // Check
-  send8(data & 0xFF);
+  send16(data);
+  // send8(data >> 8);   // Check
+  // send8(data & 0xFF);
 }
 
 
@@ -182,6 +193,64 @@ static void init( void ) {
 
 
 
+static uint16_t min(uint16_t a, uint16_t b) {
+    return (a > b) ? b : a;
+}
+
+static uint16_t max(uint16_t a, uint16_t b) {
+    return (a > b) ? a : b;
+}
+
+static uint16_t sat(uint16_t val, uint16_t vmin, uint16_t vmax) {
+    return min(vmax, max(vmin, val));
+}
+
+static void lcd_set_cursor(uint16_t x, uint16_t y) {
+    sendCommand16(0x20, x);
+    sendCommand16(0x21, y);
+}
+
+
+static void lcd_set_window(uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
+    sendCommand16(0x50, sat(left, 0, LCD_WIDTH-1));
+    sendCommand16(0x51, sat(right-1, 0, LCD_WIDTH-1));
+    sendCommand16(0x52, sat(top, 0, LCD_HEIGHT-1));
+    sendCommand16(0x53, sat(bottom-1, 0, LCD_HEIGHT-1));
+}
+
+static void lcd_fill(uint32_t color) {
+    // uint16_t data = lcd_pixel_from_rgb32(color);
+    uint16_t data = 0xf7f7; 
+
+    lcd_set_window(0, 0, 320 , 200);
+    lcd_set_cursor(0, 0);
+
+    // _lcd_select(); // what does this do? sets the register... just cs.
+                  // 
+/*
+    _lcd_tx_reg(0x22);
+    for(u32 i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
+        _lcd_tx_data(data);
+    }
+*/
+
+    gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+    send16(0x22);
+
+    gpio_set(LCD_PORT, LCD_RS);   // high data 
+
+    for(uint32_t i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
+        // _lcd_tx_data(data);
+        send16(data );
+    }
+
+    // _lcd_deselect();
+}
+
+
+
+
+
 int main(void)
 {
   clock_setup();
@@ -215,6 +284,9 @@ int main(void)
 
 
   init();
+
+
+  lcd_fill(0xf7f7 );
 
   // reverse - doesn't seem right
   // WriteCmdData(0x61, _lcd_rev);
@@ -380,7 +452,10 @@ static void sendData0(uint8_t data)
   divided in upper byte (8 bits) and lower byte, and the upper byte is
   transferred first. T
 
+    https://cdn-shop.adafruit.com/datasheets/ILI9325.pdf
+
   register meaning command? it has to be 16 bit.
+  so register and data are both 16 bit.
 
 */
 
