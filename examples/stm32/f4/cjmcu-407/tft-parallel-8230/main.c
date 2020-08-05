@@ -6,6 +6,10 @@
   trying to work it out,
   https://forum.arduino.cc/index.php?topic=438292.0
 
+  https://github.com/prenticedavid/MCUFRIEND_kbv/blob/master/MCUFRIEND_kbv.cpp
+    
+    if (_lcd_ID == 0x8230) {    // UC8230 has strange BGR and READ_BGR behaviour
+
 
  */
 
@@ -27,6 +31,68 @@
 
 
 #define LCD_DATA_PORT  GPIOD
+
+
+
+
+
+// https://github.com/MichalKs/STM32F4_ILI9320/blob/master/STM32F4_ILI9320/app/src/ili9320.c
+
+/*
+ * ILI9320 driver commands/registers
+ */
+#define ILI9320_START_OSCILLATION 0x00
+#define ILI9320_READ_ID           0x00
+#define ILI9320_DRIVER_OUTPUT     0x01
+#define ILI9320_DRIVING_WAVE      0x02
+#define ILI9320_ENTRY_MODE        0x03
+#define ILI9320_RESIZE            0x04
+#define ILI9320_DISP1             0x07
+#define ILI9320_DISP2             0x08
+#define ILI9320_DISP3             0x09
+#define ILI9320_DISP4             0x0a
+#define ILI9320_RGB_DISP1         0x0c
+#define ILI9320_FRAME_MARKER      0x0d
+#define ILI9320_RGB_DISP2         0x0f
+#define ILI9320_POWER1            0x10
+#define ILI9320_POWER2            0x11
+#define ILI9320_POWER3            0x12
+#define ILI9320_POWER4            0x13
+#define ILI9320_HOR_GRAM_ADDR     0x20
+#define ILI9320_VER_GRAM_ADDR     0x21
+#define ILI9320_WRITE_TO_GRAM     0x22
+#define ILI9320_POWER7            0x29
+#define ILI9320_FRAME_RATE        0x2b
+#define ILI9320_GAMMA1            0x30
+#define ILI9320_GAMMA2            0x31
+#define ILI9320_GAMMA3            0x32
+#define ILI9320_GAMMA4            0x35
+#define ILI9320_GAMMA5            0x36
+#define ILI9320_GAMMA6            0x37
+#define ILI9320_GAMMA7            0x38
+#define ILI9320_GAMMA8            0x39
+#define ILI9320_GAMMA9            0x3c
+#define ILI9320_GAMMA10           0x3d
+#define ILI9320_HOR_ADDR_START    0x50
+#define ILI9320_HOR_ADDR_END      0x51
+#define ILI9320_VER_ADDR_START    0x52
+#define ILI9320_VER_ADDR_END      0x53
+#define ILI9320_DRIVER_OUTPUT2    0x60
+#define ILI9320_BASE_IMAGE        0x61
+#define ILI9320_VERTICAL_SCROLL   0x6a
+#define ILI9320_PARTIAL1_POS      0x80
+#define ILI9320_PARTIAL1_START    0x81
+#define ILI9320_PARTIAL1_END      0x82
+#define ILI9320_PARTIAL2_POS      0x83
+#define ILI9320_PARTIAL2_START    0x84
+#define ILI9320_PARTIAL2_END      0x85
+#define ILI9320_PANEL_INTERFACE1  0x90
+#define ILI9320_PANEL_INTERFACE2  0x92
+#define ILI9320_PANEL_INTERFACE3  0x93
+#define ILI9320_PANEL_INTERFACE4  0x95
+#define ILI9320_PANEL_INTERFACE5  0x97
+#define ILI9320_PANEL_INTERFACE6  0x98
+
 
 // LCD
 
@@ -109,6 +175,21 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
 }
 
 
+static void sendCommand16(uint8_t command, uint16_t data)
+{
+  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  send8(command);
+  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
+/*
+      sendData0( color >> 8 );
+      sendData0( color & 0xFF );
+*/
+  send8(data >> 8);   // Check
+  send8(data & 0xFF);
+}
+
+
+
 static void sendCommand0(uint8_t command)
 {
 
@@ -140,6 +221,7 @@ static void sendData0(uint8_t data)
     looks exactly like this, 
       https://www.amazon.it/Arduino-Mega2560-320x240-pollici-lettore/dp/B01C3RDFN6/
 
+  -----------------
     
     The UC8230S register set "looks" very similar to an ILI9320.
 
@@ -150,11 +232,133 @@ static void sendData0(uint8_t data)
   I have only managed to find a "Register list" for the UC8230.   Not a full datasheet.
   The Registers and bitfields seem to be in the same places as ILI9320 / SPFD5408.
 
+  
+  code looks decent, - all reg values are 16 bit though?
+  https://github.com/MichalKs/STM32F4_ILI9320/blob/master/STM32F4_ILI9320/app/src/ili9320.c
+
+
+
 */
 
 
 
 // 
+
+
+static void ILI9320_Initializtion(void) {
+
+/*
+  ILI9320_HAL_HardInit(); // GPIO and FSMC init
+
+  // Reset the LCD
+  ILI9320_HAL_ResetOff();
+  TIMER_Delay(50);
+  ILI9320_HAL_ResetOn();
+  TIMER_Delay(50);
+  ILI9320_HAL_ResetOff();
+  TIMER_Delay(50);
+
+  SendCommand16(ILI9320_START_OSCILLATION, 0x0001);
+  TIMER_Delay(20);
+
+  // Read LCD ID
+  unsigned int id;
+  id = ILI9320_HAL_ReadReg(ILI9320_READ_ID);
+
+  printf("ID TFT LCD = %x\r\n", id);
+
+
+  // Add more LCD init codes here
+  if (id == 0x9320) {
+*/
+
+    sendCommand16(ILI9320_DRIVER_OUTPUT, 0x0100); // SS = 1 - coordinates from left to right
+    sendCommand16(ILI9320_DRIVING_WAVE, 0x0700);  // Line inversion
+    sendCommand16(ILI9320_ENTRY_MODE, 0x1018);    //
+    sendCommand16(ILI9320_RESIZE, 0x0000);
+    sendCommand16(ILI9320_DISP1, 0x0000);
+    sendCommand16(ILI9320_DISP2, 0x0202); // two lines back porch, two line front porch
+    sendCommand16(ILI9320_DISP3, 0x0000);
+    sendCommand16(ILI9320_DISP4, 0x0000);
+    sendCommand16(ILI9320_RGB_DISP1, 0x0001);
+    sendCommand16(ILI9320_FRAME_MARKER, 0x0000); // 0th line for frame marker
+    sendCommand16(ILI9320_RGB_DISP2, 0x0000);
+    sendCommand16(ILI9320_DISP1, 0x0101);
+    sendCommand16(ILI9320_POWER1, 0x10c0);
+    sendCommand16(ILI9320_POWER2, 0x0007);
+    sendCommand16(ILI9320_POWER3, 0x0110);
+    sendCommand16(ILI9320_POWER4, 0x0b00);
+    sendCommand16(ILI9320_POWER7, 0x0000);
+    sendCommand16(ILI9320_FRAME_RATE, 0x4010);
+
+    // Set window
+    sendCommand16(ILI9320_HOR_ADDR_START, 0);
+    sendCommand16(ILI9320_HOR_ADDR_END, 239);
+    sendCommand16(ILI9320_VER_ADDR_START, 0);
+    sendCommand16(ILI9320_VER_ADDR_END, 319);
+
+    sendCommand16(ILI9320_DRIVER_OUTPUT2, 0x2700);
+    sendCommand16(ILI9320_BASE_IMAGE, 0x0001);
+    sendCommand16(ILI9320_VERTICAL_SCROLL, 0x0000);
+    sendCommand16(ILI9320_PARTIAL1_POS, 0x0000);
+    sendCommand16(ILI9320_PARTIAL1_START, 0x0000);
+    sendCommand16(ILI9320_PARTIAL1_END, 0x0000);
+    sendCommand16(ILI9320_PARTIAL2_POS, 0x0000);
+    sendCommand16(ILI9320_PARTIAL2_START, 0x0000);
+    sendCommand16(ILI9320_PARTIAL2_END, 0x0000);
+    sendCommand16(ILI9320_PANEL_INTERFACE1, 0x0010);
+    sendCommand16(ILI9320_PANEL_INTERFACE2, 0x0000);
+    sendCommand16(ILI9320_PANEL_INTERFACE3, 0x0001);
+    sendCommand16(ILI9320_PANEL_INTERFACE4, 0x0110);
+    sendCommand16(ILI9320_PANEL_INTERFACE5, 0x0000);
+    sendCommand16(ILI9320_PANEL_INTERFACE6, 0x0000);
+    sendCommand16(ILI9320_DISP1, 0x0173);
+
+  // }
+
+  // TIMER_Delay(100);
+
+  msleep(100);
+}
+
+
+static void ILI9320_SetCursor(uint16_t x, uint16_t y) {
+
+ sendCommand16(ILI9320_HOR_GRAM_ADDR, y);
+ sendCommand16(ILI9320_VER_GRAM_ADDR, x);
+
+}
+/**
+ * @brief Draws a pixel on the LCD.
+ * @param x X coordinate of pixel.
+ * @param y Y coordinate of pixel.
+ * @param r Red color value.
+ * @param g Green color value.
+ * @param b Blue color value.
+ */
+// static void ILI9320_DrawPixel(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b) {
+static void ILI9320_DrawPixel(uint16_t x, uint16_t y) {
+
+  // calling this makes it flicker terribly - so there's someting not right.
+
+  ILI9320_SetCursor(x, y);
+  // sendCommand16(ILI9320_WRITE_TO_GRAM, ILI9320_RGBDecode(r, g, b));
+  // sendCommand16(ILI9320_WRITE_TO_GRAM, 0xf0f0 );
+  sendCommand16(ILI9320_WRITE_TO_GRAM, 0x3333 );
+}
+
+static void GRAPH_DrawRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
+
+  int i, j;
+  // Fill rectangle with color
+  for (i = x; i < x + w; i++) {
+    for (j = y; j < y + h; j++) {
+      ILI9320_DrawPixel(i, j );//, currentColor.r, currentColor.g, currentColor.b);
+    }
+  }
+}
+
+
 
 int main(void)
 {
@@ -187,6 +391,11 @@ int main(void)
   gpio_set(  LCD_PORT, LCD_RST);   // high
   msleep(150);
 
+  ILI9320_Initializtion();
+
+
+  ILI9320_DrawPixel(50, 50); 
+  GRAPH_DrawRectangle(50, 50, 200, 200); 
 
 
   // not sure that the correct commands and data are being sent...
@@ -195,12 +404,16 @@ int main(void)
   // OK. nothing looks like its working...
 
 
-   // 0x6809:
-
+/*
     // OK this actually does something.
     sendCommand0(0x68  );
     sendData0(0x9 );
+*/
 
+
+
+
+  ///////////
 
   bool on = 0;
  	while (1) {
