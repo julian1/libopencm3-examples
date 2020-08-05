@@ -338,6 +338,12 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
   ------------------------
 
   OK - it's thinking it should be reading the pins.  OK extreme. set RS to high. as instructed
+  ----------------
+  didn't affect WR register. because that is not a data register that can be read.
+  -------------------------
+  current is now respectable 150mA. and doesn't flutter.
+  
+  OK. need to see if perhaps transceivers are broken.
 
 */
 
@@ -392,7 +398,7 @@ int main1(void)
 }
 
 
-
+// 
 
 int main(void)
 {
@@ -408,8 +414,8 @@ int main(void)
 
 
   gpio_set(LCD_PORT, LCD_RD);   // turn read off. operates both the transceiver and the lcd which reads on rising edge. 
-                                // this will end up sinking current. and gave illusion of stuff happening due to power supply issues. 
                                 // when set to read - then if gpio is output - it will sink all the output voltage. very bad.
+                                // screen flashing resulted from drop in power supply
 
 
 
