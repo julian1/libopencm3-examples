@@ -33,8 +33,8 @@
 #define LCD_DATA_PORT  GPIOD
 
 
-#define LCD_WIDTH 10 
-#define LCD_HEIGHT 10
+#define LCD_WIDTH 30 
+#define LCD_HEIGHT 30
 
 // LCD
 
