@@ -347,6 +347,38 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
   -------------
 
   sending command to sleep doesn't change power
+  no command seems to ever do anything.
+  perhaps we wrecked it - providing the current sinking current.
+    eg. current went through tranceivers into the bloody thing. 
+
+  bit order?
+  ---------------
+
+  maybe its not 9341 ?????
+  tranceiver behavior is correct - in terms of rd / write?
+
+  fucking manual doesn't even say,
+    https://www.jaycar.com.au/medias/sys_master/images/images/9404693577758/XC4630-dataSheetMain.pdf
+    
+    actually manual says its UC8230
+    https://www.jaycar.com.au/medias/sys_master/images/images/9404693544990/XC4630-manualMain.pdf
+
+  https://forum.arduino.cc/index.php?topic=438292.0
+
+    looks exactly like this, 
+      https://www.amazon.it/Arduino-Mega2560-320x240-pollici-lettore/dp/B01C3RDFN6/
+
+    
+    The UC8230S register set "looks" very similar to an ILI9320.
+
+  very similar to ILI9320 supposedly...
+
+  
+  Yes,  the UC8230 is in the same class as ILI9320.   i.e. no Band Scroll.
+
+  
+  I have only managed to find a "Register list" for the UC8230.   Not a full datasheet.
+  The Registers and bitfields seem to be in the same places as ILI9320 / SPFD5408.
 
 */
 
@@ -363,7 +395,8 @@ int main(void)
   rcc_periph_clock_enable( RCC_GPIOD );
 
 
-  gpio_mode_setup(LCD_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, 0xff ); // JA first 8 bits.
+  // gpio_mode_setup(LCD_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, 0xff ); // JA first 8 bits.
+  gpio_mode_setup(LCD_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0 | GPIO1 | GPIO2 | GPIO3 | GPIO4 | GPIO5 | GPIO6 | GPIO7  ); // JA first 8 bits.
   gpio_mode_setup(LCD_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_RST | LCD_CS | LCD_RS | LCD_WR | LCD_RD);
 
 
@@ -372,6 +405,8 @@ int main(void)
                                 // screen flashing resulted from drop in power supply
 
 
+  // assert chip select, with low
+  gpio_clear(LCD_PORT, LCD_CS);
 
 
   // hardware reset - review
@@ -383,24 +418,35 @@ int main(void)
   msleep(150);
 
 
-  // assert chip select, check.
-  gpio_clear(LCD_PORT, LCD_CS);
 
   // not sure that the correct commands and data are being sent...
   // display off, or changing the brightness should have done something.
 
   // OK. nothing looks like its working...
 
-#if 0
 
+   // 0x6809:
+
+    // OK this actually does something.
+    sendCommand0(0x68  );
+    sendData0(0x9 );
+
+#if 0
+#if 0
   sendCommand0(0x01 ); // software reset
   msleep(5);
-  sendCommand0(0x28 ); // display off. doesn't
-  msleep(500);
+  sendCommand0(0x28 ); // display off. would think would do something ....'t work
 
+ 
+  { 
+  // sendCommand0(0x28 ); // display off. would think would do something ....'t work
+  uint8_t data[] = { 0x0 };
+  sendCommand(0x28, data, sizeof(data) ); // display off. would think would do something ....'t work
+  msleep(500);
+  }
 #endif
 
-#if 0
+#if 1
   // OK. this should have dimmed stuff...
   {
     uint8_t data[] = { 0x0/*VCOMH=4.250V*/, 0x0/*VCOML=-1.500V*/ };
@@ -408,7 +454,7 @@ int main(void)
   }
   {
     uint8_t data[] = { 0x0 /*VCOMH=VMH-58,VCOML=VML-58*/ };
-     sendCommand(0xC7/*VCOM Control 2*/, data, sizeof(data) );
+    sendCommand(0xC7/*VCOM Control 2*/, data, sizeof(data) );
     msleep(1000);
   }
 #endif
@@ -438,6 +484,8 @@ int main(void)
   // OK. its very slow... running... because there are a lot of pixel data to send
 
   // screen is blinking off and on??? why???? power supply issue?
+
+#endif
 
   bool on = 0;
  	while (1) {
