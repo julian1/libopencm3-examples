@@ -87,139 +87,6 @@ static void sendCommand16(uint16_t cmd, uint16_t data)
 }
 
 
-// OK. screen does same thing - whether we asset chip select or not.
-// So, think we want to check...
-
-// is the screen flickering a power supply issue?
-/*
-  p11.
-
-  DCX
-  This pin is used to select “Data or Command” in the parallel interface or
-  4-wire 8-bit serial data interface. When DCX = ’1’, data is selected. When DCX
-  = ’0’, command is selected. This pin is used serial interface clock in 3-wire
-  9-bit / 4-wire 8-bit serial data interface
-
-  RDX I MCU (VDDI/VSS)   8080-    /8080I-II system (RDX): Serves as a read
-    signal and MCU read data at the rising edge. Fix to VDDI level when not in use.
-
-  WRX (D/CX) I MCU (VDDI/VSS) - 8080-    /8080I-II system (WRX): Serves as a
-  write signal and writes data at the rising edge. - 4-line system (D/CX): Serves
-  as command or parameter selec
-
-  RESX I MCU (VDDI/VSS) This signal will reset the device and must be applied
-  to properly initialize the chip. Signal is active low.
-
-  CSX I MCU (VDDI/VSS) Chip select input pin (“Low” enable). This pin can be
-  permanently fixed “Low” in MPU interface mode only.* note1,2
-  -------
-
-
-  // p28 is the best. at showing the levels of everything
-  // note also that reading, involves a write from host first to select what to read.
-*/
-
-
-#if 0
-static void sendCommand16(uint8_t command, uint16_t data)
-{
-  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  send8(command);
-  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
-/*
-      sendData0( color >> 8 );
-      sendData0( color & 0xFF );
-*/
-  send8(data >> 8);   // Check
-  send8(data & 0xFF);
-}
-#endif
-
-
-#if 0
-static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
-{
-
-  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  send8(command);
-
-  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
-  for(unsigned i = 0; i < numDataBytes; ++i) {
-    send8(dataBytes[ i ]);
-  }
-
-}
-
-
-static void sendCommand0(uint8_t command)
-{
-
-  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  send8(command);
-}
-
-static void sendData0(uint8_t data)
-{
-  // advantage is that it can be done in a loop. without allocating stack for buffer.
-  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
-  send8(data);
-}
-#endif
-
-
-/*
-
-  fucking manual doesn't even say,
-    https://www.jaycar.com.au/medias/sys_master/images/images/9404693577758/XC4630-dataSheetMain.pdf
-    
-  but other doc says its UC8230
-    https://www.jaycar.com.au/medias/sys_master/images/images/9404693544990/XC4630-manualMain.pdf
-
-  https://forum.arduino.cc/index.php?topic=438292.0
-    looks exactly like this, 
-      https://www.amazon.it/Arduino-Mega2560-320x240-pollici-lettore/dp/B01C3RDFN6/
-
-  -----------------
-    
-    The UC8230S register set "looks" very similar to an ILI9320.
-
-  very similar to ILI9320 supposedly...
-  
-  Yes,  the UC8230 is in the same class as ILI9320.   i.e. no Band Scroll.
-  
-  I have only managed to find a "Register list" for the UC8230.   Not a full datasheet.
-  The Registers and bitfields seem to be in the same places as ILI9320 / SPFD5408.
-
-  
-  code looks decent, - all reg values are 16 bit though?
-  https://github.com/MichalKs/STM32F4_ILI9320/blob/master/STM32F4_ILI9320/app/src/ili9320.c
-
-  in forum - gets it working with id = 5408. 
-    SPFD5408 
-
-      case 0x5408:
-        _lcd_capable = 0 | REV_SCREEN | READ_BGR; //Red 2.4" thanks jorgenv, Ardlab_Gent
-//        _lcd_capable = 0 | REV_SCREEN | READ_BGR | INVERT_GS; //Blue 2.8" might be different
-        goto common_9320;
-
-  So just treats it as 9320...
-
-
-  OK. think we really need to read the registers... that will
-  tell us if our commands are working, and provide some info.
-  ---------
-
-  8 bit mode,
-  The i80/8-bit system interface is selected [...] When writing the 16-bit
-  register, the data is divided into upper byte (8 bits and LSB is not used)
-  lower byte and the upper byte is transferred first. The display data is also
-  divided in upper byte (8 bits) and lower byte, and the upper byte is
-  transferred first. T
-
-  register meaning command? it has to be 16 bit.
-
-*/
-
 
 
 // https://github.com/prenticedavid/MCUFRIEND_kbv/blob/master/MCUFRIEND_kbv.cpp
@@ -383,4 +250,137 @@ int main(void)
   return 0;
 }
 
+
+// OK. screen does same thing - whether we asset chip select or not.
+// So, think we want to check...
+
+// is the screen flickering a power supply issue?
+/*
+  p11.
+
+  DCX
+  This pin is used to select “Data or Command” in the parallel interface or
+  4-wire 8-bit serial data interface. When DCX = ’1’, data is selected. When DCX
+  = ’0’, command is selected. This pin is used serial interface clock in 3-wire
+  9-bit / 4-wire 8-bit serial data interface
+
+  RDX I MCU (VDDI/VSS)   8080-    /8080I-II system (RDX): Serves as a read
+    signal and MCU read data at the rising edge. Fix to VDDI level when not in use.
+
+  WRX (D/CX) I MCU (VDDI/VSS) - 8080-    /8080I-II system (WRX): Serves as a
+  write signal and writes data at the rising edge. - 4-line system (D/CX): Serves
+  as command or parameter selec
+
+  RESX I MCU (VDDI/VSS) This signal will reset the device and must be applied
+  to properly initialize the chip. Signal is active low.
+
+  CSX I MCU (VDDI/VSS) Chip select input pin (“Low” enable). This pin can be
+  permanently fixed “Low” in MPU interface mode only.* note1,2
+  -------
+
+
+  // p28 is the best. at showing the levels of everything
+  // note also that reading, involves a write from host first to select what to read.
+*/
+
+
+#if 0
+static void sendCommand16(uint8_t command, uint16_t data)
+{
+  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  send8(command);
+  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
+/*
+      sendData0( color >> 8 );
+      sendData0( color & 0xFF );
+*/
+  send8(data >> 8);   // Check
+  send8(data & 0xFF);
+}
+#endif
+
+
+#if 0
+static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
+{
+
+  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  send8(command);
+
+  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
+  for(unsigned i = 0; i < numDataBytes; ++i) {
+    send8(dataBytes[ i ]);
+  }
+
+}
+
+
+static void sendCommand0(uint8_t command)
+{
+
+  gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  send8(command);
+}
+
+static void sendData0(uint8_t data)
+{
+  // advantage is that it can be done in a loop. without allocating stack for buffer.
+  gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
+  send8(data);
+}
+#endif
+
+
+/*
+
+  fucking manual doesn't even say,
+    https://www.jaycar.com.au/medias/sys_master/images/images/9404693577758/XC4630-dataSheetMain.pdf
+    
+  but other doc says its UC8230
+    https://www.jaycar.com.au/medias/sys_master/images/images/9404693544990/XC4630-manualMain.pdf
+
+  https://forum.arduino.cc/index.php?topic=438292.0
+    looks exactly like this, 
+      https://www.amazon.it/Arduino-Mega2560-320x240-pollici-lettore/dp/B01C3RDFN6/
+
+  -----------------
+    
+    The UC8230S register set "looks" very similar to an ILI9320.
+
+  very similar to ILI9320 supposedly...
+  
+  Yes,  the UC8230 is in the same class as ILI9320.   i.e. no Band Scroll.
+  
+  I have only managed to find a "Register list" for the UC8230.   Not a full datasheet.
+  The Registers and bitfields seem to be in the same places as ILI9320 / SPFD5408.
+
+  
+  code looks decent, - all reg values are 16 bit though?
+  https://github.com/MichalKs/STM32F4_ILI9320/blob/master/STM32F4_ILI9320/app/src/ili9320.c
+
+  in forum - gets it working with id = 5408. 
+    SPFD5408 
+
+      case 0x5408:
+        _lcd_capable = 0 | REV_SCREEN | READ_BGR; //Red 2.4" thanks jorgenv, Ardlab_Gent
+//        _lcd_capable = 0 | REV_SCREEN | READ_BGR | INVERT_GS; //Blue 2.8" might be different
+        goto common_9320;
+
+  So just treats it as 9320...
+
+
+  OK. think we really need to read the registers... that will
+  tell us if our commands are working, and provide some info.
+  ---------
+
+  8 bit mode,
+  The i80/8-bit system interface is selected [...] When writing the 16-bit
+  register, the data is divided into upper byte (8 bits and LSB is not used)
+  lower byte and the upper byte is transferred first. The display data is also
+  divided in upper byte (8 bits) and lower byte, and the upper byte is
+  transferred first. T
+
+  register meaning command? it has to be 16 bit.
+
+*/
 
