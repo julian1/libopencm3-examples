@@ -319,6 +319,13 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
   
   maybe the tranceivers really require 5V inputs. 
     must check.
+
+  the signal that did go to 3.3 was bad - half way through -  because the wr strobe. would
+    go on . and there was some kind of short?
+
+  board is weird - without 5V the back light wouldn't come on. maybe other things also connected.
+
+  issue with linear regulator perhaps?
 */
 
 int main1(void)
