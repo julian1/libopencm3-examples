@@ -206,8 +206,6 @@ static void sendData0(uint8_t data)
 #endif
 
 
-
-
 /*
 
   fucking manual doesn't even say,
@@ -217,7 +215,6 @@ static void sendData0(uint8_t data)
     https://www.jaycar.com.au/medias/sys_master/images/images/9404693544990/XC4630-manualMain.pdf
 
   https://forum.arduino.cc/index.php?topic=438292.0
-
     looks exactly like this, 
       https://www.amazon.it/Arduino-Mega2560-320x240-pollici-lettore/dp/B01C3RDFN6/
 
@@ -236,6 +233,17 @@ static void sendData0(uint8_t data)
   code looks decent, - all reg values are 16 bit though?
   https://github.com/MichalKs/STM32F4_ILI9320/blob/master/STM32F4_ILI9320/app/src/ili9320.c
 
+  in forum - gets it working with id = 5408. 
+    SPFD5408 
+
+      case 0x5408:
+        _lcd_capable = 0 | REV_SCREEN | READ_BGR; //Red 2.4" thanks jorgenv, Ardlab_Gent
+//        _lcd_capable = 0 | REV_SCREEN | READ_BGR | INVERT_GS; //Blue 2.8" might be different
+        goto common_9320;
+
+  So just treats it as 9320...
+
+  https://github.com/prenticedavid/MCUFRIEND_kbv/blob/master/MCUFRIEND_kbv.cpp
 
 
 */
