@@ -180,9 +180,12 @@ static void dac_setup(void)
 
 static uint16_t read_adc_naiive(uint8_t channel)
 {
+  // set up the arry of channels to read.
 	uint8_t channel_array[16];
 	channel_array[0] = channel;
-	adc_set_regular_sequence(ADC1, 1, channel_array);
+	adc_set_regular_sequence(ADC1, 1, channel_array); // 1 indicates number of channels to read. eg. 1
+
+  // start the read
 	adc_start_conversion_regular(ADC1);
 	while (!adc_eoc(ADC1));
 	uint16_t reg16 = adc_read_regular(ADC1);
