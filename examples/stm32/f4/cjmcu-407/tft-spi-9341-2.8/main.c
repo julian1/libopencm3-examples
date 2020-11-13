@@ -103,11 +103,12 @@ static void tft_setup( void )
   // OK.. THIS MADE SPI WORK AGAIN....
   // need harder edges for signal integrity. or else different speed just helps suppress parasitic components
   // see, https://www.eevblog.com/forum/microcontrollers/libopencm3-stm32l100rc-discovery-and-spi-issues/
-  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, TFT_CLK | TFT_MOSI | TFT_MISO );
-  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, TFT_CLK | TFT_MOSI | TFT_MISO );
+  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, TFT_CLK | TFT_MOSI | TFT_MISO );
+  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, TFT_CLK | TFT_MOSI | TFT_MISO );
 
   // WARNING - CAREFULl THIS IS SPECFICIC to GPIOA....
   gpio_set_af(GPIOA, GPIO_AF5,  TFT_CLK | TFT_MOSI | TFT_MISO );
+
 
   // rcc_periph_clock_enable(RCC_SPI1);
   spi_init_master(TFT_SPI,
@@ -161,6 +162,7 @@ int main(void)
 */
 
 
+  led_setup();
   tft_setup();
 
   // assert chip select, with low
@@ -174,6 +176,14 @@ int main(void)
   msleep(150);
   gpio_set(  TFT_CTL_PORT, TFT_CTL_RST);   // high
   msleep(150);
+
+
+
+ 	while (1) {
+
+    gpio_toggle(GPIOE, GPIO0);
+    msleep(500);
+	}
 
 
 
