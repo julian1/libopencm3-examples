@@ -141,13 +141,12 @@ static void tft_setup( void )
 
 int main(void)
 {
-  clock_setup();
-  led_setup();
 
   rcc_periph_clock_enable( RCC_GPIOE );
-  // rcc_periph_clock_enable( RCC_GPIOD );
+
   rcc_periph_clock_enable(RCC_SPI1);
   rcc_periph_clock_enable( RCC_GPIOA );
+  rcc_periph_clock_enable( RCC_GPIOB );
 
 /*
 
@@ -162,8 +161,13 @@ int main(void)
 */
 
 
+  clock_setup();
   led_setup();
   tft_setup();
+
+
+
+  gpio_set(  TFT_CTL_PORT, TFT_CTL_LED);    // high
 
   // assert chip select, with low
   gpio_clear(TFT_SPI_PORT, TFT_CS);       // cs is spi port. this is hard.
