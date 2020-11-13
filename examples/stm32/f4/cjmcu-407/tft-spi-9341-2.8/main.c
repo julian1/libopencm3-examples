@@ -50,8 +50,9 @@
     MOSI == PA7 == GPIO7    DAC SDI pin 4
     MISO == PA6 == GPIO6    DAC SDO pin 5
 */
+// change name TFT_SPI_CS, TFT_SPI_CLK etc.
 #define TFT_SPI       SPI1
-#define TFT_PORT_SPI  GPIOA
+#define TFT_SPI_PORT  GPIOA
 
 #define TFT_CS        GPIO4
 #define TFT_CLK       GPIO5
@@ -59,12 +60,12 @@
 #define TFT_MISO      GPIO6
 
 
-#define TFT_PORT      GPIOB
+#define TFT_CTL_PORT  GPIOB
 // PB2, is BOOT1
 // PB3, is SDO
-#define TFT_RST       GPIO4
-#define TFT_DC        GPIO5
-#define TFT_LED       GPIO6
+#define TFT_CTL_RST   GPIO4
+#define TFT_CTL_DC    GPIO5
+#define TFT_CTL_LED   GPIO6
 
 
 
@@ -73,27 +74,66 @@
 
 
 
-// LCD
 
 static void led_setup(void)
 {
-  // rename LED_PORT...
+  // rcc_periph_clock_enable( RCC_GPIOE );
   gpio_mode_setup(GPIOE, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0); // JA
 }
 
 
-// should put control registers on different port - this would allow 16 bit parallel bit bashing
-// without hardly any code changes.
-
-
-// OK. really not sure if we have to pad everything to 16 bit.
-// sendCommand16 is a specialization for 16 bit parallel path.
-// eg. should only require 16 bits, if its unavoidable because the bus is genuinely 16 bit.
 
 static inline void delay( uint16_t x )
 {
   msleep(x);
 }
+
+
+
+
+static void tft_setup( void )
+{
+  // uart_printf("dac setup spi\n\r");
+
+  // TODO change GPIOA to TFT_SPI_PORT
+  // albeit, should probabaly also do TFT_PORT_AF
+  // spi alternate function 5
+  gpio_mode_setup(TFT_SPI_PORT, GPIO_MODE_AF, GPIO_PUPD_NONE, TFT_CLK | TFT_MOSI | TFT_MISO );
+
+  // OK.. THIS MADE SPI WORK AGAIN....
+  // need harder edges for signal integrity. or else different speed just helps suppress parasitic components
+  // see, https://www.eevblog.com/forum/microcontrollers/libopencm3-stm32l100rc-discovery-and-spi-issues/
+  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, TFT_CLK | TFT_MOSI | TFT_MISO );
+  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, TFT_CLK | TFT_MOSI | TFT_MISO );
+
+  // WARNING - CAREFULl THIS IS SPECFICIC to GPIOA....
+  gpio_set_af(GPIOA, GPIO_AF5,  TFT_CLK | TFT_MOSI | TFT_MISO );
+
+  // rcc_periph_clock_enable(RCC_SPI1);
+  spi_init_master(TFT_SPI,
+    SPI_CR1_BAUDRATE_FPCLK_DIV_4,
+    // SPI_CR1_BAUDRATE_FPCLK_DIV_256,
+    SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
+    // SPI_CR1_CPOL_CLK_TO_1_WHEN_IDLE , // possible we want clock high instead... no doesn't work
+    SPI_CR1_CPHA_CLK_TRANSITION_2,    // 1 == rising edge, 2 == falling edge.
+    SPI_CR1_DFF_8BIT,
+    SPI_CR1_MSBFIRST
+    // SPI_CR1_LSBFIRST
+  );
+  spi_enable_ss_output(TFT_SPI);
+  spi_enable(TFT_SPI);
+
+
+  // make spi cs regular gpio
+  gpio_mode_setup(TFT_SPI_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TFT_CS );
+
+  // set up gpio
+  gpio_mode_setup(TFT_CTL_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO_PUPD_NONE | TFT_CTL_DC | TFT_CTL_LED);
+
+  // uart_printf("dac setup spi done\n\r");
+}
+
+
 
 
 
@@ -104,7 +144,9 @@ int main(void)
   led_setup();
 
   rcc_periph_clock_enable( RCC_GPIOE );
-  rcc_periph_clock_enable( RCC_GPIOD );
+  // rcc_periph_clock_enable( RCC_GPIOD );
+  rcc_periph_clock_enable(RCC_SPI1);
+  rcc_periph_clock_enable( RCC_GPIOA );
 
 /*
 
@@ -118,16 +160,19 @@ int main(void)
                                 // screen flashing resulted from drop in power supply
 */
 
+
+  tft_setup();
+
   // assert chip select, with low
-  gpio_clear(TFT_PORT, TFT_CS);
+  gpio_clear(TFT_SPI_PORT, TFT_CS);       // cs is spi port. this is hard.
 
 
   // hardware reset - review
-  gpio_set(  TFT_PORT, TFT_RST);    // high
+  gpio_set(  TFT_CTL_PORT, TFT_CTL_RST);    // high
   msleep(150);
-  gpio_clear(TFT_PORT, TFT_RST);   // low
+  gpio_clear(TFT_CTL_PORT, TFT_CTL_RST);   // low
   msleep(150);
-  gpio_set(  TFT_PORT, TFT_RST);   // high
+  gpio_set(  TFT_CTL_PORT, TFT_CTL_RST);   // high
   msleep(150);
 
 
