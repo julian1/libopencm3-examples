@@ -53,6 +53,7 @@
 // change name TFT_SPI_CS, TFT_SPI_CLK etc.
 #define TFT_SPI       SPI1
 #define TFT_SPI_PORT  GPIOA
+#define TFT_SPI_AF      // should define. 
 
 #define TFT_CS        GPIO4
 #define TFT_CLK       GPIO5
@@ -107,7 +108,7 @@ static void tft_setup( void )
   gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, TFT_CLK | TFT_MOSI | TFT_MISO );
 
   // WARNING - CAREFULl THIS IS SPECFICIC to GPIOA....
-  gpio_set_af(GPIOA, GPIO_AF5,  TFT_CLK | TFT_MOSI | TFT_MISO );
+  gpio_set_af(GPIOA, GPIO_AF5, TFT_CLK | TFT_MOSI | TFT_MISO );
 
 
   // rcc_periph_clock_enable(RCC_SPI1);
@@ -148,18 +149,6 @@ int main(void)
   rcc_periph_clock_enable( RCC_GPIOA );
   rcc_periph_clock_enable( RCC_GPIOB );
 
-/*
-
-  // gpio_mode_setup(TFT_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, 0xff ); // JA first 8 bits.
-  gpio_mode_setup(TFT_DATA_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO0 | GPIO1 | GPIO2 | GPIO3 | GPIO4 | GPIO5 | GPIO6 | GPIO7  ); // JA first 8 bits.
-  gpio_mode_setup(TFT_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TFT_RST | TFT_CS | TFT_RS | TFT_WR | TFT_RD);
-
-
-  gpio_set(TFT_PORT, TFT_RD);   // turn read off. operates both the transceiver and the lcd which reads on rising edge.
-                                // when set to read - then if gpio is output - it will sink all the output voltage. very bad.
-                                // screen flashing resulted from drop in power supply
-*/
-
 
   clock_setup();
   led_setup();
@@ -184,7 +173,6 @@ int main(void)
 
 
  	while (1) {
-
     gpio_toggle(GPIOE, GPIO0);
     msleep(500);
 	}
