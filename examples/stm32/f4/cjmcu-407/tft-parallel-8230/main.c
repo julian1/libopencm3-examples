@@ -1,5 +1,5 @@
 /*
-  8-bit parallel. think code is uc5408 which is very similar to ili9320
+  8-bit parallel. purchsed from jaycar. think code is uc5408 which is very similar to ili9320
 
 item
   jaycar doc/manual says UC8230
