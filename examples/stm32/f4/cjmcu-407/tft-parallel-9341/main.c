@@ -1,4 +1,8 @@
 /*
+  CANNOT REMEMBER
+    THINK THIS MAY HAVE BEEN a 16 pin unit - that we tried to program with 8 bit.
+    But neither the board nor the flex support.
+
   8-bit parallel.
 
   in 8 bit parallel.
