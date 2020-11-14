@@ -20,6 +20,9 @@
   - general
     https://controllerstech.com/interface-tft-display-with-stm32/
 
+  libopencm3 example uses ILI9341  in spi mode.
+    https://github.com/libopencm3/libopencm3-examples/blob/master/examples/stm32/f4/stm32f429i-discovery/lcd-dma/lcd-spi.c
+
   https://www.displayfuture.com/Display/datasheet/controller/ILI9341.pdf
 
   8 bit parallel, has init sequence.
@@ -198,11 +201,22 @@ static uint8_t pgm_read_byte(const uint8_t *addr) {
 */
 
 
+static inline void spi_wait_until_not_busy(uint32_t spi)
+{
+  /*
+    see,
+    http://libopencm3.org/docs/latest/stm32f4/html/spi__common__all_8c_source.html#l00194
+  */
+  /* Wait until not busy */
+  while (SPI_SR(spi) & SPI_SR_BSY);
+}
 
 static inline void spi_wait_for_transfer_finish(uint32_t spi)
 {
    /* Wait for transfer finished. */
    while (!(SPI_SR(spi) & SPI_SR_TXE));
+
+
 }
 
 
@@ -213,7 +227,10 @@ static inline void wait_for_transfer_finish(void)
   https://github.com/libopencm3/libopencm3-examples/blob/master/examples/stm32/f4/stm32f429i-discovery/lcd-dma/lcd-spi.c
 */
   spi_wait_for_transfer_finish(TFT_SPI);
-  nop_sleep(15);   // 9 doesn't work. 10 does... weird margin
+  // nop_sleep(15);   // 9 doesn't work. 10 does... weird margin
+
+  spi_wait_until_not_busy(TFT_SPI);
+
 }
 
 
@@ -359,7 +376,7 @@ static void initialize( void)
 }
 
 
-static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) 
+static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
   {
       uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
@@ -477,7 +494,16 @@ int main(void)
 
   ILI9341_setRotation(3); // 0 == trhs, 1 == brhs, 2 == blhs,  3 == tlhs
 
-  // ILI9341_DrawPixel(100, 50, ILI9341_BLUE );
+
+  /*
+  {
+      uint8_t data[] = { 0xff  };
+      // sendCommand(ILI_WR_BRIGHTNESS, data, 1 );
+      sendCommand(0x51 , data, 1 );
+  }
+  */
+
+
 
   ILI9341_DrawRectangle(100, 50, 200, 70, ILI9341_BLUE );
 
