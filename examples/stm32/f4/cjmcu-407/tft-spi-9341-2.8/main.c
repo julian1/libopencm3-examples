@@ -26,7 +26,7 @@
     https://github.com/adafruit/Adafruit_ILI9341
 
   primitives
-    https://github.com/adafruit/Adafruit-GFX-Library/blob/master/Adafruit_SPITFT.cpp
+    https://github.com/adafruit/Adafruit-GFX-Library/blob/master/Adafruit_SPILCD.cpp
 
 
   - gfx library - higher level 
@@ -60,30 +60,30 @@
     MOSI == PA7 == GPIO7    DAC SDI pin 4
     MISO == PA6 == GPIO6    DAC SDO pin 5
 */
-// change name TFT_SPI_CS, TFT_SPI_CLK etc.
-#define TFT_SPI       SPI1
-#define TFT_SPI_PORT  GPIOA
-#define TFT_SPI_AF      // should define.
+// change name LCD_SPI_CS, LCD_SPI_CLK etc.
+#define LCD_SPI       SPI1
+#define LCD_SPI_PORT  GPIOA
+#define LCD_SPI_AF      // should define.
 
-#define TFT_CS        GPIO4
-#define TFT_CLK       GPIO5
-#define TFT_MOSI      GPIO7
-#define TFT_MISO      GPIO6
+#define LCD_CS        GPIO4
+#define LCD_CLK       GPIO5
+#define LCD_MOSI      GPIO7
+#define LCD_MISO      GPIO6
 
 
-#define TFT_CTL_PORT  GPIOB
+#define LCD_CTL_PORT  GPIOB
 // PB2, is BOOT1
 // PB3, is SDO
-#define TFT_CTL_RST   GPIO4
-#define TFT_CTL_DC    GPIO5
-#define TFT_CTL_LED   GPIO6
+#define LCD_CTL_RST   GPIO4
+#define LCD_CTL_DC    GPIO5
+#define LCD_CTL_LED   GPIO6
 
 
 
 
 
 
-
+// tft is one way to create tft
 
 
 static void led_setup(void)
@@ -114,27 +114,27 @@ static inline void nop_sleep( uint32_t n)
 
 
 
-static void tft_spi_setup( void )
+static void lcd_spi_setup( void )
 {
   // uart_printf("dac setup spi\n\r");
 
-  // TODO change GPIOA to TFT_SPI_PORT
-  // albeit, should probabaly also do TFT_PORT_AF
+  // TODO change GPIOA to LCD_SPI_PORT
+  // albeit, should probabaly also do LCD_PORT_AF
   // spi alternate function 5
-  gpio_mode_setup(TFT_SPI_PORT, GPIO_MODE_AF, GPIO_PUPD_NONE, TFT_CLK | TFT_MOSI | TFT_MISO );
+  gpio_mode_setup(LCD_SPI_PORT, GPIO_MODE_AF, GPIO_PUPD_NONE, LCD_CLK | LCD_MOSI | LCD_MISO );
 
   // OK.. THIS MADE SPI WORK AGAIN....
   // need harder edges for signal integrity. or else different speed just helps suppress parasitic components
   // see, https://www.eevblog.com/forum/microcontrollers/libopencm3-stm32l100rc-discovery-and-spi-issues/
-  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, TFT_CLK | TFT_MOSI | TFT_MISO );
-  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, TFT_CLK | TFT_MOSI | TFT_MISO );
+  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, LCD_CLK | LCD_MOSI | LCD_MISO );
+  gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, LCD_CLK | LCD_MOSI | LCD_MISO );
 
   // WARNING - CAREFULl THIS IS SPECFICIC to GPIOA....
-  gpio_set_af(GPIOA, GPIO_AF5, TFT_CLK | TFT_MOSI | TFT_MISO );
+  gpio_set_af(GPIOA, GPIO_AF5, LCD_CLK | LCD_MOSI | LCD_MISO );
 
 
   // rcc_periph_clock_enable(RCC_SPI1);
-  spi_init_master(TFT_SPI,
+  spi_init_master(LCD_SPI,
     SPI_CR1_BAUDRATE_FPCLK_DIV_4,
     // SPI_CR1_BAUDRATE_FPCLK_DIV_256,
     SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
@@ -145,16 +145,16 @@ static void tft_spi_setup( void )
     SPI_CR1_MSBFIRST
     // SPI_CR1_LSBFIRST
   );
-  spi_enable_ss_output(TFT_SPI);
-  spi_enable(TFT_SPI);
+  spi_enable_ss_output(LCD_SPI);
+  spi_enable(LCD_SPI);
 
 
   // make spi cs regular gpio
-  gpio_mode_setup(TFT_SPI_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TFT_CS );
+  gpio_mode_setup(LCD_SPI_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_CS );
 
 
   // set up gpio
-  gpio_mode_setup(TFT_CTL_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TFT_CTL_RST | TFT_CTL_DC | TFT_CTL_LED);
+  gpio_mode_setup(LCD_CTL_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LCD_CTL_RST | LCD_CTL_DC | LCD_CTL_LED);
 
   // uart_printf("dac setup spi done\n\r");
 }
@@ -229,17 +229,17 @@ static inline void wait_for_transfer_finish(void)
   see example, that also uses a loop.
   https://github.com/libopencm3/libopencm3-examples/blob/master/examples/stm32/f4/stm32f429i-discovery/lcd-dma/lcd-spi.c
 */
-  spi_wait_for_transfer_finish(TFT_SPI);
+  spi_wait_for_transfer_finish(LCD_SPI);
   // nop_sleep(15);   // 9 doesn't work. 10 does... weird margin
 
-  spi_wait_until_not_busy(TFT_SPI);
+  spi_wait_until_not_busy(LCD_SPI);
 
 }
 
 
 static inline void send8( uint8_t x )
 {
-  spi_send( TFT_SPI, x );
+  spi_send( LCD_SPI, x );
 }
 
 
@@ -247,7 +247,7 @@ static inline void send8( uint8_t x )
 static inline void assert_cs(void)
 {
   // assert chip select, with low
-  gpio_clear(TFT_SPI_PORT, TFT_CS);       // cs is spi port. this is hard.
+  gpio_clear(LCD_SPI_PORT, LCD_CS);       // cs is spi port. this is hard.
 }
 
 
@@ -255,7 +255,7 @@ static inline void assert_cs(void)
 static inline void set_command(void )
 {
   wait_for_transfer_finish();
-  gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
+  gpio_clear( LCD_CTL_PORT, LCD_CTL_DC);    // low == command
 }
 
 
@@ -263,7 +263,7 @@ static inline void set_command(void )
 static inline void set_data(void )
 {
   wait_for_transfer_finish();
-  gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
+  gpio_set( LCD_CTL_PORT, LCD_CTL_DC);    // high == data
 }
 
 
@@ -355,11 +355,11 @@ static const uint8_t initcmd[] = {
 static void initialize( void)
 {
   // hardware reset - review
-  gpio_set(  TFT_CTL_PORT, TFT_CTL_RST);    // high
+  gpio_set(  LCD_CTL_PORT, LCD_CTL_RST);    // high
   delay(150);
-  gpio_clear(TFT_CTL_PORT, TFT_CTL_RST);   // low
+  gpio_clear(LCD_CTL_PORT, LCD_CTL_RST);   // low
   delay(150);
-  gpio_set(  TFT_CTL_PORT, TFT_CTL_RST);   // high
+  gpio_set(  LCD_CTL_PORT, LCD_CTL_RST);   // high
   delay(150);
 
 
@@ -482,11 +482,11 @@ int main(void)
 
   clock_setup();
   led_setup();
-  tft_spi_setup();
+  lcd_spi_setup();
 
 
   // turn led/backlight on.
-  gpio_set( TFT_CTL_PORT, TFT_CTL_LED);    // high
+  gpio_set( LCD_CTL_PORT, LCD_CTL_LED);    // high
 
   assert_cs();
 
@@ -515,7 +515,7 @@ int main(void)
  	while (1) {
     gpio_toggle(GPIOE, GPIO0);
 
-    // gpio_toggle( TFT_CTL_PORT, TFT_CTL_LED);    // toggle backlight
+    // gpio_toggle( LCD_CTL_PORT, LCD_CTL_LED);    // toggle backlight
     msleep(500);
 	}
 
