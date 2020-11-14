@@ -89,244 +89,14 @@ static inline void delay( uint16_t x )
   msleep(x);
 }
 
-static uint8_t pgm_read_byte(const uint8_t *addr) {
-  return *addr;
-}
-
-
-
-/*
-  read/write != command/data
-
-  p33. p35.
-
-  We use 4 wire. eg. we use D/CX
-    If the D/CX bit is “low”, the transmission byte is interpreted as a command byte.
-    If the D/CX bit is “high”, the transmission byte is stored as the
-                display data RAM (Memory write command), or command register as parameter.
-
-  The 4-line serial mode consists of the
-    Data/Command selection input (D/CX),
-    chip enable input (CSX),
-    the serial clock input (SCL)
-    and serial data Input/Output (SDA or SDI/SDO) for data transmission.
-
-  Any instruction can be sent in any order to ILI9341 and the MSB is transmitted first.
-
-  The serial interface is initialized when CSX is high status. In this state,
-  SCL clock pulse and SDA data are no effect. A falling edge on CSX enables the
-  serial interface and indicates the start of data transmission.
-
-  Host processor drives the CSX pin to low and starts by setting the D/CX bit on
-  SDA. The bit is read by ILI9341 on the first rising edge of SCL signal. On the
-  next falling edge of SCL, the MSB data bit (D7) is set on SDA by the host. On
-  the next falling edge of SCL, the next bit (D6) is set on SDA. If the optional
-  D/CX signal is used, a byte is eight read cycle width.
-  ---------
-
-  read is defined on p38.
-  lookks like supports an 8 bit read.
-
-*/
-
-
-static void send8( uint8_t x )
+static inline void nop_sleep( uint32_t n )
 {
-  spi_send( TFT_SPI, x );
-}
-
-
-
-static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
-{
-  gpio_clear(TFT_SPI_PORT, TFT_CS);     // CS active low
-  delay(1);
-
-  gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
-  delay(1);
-
-  send8(command);
-  delay(1);
-
-  gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
-  delay(1);
-
-  for(unsigned i = 0; i < numDataBytes; ++i) {
-    send8(dataBytes[ i ]);
+  uint32_t i;
+  for(i = 0; i < n; ++i)  {
+    __asm__("nop");
   }
 }
 
-
-static void sendCommand0(uint8_t command)
-{
-
-  // gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
-  delay(1);
-
-
-  send8(command);
-  delay(1);
-}
-
-static void sendData0(uint8_t data)
-{
-  // advantage is that it can be done in a loop. without allocating stack for buffer.
-  // gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
-  gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
-  delay(1);
-
-
-  send8(data);
-  delay(1);
-}
-
-
-
-///////////////////////////////
-
-#if 0
-static void send16( uint16_t x )
-{
-  send8(x >> 8);   // Check
-  send8(x & 0xFF);
-
-}
-
-static void sendCommand16(uint8_t command, uint16_t data)
-{
-
-  uint8_t ia[2] = { data >> 8, data & 0xff  } ;
-
-  sendCommand(command, ia, 2);
-
-}
-
-
-
-#define LCD_WIDTH 130
-#define LCD_HEIGHT 130
-
-
-#endif
-
-
-
-static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-#if 0
-    // column address set
-    ILI9341_WriteCommand(0x2A); // CASET
-    {
-        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
-        ILI9341_WriteData(data, sizeof(data));
-    }
-
-    // row address set
-    ILI9341_WriteCommand(0x2B); // RASET
-    {
-        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
-        ILI9341_WriteData(data, sizeof(data));
-    }
-
-    // write to RAM
-    ILI9341_WriteCommand(0x2C); // RAMWR
-#endif
-    {
-        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
-        // ILI9341_WriteData(data, sizeof(data));
-        sendCommand(ILI9341_CASET, data, sizeof(data) ); // 2A
-    }
-
-    // ILI9341_WriteCommand(0x2B); // RASET
-    {
-        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
-        sendCommand(ILI9341_PASET, data, sizeof(data) ); // 2B
-        // ILI9341_WriteData(data, sizeof(data));
-    }
-
-    //
-
-    // write to RAM
-    // ILI9341_WriteCommand(0x2C); // RAMWR
-    // sendCommand(ILI9341_RAMWR, 0 , 0 ); // 2C
-}
-
-
-
-static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
-    // if((x >= ILI9341_WIDTH) || (y >= ILI9341_HEIGHT))
-    //  return;
-
-
-    ILI9341_SetAddressWindow(x, y, x+20, y+20);
-    // uint8_t data[] = { color >> 8, color & 0xFF };
-
-
-    // send command
-    sendCommand0(ILI9341_RAMWR ); // 2C
-
-    int i;
-    for( i = 0; i < 20 * 20; ++i) {
-      sendData0( color >> 8 );
-      sendData0( color & 0xFF );
-    }
-}
-
-
-#if 0
-static uint16_t min(uint16_t a, uint16_t b) {
-  return (a > b) ? b : a;
-}
-
-static uint16_t max(uint16_t a, uint16_t b) {
-  return (a > b) ? a : b;
-}
-
-static uint16_t sat(uint16_t val, uint16_t vmin, uint16_t vmax) {
-  return min(vmax, max(vmin, val));
-}
-
-static void lcd_set_cursor(uint16_t x, uint16_t y) {
-  sendCommand16(0x20, x);
-  sendCommand16(0x21, y);
-}
-
-
-static void lcd_set_window(uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
-  sendCommand16(0x50, sat(left, 0, LCD_WIDTH-1));
-  sendCommand16(0x51, sat(right-1, 0, LCD_WIDTH-1));
-  sendCommand16(0x52, sat(top, 0, LCD_HEIGHT-1));
-  sendCommand16(0x53, sat(bottom-1, 0, LCD_HEIGHT-1));
-}
-
-static void lcd_fill(uint32_t color) {
-  // uint16_t data = lcd_pixel_from_rgb32(color);
-  // uint16_t data = 0xf7f7;
-  // uint16_t data = 0x2200;
-
-  lcd_set_window(0, 0, 320 , 200);
-  lcd_set_cursor(0, 0);
-
-
-  // gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
-  gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
-  delay(1);
-  send8(0x22);
-  delay(1);
-
-  // gpio_set(LCD_PORT, LCD_RS);   // high data
-  gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
-  delay(1);
-
-  for(uint32_t i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
-      // _lcd_tx_data(data);
-      send16(i + 999 );
-  }
-}
-
-#endif
-
-/////////////////////
 
 
 
@@ -379,6 +149,128 @@ static void tft_setup( void )
 }
 
 
+
+
+
+static uint8_t pgm_read_byte(const uint8_t *addr) {
+  return *addr;
+}
+
+
+
+/*
+  read/write != command/data
+
+  p33. p35.
+
+  We use 4 wire. eg. we use D/CX
+    If the D/CX bit is “low”, the transmission byte is interpreted as a command byte.
+    If the D/CX bit is “high”, the transmission byte is stored as the
+                display data RAM (Memory write command), or command register as parameter.
+
+  The 4-line serial mode consists of the
+    Data/Command selection input (D/CX),
+    chip enable input (CSX),
+    the serial clock input (SCL)
+    and serial data Input/Output (SDA or SDI/SDO) for data transmission.
+
+  Any instruction can be sent in any order to ILI9341 and the MSB is transmitted first.
+
+  The serial interface is initialized when CSX is high status. In this state,
+  SCL clock pulse and SDA data are no effect. A falling edge on CSX enables the
+  serial interface and indicates the start of data transmission.
+
+  Host processor drives the CSX pin to low and starts by setting the D/CX bit on
+  SDA. The bit is read by ILI9341 on the first rising edge of SCL signal. On the
+  next falling edge of SCL, the MSB data bit (D7) is set on SDA by the host. On
+  the next falling edge of SCL, the next bit (D6) is set on SDA. If the optional
+  D/CX signal is used, a byte is eight read cycle width.
+  ---------
+
+  read is defined on p38.
+  lookks like supports an 8 bit read.
+
+*/
+
+
+static inline void send8( uint8_t x )
+{
+  spi_send( TFT_SPI, x );
+}
+
+
+
+static inline void assert_cs(void)
+{
+  // assert chip select, with low
+  gpio_clear(TFT_SPI_PORT, TFT_CS);       // cs is spi port. this is hard.
+}
+
+
+
+static inline void set_command(void )
+{
+  gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
+}
+
+
+
+static inline void set_data(void )
+{
+  gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
+}
+
+
+
+static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
+{
+  set_command();
+  send8(command);
+  delay(1);   // required.
+
+  set_data(); 
+  delay(1);   // not required.
+
+  for(unsigned i = 0; i < numDataBytes; ++i) {
+    send8(dataBytes[ i ]);
+  }
+
+  delay(1); // required yes...
+}
+
+
+
+
+static void sendCommand0(uint8_t command)
+{
+  set_command();
+  send8(command);
+  // delay(1);  // required... strange...
+  // nop_sleep(25);   // 1000 works, 100 works. 10 doesn't work. 50 works 30 works. 20 works. 15 doesn't
+  delay(1);
+}
+
+
+#if 0
+static void sendData0(uint8_t data)
+{
+  set_data();
+  // delay(1);  // seems not required
+
+
+  send8(data);
+  //delay(1); no required.
+}
+#endif
+
+
+
+/////////////////////
+
+
+
+
+
 // clang-format off
 static const uint8_t initcmd[] = {
   0xEF, 3, 0x03, 0x80, 0x02,
@@ -405,7 +297,6 @@ static const uint8_t initcmd[] = {
     0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F,
   ILI9341_SLPOUT  , 0x80,                // Exit Sleep
   ILI9341_DISPON  , 0x80,                // Display on
-  // ILI9341_DISPOFF  , 0x80,                // Display on  OK. this definitely appears to do something
   0x00                                   // End of list
 };
 // clang-format on
@@ -413,41 +304,15 @@ static const uint8_t initcmd[] = {
 
 
 
-
-
-int main(void)
+static void initialize( void)
 {
-
-  rcc_periph_clock_enable( RCC_GPIOE );
-
-  rcc_periph_clock_enable(RCC_SPI1);
-  rcc_periph_clock_enable( RCC_GPIOA );
-  rcc_periph_clock_enable( RCC_GPIOB );
-
-
-  clock_setup();
-  led_setup();
-  tft_setup();
-
-
-  // turn led/backlight on.
-  gpio_set( TFT_CTL_PORT, TFT_CTL_LED);    // high
-
-  // assert chip select, with low
-  gpio_clear(TFT_SPI_PORT, TFT_CS);       // cs is spi port. this is hard.
-
-
-  //
-  msleep(1000);
-
   // hardware reset - review
   gpio_set(  TFT_CTL_PORT, TFT_CTL_RST);    // high
-  msleep(150);
+  delay(150);
   gpio_clear(TFT_CTL_PORT, TFT_CTL_RST);   // low
-  msleep(150);
+  delay(150);
   gpio_set(  TFT_CTL_PORT, TFT_CTL_RST);   // high
-  msleep(150);
-
+  delay(150);
 
 
   uint8_t cmd, x, numArgs;
@@ -462,14 +327,158 @@ int main(void)
     if (x & 0x80)
       delay(150);
   }
+}
 
-  
-#if 1
-  // lcd_fill(0x2200);
 
-  ILI9341_DrawPixel(50, 50, 0xf777 );
+static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+#if 0
+    // column address set
+    ILI9341_WriteCommand(0x2A); // CASET
+    {
+        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
+        ILI9341_WriteData(data, sizeof(data));
+    }
+
+    // row address set
+    ILI9341_WriteCommand(0x2B); // RASET
+    {
+        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
+        ILI9341_WriteData(data, sizeof(data));
+    }
+
+    // write to RAM
+    ILI9341_WriteCommand(0x2C); // RAMWR
 #endif
+    {
+        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
+        // ILI9341_WriteData(data, sizeof(data));
+        sendCommand(ILI9341_CASET, data, sizeof(data) ); // 2A
+    }
 
+    // ILI9341_WriteCommand(0x2B); // RASET
+    {
+        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
+        sendCommand(ILI9341_PASET, data, sizeof(data) ); // 2B
+        // ILI9341_WriteData(data, sizeof(data));
+    }
+
+    //
+
+    // write to RAM
+    // ILI9341_WriteCommand(0x2C); // RAMWR
+    // sendCommand(ILI9341_RAMWR, 0 , 0 ); // 2C
+}
+
+
+// So origin is weird...
+
+static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
+  // if((x >= ILI9341_WIDTH) || (y >= ILI9341_HEIGHT))
+  //  return;
+
+  // uint8_t data[] = { color >> 8, color & 0xFF };
+
+  // OK. this draws a small line. much better.
+  uint16_t x_off = 10; 
+  uint16_t y_off = 1; 
+
+  // ILI9341_SetAddressWindow(x, y, x + x_off, y + y_off);
+  ILI9341_SetAddressWindow(y, x, y + x_off  - 1, x + y_off  - 1);
+
+  // send command
+  sendCommand0(ILI9341_RAMWR ); // 2C ram write
+  delay(1);
+
+  set_data();
+  // delay(1);
+
+  // so its 16 bit color???
+  // maybe it's not 16 bit...
+  int i;
+  for( i = 0; i < x_off * y_off ; ++i) {
+    send8( color >> 8 );
+    send8( color & 0xFF );
+  }
+}
+
+
+#define MADCTL_MY 0x80  ///< Bottom to top
+#define MADCTL_MX 0x40  ///< Right to left
+#define MADCTL_MV 0x20  ///< Reverse Mode
+#define MADCTL_ML 0x10  ///< LCD refresh Bottom to top
+#define MADCTL_RGB 0x00 ///< Red-Green-Blue pixel order
+#define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
+#define MADCTL_MH 0x04  ///< LCD refresh right to left
+
+// OK. we are going to need a s
+
+uint8_t rotation  ; 
+uint16_t _width;
+uint16_t _height;
+
+static void ILI9341_setRotation(uint8_t m) {
+
+  rotation = m % 4; // can't be higher than 3
+
+  switch (rotation) {
+  case 0:
+    m = (MADCTL_MX | MADCTL_BGR);
+    _width = ILI9341_TFTWIDTH;
+    _height = ILI9341_TFTHEIGHT;
+    break;
+  case 1:
+    m = (MADCTL_MV | MADCTL_BGR);
+    _width = ILI9341_TFTHEIGHT;
+    _height = ILI9341_TFTWIDTH;
+    break;
+  case 2:
+    m = (MADCTL_MY | MADCTL_BGR);
+    _width = ILI9341_TFTWIDTH;
+    _height = ILI9341_TFTHEIGHT;
+    break;
+  case 3:
+    m = (MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR);
+    _width = ILI9341_TFTHEIGHT;
+    _height = ILI9341_TFTWIDTH;
+    break;
+  }
+
+  sendCommand(ILI9341_MADCTL, &m, 1);
+}
+
+
+
+ 
+
+int main(void)
+{
+
+  rcc_periph_clock_enable(RCC_GPIOE);
+
+  rcc_periph_clock_enable(RCC_SPI1);
+  rcc_periph_clock_enable(RCC_GPIOA);
+  rcc_periph_clock_enable(RCC_GPIOB);
+
+  clock_setup();
+  led_setup();
+  tft_setup();
+
+
+  // turn led/backlight on.
+  gpio_set( TFT_CTL_PORT, TFT_CTL_LED);    // high
+
+  assert_cs();
+
+  msleep(1000);
+
+  initialize();
+ 
+  ILI9341_setRotation(3); // 0 == trhs, 1 == brhs, 2 == blhs,  3 == tlhs
+
+  ILI9341_DrawPixel(50, 50, ILI9341_BLUE );
+
+
+  // blink led
  	while (1) {
     gpio_toggle(GPIOE, GPIO0);
     msleep(500);
