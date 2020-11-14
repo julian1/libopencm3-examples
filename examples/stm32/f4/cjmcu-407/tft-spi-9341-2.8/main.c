@@ -145,10 +145,8 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
   gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
   delay(1);
 
-
   send8(command);
   delay(1);
-
 
   gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
   delay(1);
@@ -156,8 +154,180 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
   for(unsigned i = 0; i < numDataBytes; ++i) {
     send8(dataBytes[ i ]);
   }
+}
+
+
+static void sendCommand0(uint8_t command)
+{
+
+  // gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
+  delay(1);
+
+
+  send8(command);
+  delay(1);
+}
+
+static void sendData0(uint8_t data)
+{
+  // advantage is that it can be done in a loop. without allocating stack for buffer.
+  // gpio_set(LCD_PORT, LCD_RS);     // high - to assert data
+  gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
+  delay(1);
+
+
+  send8(data);
+  delay(1);
+}
+
+
+
+///////////////////////////////
+
+#if 0
+static void send16( uint16_t x )
+{
+  send8(x >> 8);   // Check
+  send8(x & 0xFF);
 
 }
+
+static void sendCommand16(uint8_t command, uint16_t data)
+{
+
+  uint8_t ia[2] = { data >> 8, data & 0xff  } ;
+
+  sendCommand(command, ia, 2);
+
+}
+
+
+
+#define LCD_WIDTH 130
+#define LCD_HEIGHT 130
+
+
+#endif
+
+
+
+static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+#if 0
+    // column address set
+    ILI9341_WriteCommand(0x2A); // CASET
+    {
+        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
+        ILI9341_WriteData(data, sizeof(data));
+    }
+
+    // row address set
+    ILI9341_WriteCommand(0x2B); // RASET
+    {
+        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
+        ILI9341_WriteData(data, sizeof(data));
+    }
+
+    // write to RAM
+    ILI9341_WriteCommand(0x2C); // RAMWR
+#endif
+    {
+        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
+        // ILI9341_WriteData(data, sizeof(data));
+        sendCommand(ILI9341_CASET, data, sizeof(data) ); // 2A
+    }
+
+    // ILI9341_WriteCommand(0x2B); // RASET
+    {
+        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
+        sendCommand(ILI9341_PASET, data, sizeof(data) ); // 2B
+        // ILI9341_WriteData(data, sizeof(data));
+    }
+
+    //
+
+    // write to RAM
+    // ILI9341_WriteCommand(0x2C); // RAMWR
+    // sendCommand(ILI9341_RAMWR, 0 , 0 ); // 2C
+}
+
+
+
+static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
+    // if((x >= ILI9341_WIDTH) || (y >= ILI9341_HEIGHT))
+    //  return;
+
+
+    ILI9341_SetAddressWindow(x, y, x+20, y+20);
+    // uint8_t data[] = { color >> 8, color & 0xFF };
+
+
+    // send command
+    sendCommand0(ILI9341_RAMWR ); // 2C
+
+    int i;
+    for( i = 0; i < 20 * 20; ++i) {
+      sendData0( color >> 8 );
+      sendData0( color & 0xFF );
+    }
+}
+
+
+#if 0
+static uint16_t min(uint16_t a, uint16_t b) {
+  return (a > b) ? b : a;
+}
+
+static uint16_t max(uint16_t a, uint16_t b) {
+  return (a > b) ? a : b;
+}
+
+static uint16_t sat(uint16_t val, uint16_t vmin, uint16_t vmax) {
+  return min(vmax, max(vmin, val));
+}
+
+static void lcd_set_cursor(uint16_t x, uint16_t y) {
+  sendCommand16(0x20, x);
+  sendCommand16(0x21, y);
+}
+
+
+static void lcd_set_window(uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) {
+  sendCommand16(0x50, sat(left, 0, LCD_WIDTH-1));
+  sendCommand16(0x51, sat(right-1, 0, LCD_WIDTH-1));
+  sendCommand16(0x52, sat(top, 0, LCD_HEIGHT-1));
+  sendCommand16(0x53, sat(bottom-1, 0, LCD_HEIGHT-1));
+}
+
+static void lcd_fill(uint32_t color) {
+  // uint16_t data = lcd_pixel_from_rgb32(color);
+  // uint16_t data = 0xf7f7;
+  // uint16_t data = 0x2200;
+
+  lcd_set_window(0, 0, 320 , 200);
+  lcd_set_cursor(0, 0);
+
+
+  // gpio_clear(LCD_PORT, LCD_RS);   // low - to assert register, D/CX  p24
+  gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
+  delay(1);
+  send8(0x22);
+  delay(1);
+
+  // gpio_set(LCD_PORT, LCD_RS);   // high data
+  gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
+  delay(1);
+
+  for(uint32_t i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
+      // _lcd_tx_data(data);
+      send16(i + 999 );
+  }
+}
+
+#endif
+
+/////////////////////
+
 
 
 
@@ -235,6 +405,7 @@ static const uint8_t initcmd[] = {
     0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F,
   ILI9341_SLPOUT  , 0x80,                // Exit Sleep
   ILI9341_DISPON  , 0x80,                // Display on
+  // ILI9341_DISPOFF  , 0x80,                // Display on  OK. this definitely appears to do something
   0x00                                   // End of list
 };
 // clang-format on
@@ -279,7 +450,6 @@ int main(void)
 
 
 
-
   uint8_t cmd, x, numArgs;
   const uint8_t *addr = initcmd;
   while ((cmd = pgm_read_byte(addr++)) > 0) {
@@ -288,11 +458,17 @@ int main(void)
     sendCommand(cmd, addr, numArgs);
     addr += numArgs;
     // Ok, hi bit determines if needs a delay... horrible
+    // single argument and delay...
     if (x & 0x80)
       delay(150);
   }
 
+  
+#if 1
+  // lcd_fill(0x2200);
 
+  ILI9341_DrawPixel(50, 50, 0xf777 );
+#endif
 
  	while (1) {
     gpio_toggle(GPIOE, GPIO0);
