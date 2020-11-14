@@ -197,6 +197,22 @@ static uint8_t pgm_read_byte(const uint8_t *addr) {
 */
 
 
+
+static inline void spi_wait_for_transfer_finish(uint32_t spi)
+{
+       /* Wait for transfer finished. */
+       while (!(SPI_SR(spi) & SPI_SR_TXE));
+  
+}
+
+
+static inline void wait_for_transfer_finish(void)
+{
+  spi_wait_for_transfer_finish(TFT_SPI);
+  nop_sleep(15);   // 9 doesn't work. 10 does... weird margin
+}
+
+
 static inline void send8( uint8_t x )
 {
   spi_send( TFT_SPI, x );
@@ -214,6 +230,7 @@ static inline void assert_cs(void)
 
 static inline void set_command(void )
 {
+  wait_for_transfer_finish();
   gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
 }
 
@@ -221,6 +238,7 @@ static inline void set_command(void )
 
 static inline void set_data(void )
 {
+  wait_for_transfer_finish();
   gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
 }
 
@@ -230,17 +248,13 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
 {
   set_command();
   send8(command);
-  delay(1);   // required.
 
   set_data();
-  delay(1);   // not required.
 
   for(unsigned i = 0; i < numDataBytes; ++i) {
     send8(dataBytes[ i ]);
   }
 
-  delay(1); // required yes...
-            // so i think it just doesn't
 
 /*
   EXTREME
@@ -255,15 +269,10 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
 }
 
 
-
-
 static void sendCommand0(uint8_t command)
 {
   set_command();
   send8(command);
-  // delay(1);  // required... strange...
-  // nop_sleep(25);   // 1000 works, 100 works. 10 doesn't work. 50 works 30 works. 20 works. 15 doesn't
-  delay(1);
 }
 
 
@@ -346,37 +355,20 @@ static void initialize( void)
 }
 
 
-static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-#if 0
-    // column address set
-    ILI9341_WriteCommand(0x2A); // CASET
-    {
-        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
-        ILI9341_WriteData(data, sizeof(data));
-    }
+static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) 
+{
+  {
+      uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
+      // ILI9341_WriteData(data, sizeof(data));
+      sendCommand(ILI9341_CASET, data, sizeof(data) ); // 2A
+  }
 
-    // row address set
-    ILI9341_WriteCommand(0x2B); // RASET
-    {
-        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
-        ILI9341_WriteData(data, sizeof(data));
-    }
-
-    // write to RAM
-    ILI9341_WriteCommand(0x2C); // RAMWR
-#endif
-    {
-        uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
-        // ILI9341_WriteData(data, sizeof(data));
-        sendCommand(ILI9341_CASET, data, sizeof(data) ); // 2A
-    }
-
-    // ILI9341_WriteCommand(0x2B); // RASET
-    {
-        uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
-        sendCommand(ILI9341_PASET, data, sizeof(data) ); // 2B
-        // ILI9341_WriteData(data, sizeof(data));
-    }
+  // ILI9341_WriteCommand(0x2B); // RASET
+  {
+      uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
+      sendCommand(ILI9341_PASET, data, sizeof(data) ); // 2B
+      // ILI9341_WriteData(data, sizeof(data));
+  }
 }
 
 
@@ -391,7 +383,7 @@ static void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16
 
   // send command
   sendCommand0(ILI9341_RAMWR ); // 2C ram write
-  delay(1);
+  //delay(1);
 
   set_data();
   // delay(1);
