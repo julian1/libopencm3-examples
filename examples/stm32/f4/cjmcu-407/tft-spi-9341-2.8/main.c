@@ -14,25 +14,28 @@
 
 
   ------------
-  - gfx library seems to be a library using a canvas rather than direct draw.
-      eg. may be buffering change.
 
-  - general
-    https://controllerstech.com/interface-tft-display-with-stm32/
+  - datasheet ILI9341
+    https://www.displayfuture.com/Display/datasheet/controller/ILI9341.pdf
+
 
   libopencm3 example uses ILI9341  in spi mode.
     https://github.com/libopencm3/libopencm3-examples/blob/master/examples/stm32/f4/stm32f429i-discovery/lcd-dma/lcd-spi.c
 
-  https://www.displayfuture.com/Display/datasheet/controller/ILI9341.pdf
-
-  8 bit parallel, has init sequence.
-  https://github.com/sammyizimmy/ili9341/blob/master/ili9341.c
-
   simple,
-  https://github.com/adafruit/Adafruit_ILI9341
+    https://github.com/adafruit/Adafruit_ILI9341
 
   primitives
     https://github.com/adafruit/Adafruit-GFX-Library/blob/master/Adafruit_SPITFT.cpp
+
+
+  - gfx library - higher level 
+      https://github.com/adafruit/Adafruit-GFX-Library/blob/master/Adafruit_GFX.cpp
+
+    https://controllerstech.com/interface-tft-display-with-stm32/
+
+  8 bit parallel, has init sequence.
+    https://github.com/sammyizimmy/ili9341/blob/master/ili9341.c
 
   optimised. 70 forks. uses spi.
     https://github.com/PaulStoffregen/ILI9341_t3
@@ -271,7 +274,6 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
   send8(command);
 
   set_data();
-
   for(unsigned i = 0; i < numDataBytes; ++i) {
     send8(dataBytes[ i ]);
   }
