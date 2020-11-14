@@ -100,6 +100,7 @@ static inline void delay( uint16_t x )
   msleep(x);
 }
 
+#if 0
 static inline void nop_sleep( uint32_t n)
 {
   uint32_t i;
@@ -107,8 +108,7 @@ static inline void nop_sleep( uint32_t n)
     __asm__("nop");
   }
 }
-
-
+#endif
 
 
 
