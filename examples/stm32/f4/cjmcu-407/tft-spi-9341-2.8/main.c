@@ -1,6 +1,10 @@
 /*
   spi 9341  2.8 with touch
 
+  -- OK. needs 5V - for backlight to be brighterjj
+    not sure if the LED pin controls mosfets that turn the backlight on/off. 
+    
+
   just connecting led/BL to +3.3V Vcc and backlight turns on.
     probably a digital ctrl.  but maybe drawing current.
     so control with gpio later.
@@ -27,7 +31,7 @@
   primitives
     https://github.com/adafruit/Adafruit-GFX-Library/blob/master/Adafruit_SPITFT.cpp
 
-  optimised. 70 forks. but uses spi.
+  optimised. 70 forks. uses spi.
     https://github.com/PaulStoffregen/ILI9341_t3
   --
 */
@@ -474,6 +478,8 @@ int main(void)
   // blink led
  	while (1) {
     gpio_toggle(GPIOE, GPIO0);
+
+    // gpio_toggle( TFT_CTL_PORT, TFT_CTL_LED);    // toggle backlight
     msleep(500);
 	}
 
