@@ -17,6 +17,7 @@
     https://controllerstech.com/interface-tft-display-with-stm32/
 
   https://www.displayfuture.com/Display/datasheet/controller/ILI9341.pdf
+    see p33. for spi.
 
   8 bit parallel,
   https://github.com/sammyizimmy/ili9341/blob/master/ili9341.c
@@ -190,7 +191,9 @@ static uint8_t initcmd[] = {
 };
 
 
-static uint8_t pgm_read_byte(const uint8_t *addr) { return *addr; }
+static uint8_t pgm_read_byte(const uint8_t *addr) { 
+  return *addr; 
+}
 
 
 

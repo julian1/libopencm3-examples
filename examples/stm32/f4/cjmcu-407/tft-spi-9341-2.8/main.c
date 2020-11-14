@@ -53,7 +53,7 @@
 // change name TFT_SPI_CS, TFT_SPI_CLK etc.
 #define TFT_SPI       SPI1
 #define TFT_SPI_PORT  GPIOA
-#define TFT_SPI_AF      // should define. 
+#define TFT_SPI_AF      // should define.
 
 #define TFT_CS        GPIO4
 #define TFT_CLK       GPIO5
@@ -89,6 +89,77 @@ static inline void delay( uint16_t x )
   msleep(x);
 }
 
+static uint8_t pgm_read_byte(const uint8_t *addr) {
+  return *addr;
+}
+
+
+
+/*
+  read/write != command/data
+
+  p33. p35.
+
+  We use 4 wire. eg. we use D/CX
+    If the D/CX bit is “low”, the transmission byte is interpreted as a command byte.
+    If the D/CX bit is “high”, the transmission byte is stored as the
+                display data RAM (Memory write command), or command register as parameter.
+
+  The 4-line serial mode consists of the
+    Data/Command selection input (D/CX),
+    chip enable input (CSX),
+    the serial clock input (SCL)
+    and serial data Input/Output (SDA or SDI/SDO) for data transmission.
+
+  Any instruction can be sent in any order to ILI9341 and the MSB is transmitted first.
+
+  The serial interface is initialized when CSX is high status. In this state,
+  SCL clock pulse and SDA data are no effect. A falling edge on CSX enables the
+  serial interface and indicates the start of data transmission.
+
+  Host processor drives the CSX pin to low and starts by setting the D/CX bit on
+  SDA. The bit is read by ILI9341 on the first rising edge of SCL signal. On the
+  next falling edge of SCL, the MSB data bit (D7) is set on SDA by the host. On
+  the next falling edge of SCL, the next bit (D6) is set on SDA. If the optional
+  D/CX signal is used, a byte is eight read cycle width.
+  ---------
+
+  read is defined on p38.
+  lookks like supports an 8 bit read.
+
+*/
+
+
+static void send8( uint8_t x )
+{
+  spi_send( TFT_SPI, x );
+}
+
+
+
+static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
+{
+  gpio_clear(TFT_SPI_PORT, TFT_CS);     // CS active low
+  delay(1);
+
+  gpio_clear( TFT_CTL_PORT, TFT_CTL_DC);    // low == command
+  delay(1);
+
+
+  send8(command);
+  delay(1);
+
+
+  gpio_set( TFT_CTL_PORT, TFT_CTL_DC);    // high == data
+  delay(1);
+
+  for(unsigned i = 0; i < numDataBytes; ++i) {
+    send8(dataBytes[ i ]);
+  }
+
+}
+
+
 
 
 
@@ -117,7 +188,8 @@ static void tft_setup( void )
     // SPI_CR1_BAUDRATE_FPCLK_DIV_256,
     SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
     // SPI_CR1_CPOL_CLK_TO_1_WHEN_IDLE , // possible we want clock high instead... no doesn't work
-    SPI_CR1_CPHA_CLK_TRANSITION_2,    // 1 == rising edge, 2 == falling edge.
+    // SPI_CR1_CPHA_CLK_TRANSITION_2,    // 1 == rising edge, 2 == falling edge.
+    SPI_CR1_CPHA_CLK_TRANSITION_1,    // 1 == rising edge, 2 == falling edge.
     SPI_CR1_DFF_8BIT,
     SPI_CR1_MSBFIRST
     // SPI_CR1_LSBFIRST
@@ -129,11 +201,43 @@ static void tft_setup( void )
   // make spi cs regular gpio
   gpio_mode_setup(TFT_SPI_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TFT_CS );
 
+
   // set up gpio
-  gpio_mode_setup(TFT_CTL_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO_PUPD_NONE | TFT_CTL_DC | TFT_CTL_LED);
+  gpio_mode_setup(TFT_CTL_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TFT_CTL_RST | TFT_CTL_DC | TFT_CTL_LED);
 
   // uart_printf("dac setup spi done\n\r");
 }
+
+
+// clang-format off
+static const uint8_t initcmd[] = {
+  0xEF, 3, 0x03, 0x80, 0x02,
+  0xCF, 3, 0x00, 0xC1, 0x30,
+  0xED, 4, 0x64, 0x03, 0x12, 0x81,
+  0xE8, 3, 0x85, 0x00, 0x78,
+  0xCB, 5, 0x39, 0x2C, 0x00, 0x34, 0x02,
+  0xF7, 1, 0x20,
+  0xEA, 2, 0x00, 0x00,
+  ILI9341_PWCTR1  , 1, 0x23,             // Power control VRH[5:0]
+  ILI9341_PWCTR2  , 1, 0x10,             // Power control SAP[2:0];BT[3:0]
+  ILI9341_VMCTR1  , 2, 0x3e, 0x28,       // VCM control
+  ILI9341_VMCTR2  , 1, 0x86,             // VCM control2
+  ILI9341_MADCTL  , 1, 0x48,             // Memory Access Control
+  ILI9341_VSCRSADD, 1, 0x00,             // Vertical scroll zero
+  ILI9341_PIXFMT  , 1, 0x55,
+  ILI9341_FRMCTR1 , 2, 0x00, 0x18,
+  ILI9341_DFUNCTR , 3, 0x08, 0x82, 0x27, // Display Function Control
+  0xF2, 1, 0x00,                         // 3Gamma Function Disable
+  ILI9341_GAMMASET , 1, 0x01,             // Gamma curve selected
+  ILI9341_GMCTRP1 , 15, 0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, // Set Gamma
+    0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00,
+  ILI9341_GMCTRN1 , 15, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, // Set Gamma
+    0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F,
+  ILI9341_SLPOUT  , 0x80,                // Exit Sleep
+  ILI9341_DISPON  , 0x80,                // Display on
+  0x00                                   // End of list
+};
+// clang-format on
 
 
 
@@ -155,12 +259,15 @@ int main(void)
   tft_setup();
 
 
-
-  gpio_set(  TFT_CTL_PORT, TFT_CTL_LED);    // high
+  // turn led/backlight on.
+  gpio_set( TFT_CTL_PORT, TFT_CTL_LED);    // high
 
   // assert chip select, with low
   gpio_clear(TFT_SPI_PORT, TFT_CS);       // cs is spi port. this is hard.
 
+
+  //
+  msleep(1000);
 
   // hardware reset - review
   gpio_set(  TFT_CTL_PORT, TFT_CTL_RST);    // high
@@ -169,6 +276,21 @@ int main(void)
   msleep(150);
   gpio_set(  TFT_CTL_PORT, TFT_CTL_RST);   // high
   msleep(150);
+
+
+
+
+  uint8_t cmd, x, numArgs;
+  const uint8_t *addr = initcmd;
+  while ((cmd = pgm_read_byte(addr++)) > 0) {
+    x = pgm_read_byte(addr++);
+    numArgs = x & 0x7F;
+    sendCommand(cmd, addr, numArgs);
+    addr += numArgs;
+    // Ok, hi bit determines if needs a delay... horrible
+    if (x & 0x80)
+      delay(150);
+  }
 
 
 
