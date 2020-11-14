@@ -505,12 +505,8 @@ int main(void)
   }
   */
 
-
-
   ILI9341_DrawRectangle(100, 50, 200, 70, ILI9341_BLUE );
-
   ILI9341_DrawRectangle(20, 20, 20, 20, ILI9341_RED );
-  
   ILI9341_DrawRectangle(50, 20, 20, 20, ILI9341_WHITE );
 
   // blink led
