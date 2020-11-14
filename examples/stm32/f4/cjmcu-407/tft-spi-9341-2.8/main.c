@@ -361,47 +361,15 @@ static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint
         sendCommand(ILI9341_PASET, data, sizeof(data) ); // 2B
         // ILI9341_WriteData(data, sizeof(data));
     }
-
-    //
-
-    // write to RAM
-    // ILI9341_WriteCommand(0x2C); // RAMWR
-    // sendCommand(ILI9341_RAMWR, 0 , 0 ); // 2C
 }
 
 
-// So origin is weird...
 
-static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
-  // if((x >= ILI9341_WIDTH) || (y >= ILI9341_HEIGHT))
-  //  return;
 
-  // uint8_t data[] = { color >> 8, color & 0xFF };
+static void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color) 
+{
 
-  // OK. this draws a small line. much better.
-  uint16_t x_off = 10; 
-  uint16_t y_off = 1; 
-
-  ILI9341_SetAddressWindow(x, y, x + x_off - 1, y + y_off - 1);
-  // ILI9341_SetAddressWindow(y, x, y + x_off  - 1, x + y_off  - 1);
-
-  // send command
-  sendCommand0(ILI9341_RAMWR ); // 2C ram write
-  delay(1);
-
-  set_data();
-  // delay(1);
-
-  // so its 16 bit color???
-  // maybe it's not 16 bit...
-  int i;
-  for( i = 0; i < x_off * y_off ; ++i) {
-    send8( color >> 8 );
-    send8( color & 0xFF );
-  }
-}
-
-static void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color) {
+  // TODO clamp inputs..
 
   ILI9341_SetAddressWindow(x, y, x + x_off - 1, y + y_off - 1);
 
@@ -501,6 +469,7 @@ int main(void)
 
   ILI9341_DrawRectangle(100, 50, 200, 70, ILI9341_BLUE );
 
+  ILI9341_DrawRectangle(20, 20, 20, 20, ILI9341_RED );
 
   // blink led
  	while (1) {
