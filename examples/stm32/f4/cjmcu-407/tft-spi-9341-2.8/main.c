@@ -2,8 +2,8 @@
   spi 9341  2.8 with touch
 
   -- OK. needs 5V - for backlight to be brighterjj
-    not sure if the LED pin controls mosfets that turn the backlight on/off.
-
+  -- i think.
+    think the board LED pin controls mosfets that then turn the backlight on/off.
 
   just connecting led/BL to +3.3V Vcc and backlight turns on.
     probably a digital ctrl.  but maybe drawing current.
@@ -28,11 +28,16 @@
   primitives
     https://github.com/adafruit/Adafruit-GFX-Library/blob/master/Adafruit_SPILCD.cpp
 
-
-  - gfx library - higher level 
+  - gfx library - higher level
       https://github.com/adafruit/Adafruit-GFX-Library/blob/master/Adafruit_GFX.cpp
 
     https://controllerstech.com/interface-tft-display-with-stm32/
+
+  -------
+  agg antigrain.
+    to use - would need buffer in local memory - because must know background in order to blend pixel.
+    so even if use spi - to write the extents. still need backgroun buffer.
+    need to modify font to handle - fix paths.
 
   8 bit parallel, has init sequence.
     https://github.com/sammyizimmy/ili9341/blob/master/ili9341.c
@@ -161,11 +166,6 @@ static void lcd_spi_setup( void )
 
 
 
-
-
-static uint8_t pgm_read_byte(const uint8_t *addr) {
-  return *addr;
-}
 
 
 
@@ -349,6 +349,11 @@ static const uint8_t initcmd[] = {
 };
 // clang-format on
 
+
+
+static uint8_t pgm_read_byte(const uint8_t *addr) {
+  return *addr;
+}
 
 
 
