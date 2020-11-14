@@ -2,8 +2,8 @@
   spi 9341  2.8 with touch
 
   -- OK. needs 5V - for backlight to be brighterjj
-    not sure if the LED pin controls mosfets that turn the backlight on/off. 
-    
+    not sure if the LED pin controls mosfets that turn the backlight on/off.
+
 
   just connecting led/BL to +3.3V Vcc and backlight turns on.
     probably a digital ctrl.  but maybe drawing current.
@@ -232,7 +232,7 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
   send8(command);
   delay(1);   // required.
 
-  set_data(); 
+  set_data();
   delay(1);   // not required.
 
   for(unsigned i = 0; i < numDataBytes; ++i) {
@@ -240,6 +240,18 @@ static void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDa
   }
 
   delay(1); // required yes...
+            // so i think it just doesn't
+
+/*
+  EXTREME
+    // OK. think issue may be that send8 returns before it has finished sending bytes.
+    // so we have to find another call to block until finished.
+    // or check register in a loop ourselves.
+    // not sure.
+    // eg. it returns early. and only blocks if we try to write another byte while still sending spi data.
+    // so if we try to fiddle with the command/data register  in the middle of sending it screws up.
+
+*/
 }
 
 
@@ -370,7 +382,7 @@ static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint
 
 
 
-static void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color) 
+static void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color)
 {
 
   // TODO clamp inputs..
@@ -404,9 +416,9 @@ static void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16
 #define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
 #define MADCTL_MH 0x04  ///< LCD refresh right to left
 
-// OK. we are going to need a s
+// OK. we are going to need a struct to handle this...
 
-uint8_t rotation  ; 
+uint8_t rotation  ;
 uint16_t _width;
 uint16_t _height;
 
@@ -442,7 +454,7 @@ static void ILI9341_setRotation(uint8_t m) {
 
 
 
- 
+
 
 int main(void)
 {
@@ -466,7 +478,7 @@ int main(void)
   msleep(1000);
 
   initialize();
- 
+
   ILI9341_setRotation(3); // 0 == trhs, 1 == brhs, 2 == blhs,  3 == tlhs
 
   // ILI9341_DrawPixel(100, 50, ILI9341_BLUE );
