@@ -382,8 +382,8 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
   uint16_t x_off = 10; 
   uint16_t y_off = 1; 
 
-  // ILI9341_SetAddressWindow(x, y, x + x_off, y + y_off);
-  ILI9341_SetAddressWindow(y, x, y + x_off  - 1, x + y_off  - 1);
+  ILI9341_SetAddressWindow(x, y, x + x_off - 1, y + y_off - 1);
+  // ILI9341_SetAddressWindow(y, x, y + x_off  - 1, x + y_off  - 1);
 
   // send command
   sendCommand0(ILI9341_RAMWR ); // 2C ram write
@@ -400,6 +400,28 @@ static void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
     send8( color & 0xFF );
   }
 }
+
+static void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color) {
+
+  ILI9341_SetAddressWindow(x, y, x + x_off - 1, y + y_off - 1);
+
+  // send command
+  sendCommand0(ILI9341_RAMWR ); // 2C ram write
+  delay(1);
+
+  set_data();
+  // delay(1);
+
+  // 16 bit color
+  int i;
+  for( i = 0; i < x_off * y_off ; ++i) {
+    send8( color >> 8 );
+    send8( color & 0xFF );
+  }
+}
+
+
+
 
 
 #define MADCTL_MY 0x80  ///< Bottom to top
@@ -475,7 +497,9 @@ int main(void)
  
   ILI9341_setRotation(3); // 0 == trhs, 1 == brhs, 2 == blhs,  3 == tlhs
 
-  ILI9341_DrawPixel(50, 50, ILI9341_BLUE );
+  // ILI9341_DrawPixel(100, 50, ILI9341_BLUE );
+
+  ILI9341_DrawRectangle(100, 50, 200, 70, ILI9341_BLUE );
 
 
   // blink led
