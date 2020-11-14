@@ -90,10 +90,11 @@ static void led_setup(void)
 
 static inline void delay( uint16_t x )
 {
+  // millisecond delay
   msleep(x);
 }
 
-static inline void nop_sleep( uint32_t n )
+static inline void nop_sleep( uint32_t n)
 {
   uint32_t i;
   for(i = 0; i < n; ++i)  {
@@ -107,7 +108,7 @@ static inline void nop_sleep( uint32_t n )
 
 
 
-static void tft_setup( void )
+static void tft_spi_setup( void )
 {
   // uart_printf("dac setup spi\n\r");
 
@@ -200,14 +201,17 @@ static uint8_t pgm_read_byte(const uint8_t *addr) {
 
 static inline void spi_wait_for_transfer_finish(uint32_t spi)
 {
-       /* Wait for transfer finished. */
-       while (!(SPI_SR(spi) & SPI_SR_TXE));
-  
+   /* Wait for transfer finished. */
+   while (!(SPI_SR(spi) & SPI_SR_TXE));
 }
 
 
 static inline void wait_for_transfer_finish(void)
 {
+/*
+  see example, that also uses a loop.
+  https://github.com/libopencm3/libopencm3-examples/blob/master/examples/stm32/f4/stm32f429i-discovery/lcd-dma/lcd-spi.c
+*/
   spi_wait_for_transfer_finish(TFT_SPI);
   nop_sleep(15);   // 9 doesn't work. 10 does... weird margin
 }
@@ -459,7 +463,7 @@ int main(void)
 
   clock_setup();
   led_setup();
-  tft_setup();
+  tft_spi_setup();
 
 
   // turn led/backlight on.
