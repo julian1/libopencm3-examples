@@ -72,6 +72,8 @@ int main(void)
   writeFastHLine(&ctx, 50, 40, 100, ILI9341_BLUE); 
 
 
+  writeLine(&ctx, 10, 10, 190, 70, ILI9341_RED);
+
   // blink led
  	while (1) {
     gpio_toggle(GPIOE, GPIO0);

@@ -60,4 +60,97 @@ void writeFastHLine(Context *ctx, int16_t x, int16_t y, int16_t w, uint16_t colo
 
 }
 
+#if 0
+void Adafruit_SPITFT::drawPixel(int16_t x, int16_t y, uint16_t color) {
+  // Clip first...
+  if ((x >= 0) && (x < _width) && (y >= 0) && (y < _height)) {
+    // THEN set up transaction (if needed) and draw...
+    startWrite();
+    setAddrWindow(x, y, 1, 1);
+    SPI_WRITE16(color);
+    endWrite();
+  }
+}
+#endif
+
+static void drawPixel(Context *ctx, int16_t x, int16_t y, uint16_t color) {
+  // Clip first...
+  if ((x >= 0) && (x < ctx->width) && (y >= 0) && (y < ctx->height)) {
+    // THEN set up transaction (if needed) and draw...
+
+
+    //  can improve later
+    ILI9341_DrawRectangle(ctx, x, y, 1 , 1, color);
+
+  }
+}
+
+
+void writePixel(Context *ctx, int16_t x, int16_t y, uint16_t color) {
+  drawPixel(ctx, x, y, color);
+}
+
+#include <stdlib.h> // abs
+
+
+#ifndef min
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#ifndef _swap_int16_t
+#define _swap_int16_t(a, b)                                                    \
+  {                                                                            \
+    int16_t t = a;                                                             \
+    a = b;                                                                     \
+    b = t;                                                                     \
+  }
+#endif
+
+
+
+void writeLine(Context *ctx, int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {
+#if defined(ESP8266)
+  yield();
+#endif
+  int16_t steep = abs(y1 - y0) > abs(x1 - x0);
+  if (steep) {
+    _swap_int16_t(x0, y0);
+    _swap_int16_t(x1, y1);
+  }
+
+  if (x0 > x1) {
+    _swap_int16_t(x0, x1);
+    _swap_int16_t(y0, y1);
+  }
+
+  int16_t dx, dy;
+  dx = x1 - x0;
+  dy = abs(y1 - y0);
+
+  int16_t err = dx / 2;
+  int16_t ystep;
+
+  if (y0 < y1) {
+    ystep = 1;
+  } else {
+    ystep = -1;
+  }
+
+  for (; x0 <= x1; x0++) {
+    if (steep) {
+      writePixel(ctx, y0, x0, color);
+    } else {
+      writePixel(ctx, x0, y0, color);
+    }
+    err -= dy;
+    if (err < 0) {
+      y0 += ystep;
+      err += dx;
+    }
+  }
+}
+
+
+
+
 
