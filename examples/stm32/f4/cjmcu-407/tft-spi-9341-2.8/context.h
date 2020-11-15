@@ -20,7 +20,7 @@ Adafruit_GFX::Adafruit_GFX(int16_t w, int16_t h) : WIDTH(w), HEIGHT(h) {
 
 typedef struct Context
 {
-    // spi structure 
+    // could almost include opaque spi structure here, if needed
 
     uint8_t rotation  ;
     uint16_t width;

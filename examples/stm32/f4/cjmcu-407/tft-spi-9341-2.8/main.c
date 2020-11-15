@@ -73,9 +73,13 @@ int main(void)
   */
 
   // fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) 
+
+  fillScreen(&ctx, ILI9341_WHITE );
+
   fillRect(&ctx, 100, 50, 200, 70, ILI9341_BLUE );
   fillRect(&ctx, 20, 20, 20, 20, ILI9341_RED );
-  fillRect(&ctx, 50, 20, 20, 20, ILI9341_WHITE );
+
+
 
   // blink led
  	while (1) {
