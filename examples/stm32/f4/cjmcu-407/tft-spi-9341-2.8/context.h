@@ -30,15 +30,15 @@ typedef struct Context
 } Context;
 
 
-void initialize( void);
+void initialize(Context *ctx);
 
 
 
 void ILI9341_setRotation(Context *ctx, uint8_t m) ;
 
-void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void ILI9341_SetAddressWindow(Context *ctx, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
-void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color);
+void ILI9341_DrawRectangle(Context *ctx, uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color);
 
 
 

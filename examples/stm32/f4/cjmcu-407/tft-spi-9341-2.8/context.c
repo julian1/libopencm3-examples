@@ -1,6 +1,7 @@
 
 
 #include <stdint.h> // uint16_t etc
+#include <string.h> // memset
 
 #include "Adafruit-GFX-Library/gfxfont.h"
 #include "Adafruit-GFX-Library/glcdfont.c"
@@ -59,8 +60,10 @@ static uint8_t pgm_read_byte(const uint8_t *addr) {
 
 
 
-void initialize( void)
+void initialize(Context *ctx)
 {
+
+  memset(ctx, 0, sizeof(Context));
 
 
     // not sure if this is the best place
@@ -148,12 +151,14 @@ void ILI9341_setRotation(Context *ctx, uint8_t m)
 }
 
 
-
+#define UNUSED(x) (void)(x)
 
 // we need the low level functions.
 
-void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+void ILI9341_SetAddressWindow(Context *ctx, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
+  UNUSED(ctx);
+
   {
       uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
       // ILI9341_WriteData(data, sizeof(data));
@@ -170,12 +175,12 @@ void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1
 
 
 
-void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color)
+void ILI9341_DrawRectangle(Context *ctx, uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color)
 {
 
   // TODO clamp inputs..
 
-  ILI9341_SetAddressWindow(x, y, x + x_off - 1, y + y_off - 1);
+  ILI9341_SetAddressWindow(ctx, x, y, x + x_off - 1, y + y_off - 1);
 
   // send command
   sendCommand0(ILI9341_RAMWR ); // 2C ram write

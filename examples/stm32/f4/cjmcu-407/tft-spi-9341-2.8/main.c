@@ -54,16 +54,11 @@ int main(void)
 
   turn_on_backlight( );
 
-  // do once
-  // assert_cs();
-
-  //msleep(1000);
-
 
 
   Context   ctx;
 
-  initialize();
+  initialize(&ctx);
 
   ILI9341_setRotation(&ctx, 3); // 0 == trhs, 1 == brhs, 2 == blhs,  3 == tlhs
 
@@ -76,9 +71,9 @@ int main(void)
   }
   */
 
-  ILI9341_DrawRectangle(100, 50, 200, 70, ILI9341_BLUE );
-  ILI9341_DrawRectangle(20, 20, 20, 20, ILI9341_RED );
-  ILI9341_DrawRectangle(50, 20, 20, 20, ILI9341_WHITE );
+  ILI9341_DrawRectangle(&ctx, 100, 50, 200, 70, ILI9341_BLUE );
+  ILI9341_DrawRectangle(&ctx, 20, 20, 20, 20, ILI9341_RED );
+  ILI9341_DrawRectangle(&ctx, 50, 20, 20, 20, ILI9341_WHITE );
 
   // blink led
  	while (1) {
