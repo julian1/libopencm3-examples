@@ -55,7 +55,8 @@ typedef struct Context
 
 } Context;
 
-// prefix with context?
+
+// prefix with context_?
 
 void startWrite(Context *ctx) ;
 

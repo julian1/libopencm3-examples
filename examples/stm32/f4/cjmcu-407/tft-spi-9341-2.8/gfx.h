@@ -15,6 +15,8 @@
 #include <stddef.h> // size_t
 
 
+// prefix with gfx_
+
 void fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) ;
 
 void fillScreen(Context *ctx, uint16_t color) ;
@@ -22,6 +24,7 @@ void fillScreen(Context *ctx, uint16_t color) ;
 
 void writeFillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) ;
 
+// possibly should be moved to context.
 void writeFastHLine(Context *ctx, int16_t x, int16_t y, int16_t w, uint16_t color); 
 void writeFastVLine(Context *ctx, int16_t x, int16_t y, int16_t h, uint16_t color) ;
 
@@ -45,6 +48,9 @@ void drawChar(
     uint8_t size_x, uint8_t size_y); 
 
 
+// our printf function is goinig to have to take the function pointer, and context
+// as arguments... which is a bit messy.
+// eg. gfx_printf(&ctx, gfx_write, "%s %d", "hi", 123);
 size_t write(Context *ctx, uint8_t c);
 
 void setCursor(Context *ctx, int16_t x, int16_t y) ;

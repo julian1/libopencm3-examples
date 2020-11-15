@@ -56,7 +56,6 @@ int main(void)
   lcd_spi_turn_on_backlight( );
 
 
-
   Context   ctx;
 
   // low level
