@@ -2,6 +2,9 @@
 #include "context.h"
 #include "gfx.h"
 
+
+#define UNUSED(x) (void)(x)
+
 #if 0
 void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
                             uint16_t color) {
@@ -14,6 +17,19 @@ void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
 #endif
 
 
+void startWrite(Context *ctx) 
+{
+  UNUSED(ctx);
+  // dummy
+  // would normally do cs.
+
+}
+
+void endWrite(Context *ctx) 
+{
+  UNUSED(ctx);
+
+}
 
 
 void fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) 
@@ -151,6 +167,47 @@ void writeLine(Context *ctx, int16_t x0, int16_t y0, int16_t x1, int16_t y1, uin
 }
 
 
+
+
+
+void drawCircle(Context *ctx, int16_t x0, int16_t y0, int16_t r, uint16_t color) 
+{
+#if defined(ESP8266)
+  yield();
+#endif
+  int16_t f = 1 - r;
+  int16_t ddF_x = 1;
+  int16_t ddF_y = -2 * r;
+  int16_t x = 0;
+  int16_t y = r;
+
+  startWrite(ctx);
+  writePixel(ctx, x0, y0 + r, color);
+  writePixel(ctx, x0, y0 - r, color);
+  writePixel(ctx, x0 + r, y0, color);
+  writePixel(ctx, x0 - r, y0, color);
+
+  while (x < y) {
+    if (f >= 0) {
+      y--;
+      ddF_y += 2;
+      f += ddF_y;
+    }
+    x++;
+    ddF_x += 2;
+    f += ddF_x;
+
+    writePixel(ctx, x0 + x, y0 + y, color);
+    writePixel(ctx, x0 - x, y0 + y, color);
+    writePixel(ctx, x0 + x, y0 - y, color);
+    writePixel(ctx, x0 - x, y0 - y, color);
+    writePixel(ctx, x0 + y, y0 + x, color);
+    writePixel(ctx, x0 - y, y0 + x, color);
+    writePixel(ctx, x0 + y, y0 - x, color);
+    writePixel(ctx, x0 - y, y0 - x, color);
+  }
+  endWrite(ctx);
+}
 
 
 

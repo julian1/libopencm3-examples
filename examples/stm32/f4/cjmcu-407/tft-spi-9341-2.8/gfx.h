@@ -11,6 +11,11 @@
 
 */
 
+
+void startWrite(Context *ctx) ;
+
+void endWrite(Context *ctx); 
+
 void fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) ;
 
 void fillScreen(Context *ctx, uint16_t color) ;
@@ -29,6 +34,7 @@ void writePixel(Context *ctx, int16_t x, int16_t y, uint16_t color) ;
 void writeLine(Context *ctx, int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) ;
 
 
+void drawCircle(Context *ctx, int16_t x0, int16_t y0, int16_t r, uint16_t color) ;
 
 
 

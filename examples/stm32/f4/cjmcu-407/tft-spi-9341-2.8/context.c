@@ -12,6 +12,7 @@
 #include "context.h"
 
 
+#define UNUSED(x) (void)(x)
 
 /*
 inline GFXglyph *pgm_read_glyph_ptr(const GFXfont *gfxFont, uint8_t c) {
@@ -150,7 +151,6 @@ void ILI9341_setRotation(Context *ctx, uint8_t m)
 }
 
 
-#define UNUSED(x) (void)(x)
 
 // we need the low level functions.
 
@@ -183,11 +183,8 @@ void ILI9341_DrawRectangle(Context *ctx, uint16_t x, uint16_t y, uint16_t x_off,
 
   // send command
   sendCommand0(ILI9341_RAMWR); // 2C ram write
-  //delay(1);
 
   set_data();
-  // delay(1);
-
   // 16 bit color
   int i;
   for( i = 0; i < x_off * y_off ; ++i) {

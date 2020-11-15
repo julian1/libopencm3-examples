@@ -74,6 +74,8 @@ int main(void)
 
   writeLine(&ctx, 10, 10, 190, 70, ILI9341_RED);
 
+  drawCircle(&ctx, 40, 40, 50, ILI9341_BLUE) ;
+
   // blink led
  	while (1) {
     gpio_toggle(GPIOE, GPIO0);
