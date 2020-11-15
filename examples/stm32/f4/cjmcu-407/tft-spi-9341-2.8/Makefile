@@ -19,7 +19,7 @@
 
 BINARY = main
 
-OBJS = clock.o
+OBJS = clock.o support.o
 
 DEVICE=STM32F407VG
 
