@@ -4,9 +4,6 @@
 #include <stdint.h> // uint16_t etc
 #include <string.h> // memset
 
-#include "Adafruit-GFX-Library/gfxfont.h"
-#include "Adafruit-GFX-Library/glcdfont.c"
-
 #include "lcd_spi.h"
 #include "Adafruit_ILI9341.h"
 
@@ -84,7 +81,7 @@ static const uint8_t initcmd[] = {
 
 
 
-static uint8_t pgm_read_byte(const uint8_t *addr) {
+static inline uint8_t pgm_read_byte(const uint8_t *addr) {
   return *addr;
 }
 
