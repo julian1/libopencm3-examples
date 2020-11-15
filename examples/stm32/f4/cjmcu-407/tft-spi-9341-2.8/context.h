@@ -1,4 +1,5 @@
 
+#include <stdint.h>
 
 
 #if 0
@@ -31,8 +32,6 @@ typedef struct Context
 
 
 void initialize(Context *ctx);
-
-
 
 void ILI9341_setRotation(Context *ctx, uint8_t m) ;
 

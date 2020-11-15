@@ -12,6 +12,7 @@
 
 #include "lcd_spi.h"
 #include "context.h"
+#include "gfx.h"
 
 
 
@@ -71,9 +72,10 @@ int main(void)
   }
   */
 
-  ILI9341_DrawRectangle(&ctx, 100, 50, 200, 70, ILI9341_BLUE );
-  ILI9341_DrawRectangle(&ctx, 20, 20, 20, 20, ILI9341_RED );
-  ILI9341_DrawRectangle(&ctx, 50, 20, 20, 20, ILI9341_WHITE );
+  // fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) 
+  fillRect(&ctx, 100, 50, 200, 70, ILI9341_BLUE );
+  fillRect(&ctx, 20, 20, 20, 20, ILI9341_RED );
+  fillRect(&ctx, 50, 20, 20, 20, ILI9341_WHITE );
 
   // blink led
  	while (1) {
