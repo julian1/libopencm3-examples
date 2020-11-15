@@ -17,6 +17,25 @@
 #define UNUSED(x) (void)(x)
 
 
+
+
+void startWrite(Context *ctx) 
+{
+  UNUSED(ctx);
+  // dummy
+  // would normally do cs.
+  // except we 
+  // lcd_spi_assert_cs();
+}
+
+void endWrite(Context *ctx) 
+{
+  UNUSED(ctx);
+
+}
+
+
+
 void delay( uint16_t x )
 {
   // millisecond delay

@@ -32,6 +32,11 @@ typedef struct Context
 
 // prefix with context?
 
+void startWrite(Context *ctx) ;
+
+void endWrite(Context *ctx); 
+
+
 void delay( uint16_t x ); 
 
 void initialize(Context *ctx);

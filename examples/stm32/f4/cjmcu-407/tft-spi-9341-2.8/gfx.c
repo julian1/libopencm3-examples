@@ -17,20 +17,6 @@ void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
 #endif
 
 
-void startWrite(Context *ctx) 
-{
-  UNUSED(ctx);
-  // dummy
-  // would normally do cs.
-
-}
-
-void endWrite(Context *ctx) 
-{
-  UNUSED(ctx);
-
-}
-
 
 void fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) 
 {
