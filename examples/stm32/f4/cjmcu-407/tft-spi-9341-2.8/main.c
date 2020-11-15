@@ -59,26 +59,17 @@ int main(void)
 
   Context   ctx;
 
+  // low level
   initialize(&ctx);
-
   ILI9341_setRotation(&ctx, 3); // 0 == trhs, 1 == brhs, 2 == blhs,  3 == tlhs
 
 
-  /*
-  {
-      uint8_t data[] = { 0xff  };
-      // sendCommand(ILI_WR_BRIGHTNESS, data, 1 );
-      sendCommand(0x51 , data, 1 );
-  }
-  */
-
-  // fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) 
-
+  // gfx
   fillScreen(&ctx, ILI9341_WHITE );
-
   fillRect(&ctx, 100, 50, 200, 70, ILI9341_BLUE );
   fillRect(&ctx, 20, 20, 20, 20, ILI9341_RED );
 
+  writeFastHLine(&ctx, 50, 40, 100, ILI9341_BLUE); 
 
 
   // blink led

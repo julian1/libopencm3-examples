@@ -23,6 +23,7 @@ void send8( uint8_t x );
 
 void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes);
 void sendCommand0(uint8_t command);
+void sendCommand1(uint8_t command, uint8_t data);
 
 
 

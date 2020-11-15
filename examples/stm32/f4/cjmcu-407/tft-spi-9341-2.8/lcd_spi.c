@@ -297,21 +297,16 @@ void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes
 
 void sendCommand0(uint8_t command)
 {
+  // should look at removing this
   set_command();
   send8(command);
 }
 
-
-#if 0
-static void sendData0(uint8_t data)
+void sendCommand1(uint8_t command, uint8_t data)
 {
-  set_data();
-  // delay(1);  // seems not required
-
-
-  send8(data);
-  //delay(1); no required.
+  sendCommand(command, &data, 1);
 }
-#endif
+
+
 
 

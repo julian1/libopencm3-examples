@@ -6,7 +6,6 @@
 #include "Adafruit-GFX-Library/gfxfont.h"
 #include "Adafruit-GFX-Library/glcdfont.c"
 
-
 #include "lcd_spi.h"
 #include "Adafruit_ILI9341.h"
 
@@ -183,7 +182,7 @@ void ILI9341_DrawRectangle(Context *ctx, uint16_t x, uint16_t y, uint16_t x_off,
   ILI9341_SetAddressWindow(ctx, x, y, x + x_off - 1, y + y_off - 1);
 
   // send command
-  sendCommand0(ILI9341_RAMWR ); // 2C ram write
+  sendCommand0(ILI9341_RAMWR); // 2C ram write
   //delay(1);
 
   set_data();
