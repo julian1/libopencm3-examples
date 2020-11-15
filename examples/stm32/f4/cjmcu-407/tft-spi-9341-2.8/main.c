@@ -59,9 +59,13 @@ int main(void)
 
   //msleep(1000);
 
+
+
+  Context   ctx;
+
   initialize();
 
-  ILI9341_setRotation(3); // 0 == trhs, 1 == brhs, 2 == blhs,  3 == tlhs
+  ILI9341_setRotation(&ctx, 3); // 0 == trhs, 1 == brhs, 2 == blhs,  3 == tlhs
 
 
   /*

@@ -1,9 +1,7 @@
 
 
-//#include "Adafruit_GFX.h"
-
-
 #include <stdint.h> // uint16_t etc
+
 #include "Adafruit-GFX-Library/gfxfont.h"
 #include "Adafruit-GFX-Library/glcdfont.c"
 
@@ -15,11 +13,11 @@
 
 
 
-
+/*
 inline GFXglyph *pgm_read_glyph_ptr(const GFXfont *gfxFont, uint8_t c) {
   return gfxFont->glyph + c;
 }
-
+*/
 
 ////////////////////////////////
 
@@ -101,6 +99,56 @@ void initialize( void)
 
 
 
+#define MADCTL_MY 0x80  ///< Bottom to top
+#define MADCTL_MX 0x40  ///< Right to left
+#define MADCTL_MV 0x20  ///< Reverse Mode
+#define MADCTL_ML 0x10  ///< LCD refresh Bottom to top
+#define MADCTL_RGB 0x00 ///< Red-Green-Blue pixel order
+#define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
+#define MADCTL_MH 0x04  ///< LCD refresh right to left
+
+// OK. we are going to need a struct to handle this...
+
+/*
+uint8_t rotation  ;
+uint16_t _width;
+uint16_t _height;
+*/
+
+// cvoid ILI9341_setRotation(uint8_t m) {
+void ILI9341_setRotation(Context *ctx, uint8_t m)
+{
+
+  ctx->rotation = m % 4; // can't be higher than 3
+
+  switch (ctx->rotation) {
+    case 0:
+      m = (MADCTL_MX | MADCTL_BGR);
+      ctx->width = ILI9341_TFTWIDTH;
+      ctx->height = ILI9341_TFTHEIGHT;
+      break;
+    case 1:
+      m = (MADCTL_MV | MADCTL_BGR);
+      ctx->width = ILI9341_TFTHEIGHT;
+      ctx->height = ILI9341_TFTWIDTH;
+      break;
+    case 2:
+      m = (MADCTL_MY | MADCTL_BGR);
+      ctx->width = ILI9341_TFTWIDTH;
+      ctx->height = ILI9341_TFTHEIGHT;
+      break;
+    case 3:
+      m = (MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR);
+      ctx->width = ILI9341_TFTHEIGHT;
+      ctx->height = ILI9341_TFTWIDTH;
+      break;
+  }
+
+  sendCommand(ILI9341_MADCTL, &m, 1);
+}
+
+
+
 
 // we need the low level functions.
 
@@ -145,51 +193,5 @@ void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_of
 }
 
 
-
-
-
-#define MADCTL_MY 0x80  ///< Bottom to top
-#define MADCTL_MX 0x40  ///< Right to left
-#define MADCTL_MV 0x20  ///< Reverse Mode
-#define MADCTL_ML 0x10  ///< LCD refresh Bottom to top
-#define MADCTL_RGB 0x00 ///< Red-Green-Blue pixel order
-#define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
-#define MADCTL_MH 0x04  ///< LCD refresh right to left
-
-// OK. we are going to need a struct to handle this...
-
-uint8_t rotation  ;
-uint16_t _width;
-uint16_t _height;
-
-void ILI9341_setRotation(uint8_t m) {
-
-  rotation = m % 4; // can't be higher than 3
-
-  switch (rotation) {
-  case 0:
-    m = (MADCTL_MX | MADCTL_BGR);
-    _width = ILI9341_TFTWIDTH;
-    _height = ILI9341_TFTHEIGHT;
-    break;
-  case 1:
-    m = (MADCTL_MV | MADCTL_BGR);
-    _width = ILI9341_TFTHEIGHT;
-    _height = ILI9341_TFTWIDTH;
-    break;
-  case 2:
-    m = (MADCTL_MY | MADCTL_BGR);
-    _width = ILI9341_TFTWIDTH;
-    _height = ILI9341_TFTHEIGHT;
-    break;
-  case 3:
-    m = (MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR);
-    _width = ILI9341_TFTHEIGHT;
-    _height = ILI9341_TFTWIDTH;
-    break;
-  }
-
-  sendCommand(ILI9341_MADCTL, &m, 1);
-}
 
 

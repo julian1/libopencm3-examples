@@ -17,11 +17,24 @@ Adafruit_GFX::Adafruit_GFX(int16_t w, int16_t h) : WIDTH(w), HEIGHT(h) {
 #endif
 
 
+typedef struct Context
+{
+    // spi structure 
+
+    uint8_t rotation  ;
+    uint16_t width;
+    uint16_t height;
+
+
+
+} Context;
+
+
 void initialize( void);
 
 
 
-void ILI9341_setRotation(uint8_t m) ;
+void ILI9341_setRotation(Context *ctx, uint8_t m) ;
 
 void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
