@@ -76,6 +76,15 @@ int main(void)
 
   drawCircle(&ctx, 40, 40, 50, ILI9341_BLUE) ;
 
+
+  drawChar(
+    &ctx,
+    60, 60, '8',                        // int16_t x, int16_t y, unsigned char c,
+    ILI9341_BLACK, ILI9341_WHITE,       // uint16_t color, uint16_t bg, 
+    10, 10);                            // uint8_t size_x, uint8_t size_y); 
+
+
+
   // blink led
  	while (1) {
     gpio_toggle(GPIOE, GPIO0);
