@@ -17,4 +17,15 @@ Adafruit_GFX::Adafruit_GFX(int16_t w, int16_t h) : WIDTH(w), HEIGHT(h) {
 #endif
 
 
+void initialize( void);
+
+
+
+void ILI9341_setRotation(uint8_t m) ;
+
+void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+
+void ILI9341_DrawRectangle(uint16_t x, uint16_t y, uint16_t x_off, uint16_t y_off, uint16_t color);
+
+
 

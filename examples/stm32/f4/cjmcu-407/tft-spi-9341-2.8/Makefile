@@ -19,7 +19,7 @@
 
 BINARY = main
 
-OBJS = clock.o gfx.o
+OBJS = clock.o lcd_spi.o gfx.o
 
 DEVICE=STM32F407VG
 
