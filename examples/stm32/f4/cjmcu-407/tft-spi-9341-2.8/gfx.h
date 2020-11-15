@@ -51,4 +51,10 @@ void setCursor(Context *ctx, int16_t x, int16_t y) ;
 void setTextColor(Context *ctx, uint16_t c) ;
 //void setTextColor2(uint16_t c, uint16_t bg) ;
 
+void setTextSize(Context *ctx, uint8_t s_x, uint8_t s_y) ;
+
+
+
+
+
 

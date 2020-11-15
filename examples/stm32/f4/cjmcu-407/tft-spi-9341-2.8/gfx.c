@@ -411,6 +411,14 @@ void setTextColor(Context *ctx, uint16_t c)
 }
 
 
+void setTextSize(Context *ctx, uint8_t s_x, uint8_t s_y) 
+{
+  ctx->textsize_x = (s_x > 0) ? s_x : 1;
+  ctx->textsize_y = (s_y > 0) ? s_y : 1;
+}
+
+
+
 
 
 

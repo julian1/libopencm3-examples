@@ -83,8 +83,9 @@ int main(void)
 
 
   setTextColor(&ctx, ILI9341_BLUE); 
-
   setCursor(&ctx, 50, 50);
+  setTextSize(&ctx, 3, 3);
+
   write(&ctx, 'h');     // This won't work very well with printf if have to pass a context...
   write(&ctx, 'i');
 
