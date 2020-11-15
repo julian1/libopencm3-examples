@@ -221,7 +221,7 @@ static inline void wait_for_transfer_finish(void)
 
 
 // probably should be inlined...
-void send8( uint8_t x )
+void lcd_spi_send8( uint8_t x )
 {
   spi_send( LCD_SPI, x );
 }
@@ -271,20 +271,20 @@ void lcd_spi_set_data(void )
 
 
 
-void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
+void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
   lcd_spi_set_command();
-  send8(command);
+  lcd_spi_send8(command);
 
   lcd_spi_set_data();
   for(unsigned i = 0; i < numDataBytes; ++i) {
-    send8(dataBytes[ i ]);
+    lcd_spi_send8(dataBytes[ i ]);
   }
 
 
 /*
   EXTREME
-    // OK. think issue may be that send8 returns before it has finished sending bytes.
+    // OK. think issue may be that lcd_spi_send8 returns before it has finished sending bytes.
     // so we have to find another call to block until finished.
     // or check register in a loop ourselves.
     // not sure.
@@ -295,16 +295,16 @@ void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes
 }
 
 
-void sendCommand0(uint8_t command)
+void lcd_send_command0(uint8_t command)
 {
   // should look at removing this
   lcd_spi_set_command();
-  send8(command);
+  lcd_spi_send8(command);
 }
 
-void sendCommand1(uint8_t command, uint8_t data)
+void lcd_send_command1(uint8_t command, uint8_t data)
 {
-  sendCommand(command, &data, 1);
+  lcd_send_command(command, &data, 1);
 }
 
 

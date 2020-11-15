@@ -1,4 +1,5 @@
 
+// prefix function names with context
 
 #include <stdint.h> // uint16_t etc
 #include <string.h> // memset
@@ -98,7 +99,7 @@ void initialize(Context *ctx)
   while ((cmd = pgm_read_byte(addr++)) > 0) {
     x = pgm_read_byte(addr++);
     numArgs = x & 0x7F;
-    sendCommand(cmd, addr, numArgs);
+    lcd_send_command(cmd, addr, numArgs);
     addr += numArgs;
     // Ok, hi bit determines if needs a delay... horrible
     // single argument and delay...
@@ -157,7 +158,7 @@ void ILI9341_setRotation(Context *ctx, uint8_t m)
       break;
   }
 
-  sendCommand(ILI9341_MADCTL, &m, 1);
+  lcd_send_command(ILI9341_MADCTL, &m, 1);
 }
 
 
@@ -169,16 +170,13 @@ void ILI9341_SetAddressWindow(Context *ctx, uint16_t x0, uint16_t y0, uint16_t x
   UNUSED(ctx);
 
   {
-      uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
-      // ILI9341_WriteData(data, sizeof(data));
-      sendCommand(ILI9341_CASET, data, sizeof(data) ); // 2A
+    uint8_t data[] = { (x0 >> 8) & 0xFF, x0 & 0xFF, (x1 >> 8) & 0xFF, x1 & 0xFF };
+    lcd_send_command(ILI9341_CASET, data, sizeof(data) ); // 2A
   }
 
-  // ILI9341_WriteCommand(0x2B); // RASET
   {
-      uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
-      sendCommand(ILI9341_PASET, data, sizeof(data) ); // 2B
-      // ILI9341_WriteData(data, sizeof(data));
+    uint8_t data[] = { (y0 >> 8) & 0xFF, y0 & 0xFF, (y1 >> 8) & 0xFF, y1 & 0xFF };
+    lcd_send_command(ILI9341_PASET, data, sizeof(data) ); // 2B
   }
 }
 
@@ -192,14 +190,14 @@ void ILI9341_DrawRectangle(Context *ctx, uint16_t x, uint16_t y, uint16_t x_off,
   ILI9341_SetAddressWindow(ctx, x, y, x + x_off - 1, y + y_off - 1);
 
   // send command
-  sendCommand0(ILI9341_RAMWR); // 2C ram write
+  lcd_send_command0(ILI9341_RAMWR); // 2C ram write
 
   lcd_spi_set_data();
   // 16 bit color
   int i;
   for( i = 0; i < x_off * y_off ; ++i) {
-    send8( color >> 8 );
-    send8( color & 0xFF );
+    lcd_spi_send8( color >> 8 );
+    lcd_spi_send8( color & 0xFF );
   }
 }
 
