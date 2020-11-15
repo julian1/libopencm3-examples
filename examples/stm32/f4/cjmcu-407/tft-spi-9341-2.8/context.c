@@ -10,9 +10,19 @@
 #include "Adafruit_ILI9341.h"
 
 #include "context.h"
+#include "clock.h" // for msleep
 
 
 #define UNUSED(x) (void)(x)
+
+
+void delay( uint16_t x )
+{
+  // millisecond delay
+  msleep(x);
+}
+
+
 
 /*
 inline GFXglyph *pgm_read_glyph_ptr(const GFXfont *gfxFont, uint8_t c) {
@@ -67,19 +77,19 @@ void initialize(Context *ctx)
 
 
     // not sure if this is the best place
-  assert_cs();
+  lcd_spi_assert_cs();
   delay(1);
 
 
   // hardware reset - review
   // gpio_set(  LCD_CTL_PORT, LCD_CTL_RST);    // high
-  deassert_rst();
+  lcd_spi_deassert_rst();
   delay(150);
-  assert_rst();
+  lcd_spi_assert_rst();
   // gpio_clear(LCD_CTL_PORT, LCD_CTL_RST);   // low
   delay(150);
   // gpio_set(  LCD_CTL_PORT, LCD_CTL_RST);   // high
-  deassert_rst();
+  lcd_spi_deassert_rst();
   delay(150);
 
 
@@ -184,7 +194,7 @@ void ILI9341_DrawRectangle(Context *ctx, uint16_t x, uint16_t y, uint16_t x_off,
   // send command
   sendCommand0(ILI9341_RAMWR); // 2C ram write
 
-  set_data();
+  lcd_spi_set_data();
   // 16 bit color
   int i;
   for( i = 0; i < x_off * y_off ; ++i) {

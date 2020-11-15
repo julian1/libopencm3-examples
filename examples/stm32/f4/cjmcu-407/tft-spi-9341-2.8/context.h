@@ -31,6 +31,8 @@ typedef struct Context
 } Context;
 
 
+void delay( uint16_t x ); 
+
 void initialize(Context *ctx);
 
 void ILI9341_setRotation(Context *ctx, uint8_t m) ;

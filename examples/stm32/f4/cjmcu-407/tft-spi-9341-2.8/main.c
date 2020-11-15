@@ -53,7 +53,7 @@ int main(void)
   lcd_spi_setup();
 
 
-  turn_on_backlight( );
+  lcd_spi_turn_on_backlight( );
 
 
 

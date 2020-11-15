@@ -54,7 +54,6 @@
 
 
 #include "lcd_spi.h"
-#include "clock.h" // for msleep
 
 /*
   spi 1 AF5
@@ -82,13 +81,14 @@
 
 
 
+
+
+#if 0
 void delay( uint16_t x )
 {
   // millisecond delay
   msleep(x);
 }
-
-#if 0
 static inline void nop_sleep( uint32_t n)
 {
   uint32_t i;
@@ -227,19 +227,19 @@ void send8( uint8_t x )
 }
 
 
-void turn_on_backlight( void )
+void lcd_spi_turn_on_backlight( void )
 {
   // turn led/backlight on.
   gpio_set( LCD_CTL_PORT, LCD_CTL_LED);    // high
 }
 
 
-void deassert_rst(void)
+void lcd_spi_deassert_rst(void)
 {
   gpio_set( LCD_CTL_PORT, LCD_CTL_RST);
 }
 
-void assert_rst(void)
+void lcd_spi_assert_rst(void)
 {
   gpio_clear(  LCD_CTL_PORT, LCD_CTL_RST);
 }
@@ -247,7 +247,7 @@ void assert_rst(void)
 
 
 
-void assert_cs(void)
+void lcd_spi_assert_cs(void)
 {
   // assert chip select, with low
   gpio_clear(LCD_SPI_PORT, LCD_CS);       // cs is spi port. this is hard.
@@ -255,7 +255,7 @@ void assert_cs(void)
 
 
 
-void set_command(void )
+void lcd_spi_set_command(void )
 {
   wait_for_transfer_finish();
   gpio_clear( LCD_CTL_PORT, LCD_CTL_DC);    // low == command
@@ -263,7 +263,7 @@ void set_command(void )
 
 
 
-void set_data(void )
+void lcd_spi_set_data(void )
 {
   wait_for_transfer_finish();
   gpio_set( LCD_CTL_PORT, LCD_CTL_DC);    // high == data
@@ -273,10 +273,10 @@ void set_data(void )
 
 void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
-  set_command();
+  lcd_spi_set_command();
   send8(command);
 
-  set_data();
+  lcd_spi_set_data();
   for(unsigned i = 0; i < numDataBytes; ++i) {
     send8(dataBytes[ i ]);
   }
@@ -298,7 +298,7 @@ void sendCommand(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes
 void sendCommand0(uint8_t command)
 {
   // should look at removing this
-  set_command();
+  lcd_spi_set_command();
   send8(command);
 }
 
