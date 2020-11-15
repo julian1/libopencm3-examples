@@ -71,17 +71,22 @@ int main(void)
 
   writeFastHLine(&ctx, 50, 40, 100, ILI9341_BLUE); 
 
-
   writeLine(&ctx, 10, 10, 190, 70, ILI9341_RED);
-
   drawCircle(&ctx, 40, 40, 50, ILI9341_BLUE) ;
-
 
   drawChar(
     &ctx,
     60, 60, '8',                        // int16_t x, int16_t y, unsigned char c,
     ILI9341_BLACK, ILI9341_WHITE,       // uint16_t color, uint16_t bg, 
     10, 10);                            // uint8_t size_x, uint8_t size_y); 
+
+
+
+  setTextColor(&ctx, ILI9341_BLUE); 
+
+  setCursor(&ctx, 50, 50);
+  write(&ctx, 'h');     // This won't work very well with printf if have to pass a context...
+  write(&ctx, 'i');
 
 
 

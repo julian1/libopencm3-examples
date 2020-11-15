@@ -25,7 +25,7 @@ void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
 
 
 
-void fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) 
+void fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 {
 
   ILI9341_DrawRectangle(ctx, x, y, w, h, color);
@@ -38,14 +38,14 @@ void fillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t
 #endif
 }
 
-void fillScreen(Context *ctx, uint16_t color) 
+void fillScreen(Context *ctx, uint16_t color)
 {
   fillRect(ctx, 0, 0, ctx->width, ctx->height, color);
 }
 
 /*
     appears to use a buffer????
-void writePixel(Context *ctx, int16_t x, int16_t y, uint16_t color) 
+void writePixel(Context *ctx, int16_t x, int16_t y, uint16_t color)
 {
   drawPixel(x, y, color);
 }
@@ -58,7 +58,7 @@ void writeFillRect(Context *ctx, int16_t x, int16_t y, int16_t w, int16_t h, uin
 }
 
 
-void writeFastHLine(Context *ctx, int16_t x, int16_t y, int16_t w, uint16_t color) 
+void writeFastHLine(Context *ctx, int16_t x, int16_t y, int16_t w, uint16_t color)
 {
   // Overwrite in subclasses if startWrite is defined!
   // Example: writeLine(x, y, x+w-1, y, color);
@@ -69,7 +69,7 @@ void writeFastHLine(Context *ctx, int16_t x, int16_t y, int16_t w, uint16_t colo
 
 }
 
-void writeFastVLine(Context *ctx, int16_t x, int16_t y, int16_t h, uint16_t color) 
+void writeFastVLine(Context *ctx, int16_t x, int16_t y, int16_t h, uint16_t color)
 {
   // Overwrite in subclasses if startWrite is defined!
   // Can be just writeLine(x, y, x, y+h-1, color);
@@ -175,7 +175,7 @@ void writeLine(Context *ctx, int16_t x0, int16_t y0, int16_t x1, int16_t y1, uin
 
 
 
-void drawCircle(Context *ctx, int16_t x0, int16_t y0, int16_t r, uint16_t color) 
+void drawCircle(Context *ctx, int16_t x0, int16_t y0, int16_t r, uint16_t color)
 {
 #if defined(ESP8266)
   yield();
@@ -240,7 +240,7 @@ static inline uint8_t pgm_read_byte(const uint8_t *addr) {
 void drawChar(
     Context *ctx,
     int16_t x, int16_t y, unsigned char c,
-    uint16_t color, uint16_t bg, 
+    uint16_t color, uint16_t bg,
     uint8_t size_x, uint8_t size_y
 ) {
 
@@ -344,6 +344,74 @@ void drawChar(
 
   } // End classic vs custom font
 }
+
+
+
+
+size_t write(Context *ctx, uint8_t c)
+{
+  if (!ctx->gfxFont) { // 'Classic' built-in font
+
+    if (c == '\n') {              // Newline?
+      ctx->cursor_x = 0;               // Reset x to zero,
+      ctx->cursor_y += ctx->textsize_y * 8; // advance y one line
+    } else if (c != '\r') {       // Ignore carriage returns
+      if (ctx->wrap && ((ctx->cursor_x + ctx->textsize_x * 6) > ctx->width)) { // Off right?
+        ctx->cursor_x = 0;                                       // Reset x to zero,
+        ctx->cursor_y += ctx->textsize_y * 8; // advance y one line
+      }
+      drawChar(ctx, ctx->cursor_x, ctx->cursor_y, c, ctx->textcolor, ctx->textbgcolor, ctx->textsize_x, ctx->textsize_y);
+      ctx->cursor_x += ctx->textsize_x * 6; // Advance x one char
+    }
+
+  } else { // Custom font
+
+#if 0
+    if (c == '\n') {
+      cursor_x = 0;
+      cursor_y +=
+          (int16_t)textsize_y * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+    } else if (c != '\r') {
+      uint8_t first = pgm_read_byte(&gfxFont->first);
+      if ((c >= first) && (c <= (uint8_t)pgm_read_byte(&gfxFont->last))) {
+        GFXglyph *glyph = pgm_read_glyph_ptr(gfxFont, c - first);
+        uint8_t w = pgm_read_byte(&glyph->width),
+                h = pgm_read_byte(&glyph->height);
+        if ((w > 0) && (h > 0)) { // Is there an associated bitmap?
+          int16_t xo = (int8_t)pgm_read_byte(&glyph->xOffset); // sic
+          if (wrap && ((cursor_x + textsize_x * (xo + w)) > _width)) {
+            cursor_x = 0;
+            cursor_y += (int16_t)textsize_y *
+                        (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+          }
+          drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize_x,
+                   textsize_y);
+        }
+        cursor_x +=
+            (uint8_t)pgm_read_byte(&glyph->xAdvance) * (int16_t)textsize_x;
+      }
+    }
+#endif
+  }
+  return 1;
+}
+
+
+
+
+void setCursor(Context *ctx, int16_t x, int16_t y) 
+{
+    ctx->cursor_x = x;
+    ctx->cursor_y = y;
+  }
+
+void setTextColor(Context *ctx, uint16_t c) 
+{ 
+  ctx->textcolor = ctx->textbgcolor = c; 
+}
+
+
+
 
 
 

@@ -92,6 +92,21 @@ void initialize(Context *ctx)
 
   memset(ctx, 0, sizeof(Context));
 
+  ////////////////////
+
+  // ctx->width = WIDTH;
+  // ctx->height = HEIGHT;
+  ctx->rotation = 0;
+  ctx->cursor_y = ctx->cursor_x = 0;
+  ctx->textsize_x = ctx->textsize_y = 1;
+  ctx->textcolor = ctx->textbgcolor = 0xFFFF;
+  ctx->wrap = true;
+  ctx->cp437 = false;
+  ctx->gfxFont = NULL;
+
+
+  ////////////////////
+
 
     // not sure if this is the best place
   lcd_spi_assert_cs();
