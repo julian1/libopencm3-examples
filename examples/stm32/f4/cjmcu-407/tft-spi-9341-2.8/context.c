@@ -22,7 +22,7 @@ void startWrite(Context *ctx)
   // dummy
   // would normally do cs.
   // except we 
-  // lcd_spi_assert_cs();
+  // lcd_spi_enable();
 }
 
 void endWrite(Context *ctx) 
@@ -109,7 +109,7 @@ void initialize(Context *ctx)
 
 
     // not sure if this is the best place
-  lcd_spi_assert_cs();
+  lcd_spi_enable();
   delay(1);
 
 

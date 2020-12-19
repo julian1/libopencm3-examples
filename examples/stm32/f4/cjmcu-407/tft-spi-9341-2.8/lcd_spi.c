@@ -252,7 +252,7 @@ void lcd_spi_assert_rst(void)
 
 // beginning stm32 uses, spi_enable()    for nss/cs.
 
-void lcd_spi_assert_cs(void)
+void lcd_spi_enable(void)
 {
   // assert chip select, with low
   gpio_clear(LCD_SPI_PORT, LCD_CS);       // cs is spi port. this is hard.

@@ -5,7 +5,6 @@
 
 void lcd_spi_setup( void );
 
-void lcd_spi_assert_cs(void);
 
 
 // change name - use assert for cs/nss. not rst.
@@ -16,6 +15,10 @@ void lcd_spi_turn_on_backlight( void );
 
 
 // only  the following should really be used by gfx
+
+
+
+void lcd_spi_enable(void);
 
 void lcd_spi_set_command(void );
 void lcd_spi_set_data(void );
