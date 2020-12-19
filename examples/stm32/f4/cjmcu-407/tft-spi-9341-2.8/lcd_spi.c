@@ -253,6 +253,15 @@ void lcd_spi_enable(void)
 }
 
 
+void lcd_spi_disable(void)
+{
+  gpio_set(LCD_SPI_PORT, LCD_CS);       // cs is spi port. this is hard.
+}
+
+
+
+
+//////////////////////////
 
 static void lcd_spi_assert_command(void )
 {
@@ -294,6 +303,9 @@ static void lcd_spi_send8( uint8_t x )
 
 void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint32_t numDataBytes)
 {
+
+
+
   lcd_spi_assert_command();
   lcd_spi_send8(command);
 
@@ -326,27 +338,6 @@ void lcd_send_command_repeat(uint8_t command, uint16_t x, uint32_t n )
 }
 
 
-
-
-
-
-
-#if 0
-// these are helpers ... 
-// but not very nice.
-
-void lcd_send_command0(uint8_t command)
-{
-  // should look at removing this
-  lcd_spi_assert_command();
-  lcd_spi_send8(command);
-}
-
-void lcd_send_command1(uint8_t command, uint8_t data)
-{
-  lcd_send_command(command, &data, 1);
-}
-#endif
 
 
 
