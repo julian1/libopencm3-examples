@@ -7,6 +7,8 @@ void lcd_spi_setup( void );
 
 void lcd_spi_assert_cs(void);
 
+
+// change name - use assert for cs/nss. not rst.
 void lcd_spi_assert_rst(void);
 void lcd_spi_deassert_rst(void);
 

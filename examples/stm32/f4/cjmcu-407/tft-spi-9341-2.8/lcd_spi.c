@@ -246,6 +246,11 @@ void lcd_spi_assert_rst(void)
 
 
 
+// ok. we're not really using this correctly
+// should be disable on each major write.
+
+
+// beginning stm32 uses, spi_enable()    for nss/cs.
 
 void lcd_spi_assert_cs(void)
 {
