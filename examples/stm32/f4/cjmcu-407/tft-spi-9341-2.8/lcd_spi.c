@@ -220,12 +220,6 @@ static inline void wait_for_transfer_finish(void)
 }
 
 
-// probably should be inlined...
-void lcd_spi_send8( uint8_t x )
-{
-  spi_send( LCD_SPI, x );
-}
-
 
 void lcd_spi_turn_on_backlight( void )
 {
@@ -260,7 +254,7 @@ void lcd_spi_enable(void)
 
 
 
-void lcd_spi_assert_command(void )
+static void lcd_spi_assert_command(void )
 {
   wait_for_transfer_finish();
   gpio_clear( LCD_CTL_PORT, LCD_CTL_DC);    // low == command
@@ -268,11 +262,23 @@ void lcd_spi_assert_command(void )
 
 
 
-void lcd_spi_assert_data(void )
+static void lcd_spi_assert_data(void )
 {
   wait_for_transfer_finish();
   gpio_set( LCD_CTL_PORT, LCD_CTL_DC);    // high == data
 }
+
+
+// probably should be inlined...
+static void lcd_spi_send8( uint8_t x )
+{
+  spi_send( LCD_SPI, x );
+}
+
+
+
+
+
 
 /*
   EXTREME
@@ -292,8 +298,30 @@ void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint32_t numDat
   lcd_spi_send8(command);
 
   lcd_spi_assert_data();
+
   for(unsigned i = 0; i < numDataBytes; ++i) {
     lcd_spi_send8(dataBytes[ i ]);
+  }
+}
+
+
+
+
+
+void lcd_send_command_repeat(uint8_t command, uint16_t x, uint32_t n )
+{
+  // n is *not* bytes, but number of 16bit elements
+
+  lcd_spi_assert_command();
+  lcd_spi_send8(command);
+
+  lcd_spi_assert_data();
+
+  for(unsigned i = 0; i < n ; ++i) {
+    // lcd_spi_send8(dataBytes[ i ]);
+    lcd_spi_send8( x >> 8 );
+    lcd_spi_send8( x & 0xFF );
+
   }
 }
 
