@@ -305,7 +305,6 @@ void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint32_t numDat
 {
 
 
-
   lcd_spi_assert_command();
   lcd_spi_send8(command);
 
@@ -314,6 +313,8 @@ void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint32_t numDat
   for(unsigned i = 0; i < numDataBytes; ++i) {
     lcd_spi_send8(dataBytes[ i ]);
   }
+
+
 }
 
 
@@ -323,6 +324,7 @@ void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint32_t numDat
 void lcd_send_command_repeat(uint8_t command, uint16_t x, uint32_t n )
 {
   // n is *not* bytes, but number of 16bit elements
+
 
   lcd_spi_assert_command();
   lcd_spi_send8(command);
@@ -335,6 +337,8 @@ void lcd_send_command_repeat(uint8_t command, uint16_t x, uint32_t n )
     lcd_spi_send8( x & 0xFF );
 
   }
+
+
 }
 
 
