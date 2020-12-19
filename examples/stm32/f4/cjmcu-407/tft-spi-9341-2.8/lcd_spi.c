@@ -1,4 +1,8 @@
 /*
+  Not sure, how useful using hardware NSS with an external PU resistor is.
+  Since we must already toggle the command/data pin, which will require waiting for writes to complete etc.
+*/
+/*
   spi 9341  2.8 with touch
 
   -- OK. needs 5V - for backlight to be brighterjj
@@ -196,6 +200,8 @@ static inline void wait_for_transfer_finish(void)
   see example, that also uses a loop.
   https://github.com/libopencm3/libopencm3-examples/blob/master/examples/stm32/f4/stm32f429i-discovery/lcd-dma/lcd-spi.c
 */
+  // so we actually need both of these,
+
   spi_wait_for_transfer_finish(LCD_SPI);
   // nop_sleep(15);   // 9 doesn't work. 10 does... weird margin
 
