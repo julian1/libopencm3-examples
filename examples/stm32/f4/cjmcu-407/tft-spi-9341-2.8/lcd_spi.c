@@ -83,22 +83,6 @@
 
 
 
-#if 0
-void delay( uint16_t x )
-{
-  // millisecond delay
-  msleep(x);
-}
-static inline void nop_sleep( uint32_t n)
-{
-  uint32_t i;
-  for(i = 0; i < n; ++i)  {
-    __asm__("nop");
-  }
-}
-#endif
-
-
 
 
 
@@ -303,7 +287,6 @@ static void lcd_spi_send8( uint8_t x )
 
 void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint32_t numDataBytes)
 {
-
 
   lcd_spi_assert_command();
   lcd_spi_send8(command);
