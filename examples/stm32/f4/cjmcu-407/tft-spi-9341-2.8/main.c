@@ -35,7 +35,13 @@ static void led_setup(void)
 
 
 
-
+static void drawText(Context *ctx, const char *s)
+{
+  while(*s) {
+    write(ctx, *s);     // This won't work very well with printf if have to pass a context...
+    ++s;
+  }
+}
 
 
 
@@ -84,12 +90,10 @@ int main(void)
   setCursor(&ctx, 50, 50);
   setTextSize(&ctx, 3, 3);
 
-  write(&ctx, 'h');     // This won't work very well with printf if have to pass a context...
-  write(&ctx, 'i');
-  write(&ctx, ' ');
-  write(&ctx, 't');
-  write(&ctx, 'h');
+  // ok. this will actually wrap correctly...
+  drawText(&ctx, "hi there friends all");
 
+  drawText(&ctx, "77.123");
 
   // int u = ILI9341_BLACK;
   // blink led
