@@ -20,8 +20,8 @@ void lcd_spi_turn_on_backlight( void );
 
 void lcd_spi_enable(void);
 
-void lcd_spi_set_command(void );
-void lcd_spi_set_data(void );
+void lcd_spi_assert_command(void );
+void lcd_spi_assert_data(void );
 
 
 void lcd_spi_send8( uint8_t x );

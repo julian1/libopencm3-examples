@@ -223,7 +223,7 @@ void ILI9341_DrawRectangle(Context *ctx, uint16_t x, uint16_t y, uint16_t x_off,
   // send command
   lcd_send_command0(ILI9341_RAMWR); // 2C ram write
 
-  lcd_spi_set_data();
+  lcd_spi_assert_data();
   // 16 bit color
   int i;
   for( i = 0; i < x_off * y_off ; ++i) {

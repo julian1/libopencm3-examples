@@ -260,7 +260,7 @@ void lcd_spi_enable(void)
 
 
 
-void lcd_spi_set_command(void )
+void lcd_spi_assert_command(void )
 {
   wait_for_transfer_finish();
   gpio_clear( LCD_CTL_PORT, LCD_CTL_DC);    // low == command
@@ -268,7 +268,7 @@ void lcd_spi_set_command(void )
 
 
 
-void lcd_spi_set_data(void )
+void lcd_spi_assert_data(void )
 {
   wait_for_transfer_finish();
   gpio_set( LCD_CTL_PORT, LCD_CTL_DC);    // high == data
@@ -278,10 +278,10 @@ void lcd_spi_set_data(void )
 
 void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
 {
-  lcd_spi_set_command();
+  lcd_spi_assert_command();
   lcd_spi_send8(command);
 
-  lcd_spi_set_data();
+  lcd_spi_assert_data();
   for(unsigned i = 0; i < numDataBytes; ++i) {
     lcd_spi_send8(dataBytes[ i ]);
   }
@@ -303,7 +303,7 @@ void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint8_t numData
 void lcd_send_command0(uint8_t command)
 {
   // should look at removing this
-  lcd_spi_set_command();
+  lcd_spi_assert_command();
   lcd_spi_send8(command);
 }
 
