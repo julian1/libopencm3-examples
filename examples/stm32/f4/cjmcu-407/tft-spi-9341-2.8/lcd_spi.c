@@ -331,7 +331,7 @@ void lcd_send_command_repeat(uint8_t command, uint16_t x, uint32_t n )
 
 
 
-
+#if 0
 // these are helpers ... 
 // but not very nice.
 
@@ -346,7 +346,7 @@ void lcd_send_command1(uint8_t command, uint8_t data)
 {
   lcd_send_command(command, &data, 1);
 }
-
+#endif
 
 
 
