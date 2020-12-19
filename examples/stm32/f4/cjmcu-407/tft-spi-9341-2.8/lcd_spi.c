@@ -274,19 +274,6 @@ void lcd_spi_assert_data(void )
   gpio_set( LCD_CTL_PORT, LCD_CTL_DC);    // high == data
 }
 
-
-
-void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint8_t numDataBytes)
-{
-  lcd_spi_assert_command();
-  lcd_spi_send8(command);
-
-  lcd_spi_assert_data();
-  for(unsigned i = 0; i < numDataBytes; ++i) {
-    lcd_spi_send8(dataBytes[ i ]);
-  }
-
-
 /*
   EXTREME
     // OK. think issue may be that lcd_spi_send8 returns before it has finished sending bytes.
@@ -297,7 +284,25 @@ void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint8_t numData
     // so if we try to fiddle with the command/data register  in the middle of sending it screws up.
 
 */
+
+
+void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint32_t numDataBytes)
+{
+  lcd_spi_assert_command();
+  lcd_spi_send8(command);
+
+  lcd_spi_assert_data();
+  for(unsigned i = 0; i < numDataBytes; ++i) {
+    lcd_spi_send8(dataBytes[ i ]);
+  }
 }
+
+
+
+
+
+
+
 
 // these are helpers ... 
 // but not very nice.
