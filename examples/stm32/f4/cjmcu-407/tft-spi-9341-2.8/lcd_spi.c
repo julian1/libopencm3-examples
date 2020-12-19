@@ -233,15 +233,15 @@ void lcd_spi_turn_on_backlight( void )
   gpio_set( LCD_CTL_PORT, LCD_CTL_LED);    // high
 }
 
+void lcd_spi_assert_rst(void)
+{
+  gpio_clear(  LCD_CTL_PORT, LCD_CTL_RST);
+}
+
 
 void lcd_spi_deassert_rst(void)
 {
   gpio_set( LCD_CTL_PORT, LCD_CTL_RST);
-}
-
-void lcd_spi_assert_rst(void)
-{
-  gpio_clear(  LCD_CTL_PORT, LCD_CTL_RST);
 }
 
 
@@ -299,6 +299,8 @@ void lcd_send_command(uint8_t command, const uint8_t *dataBytes, uint8_t numData
 */
 }
 
+// these are helpers ... 
+// but not very nice.
 
 void lcd_send_command0(uint8_t command)
 {

@@ -1,20 +1,15 @@
 
 
-// prefix all these with lcd_spi_
-// spi primitives, that hide underlying stm32 spi details.
+// low-level spi primitives, that hide underlying stm32 spi details.
 
 void lcd_spi_setup( void );
 
 
 
-// change name - use assert for cs/nss. not rst.
 void lcd_spi_assert_rst(void);
 void lcd_spi_deassert_rst(void);
 
 void lcd_spi_turn_on_backlight( void );
-
-
-// only  the following should really be used by gfx
 
 
 
