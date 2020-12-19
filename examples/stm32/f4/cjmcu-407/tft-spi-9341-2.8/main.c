@@ -65,8 +65,7 @@ int main(void)
 
   // gfx
   fillScreen(&ctx, ILI9341_WHITE );
-  fillRect(&ctx, 100, 50, 200, 70, ILI9341_BLUE );
-  fillRect(&ctx, 20, 20, 20, 20, ILI9341_RED );
+  fillRect(&ctx, 20, 20, 40, 20, ILI9341_RED );
 
   writeFastHLine(&ctx, 50, 40, 100, ILI9341_BLUE);
 
@@ -87,12 +86,25 @@ int main(void)
 
   write(&ctx, 'h');     // This won't work very well with printf if have to pass a context...
   write(&ctx, 'i');
+  write(&ctx, ' ');
+  write(&ctx, 't');
+  write(&ctx, 'h');
 
 
-
+  // int u = ILI9341_BLACK;
   // blink led
  	while (1) {
     gpio_toggle(GPIOE, GPIO0);
+
+    #if 0
+    u = u == ILI9341_BLACK ?  ILI9341_RED : ILI9341_BLACK;
+
+    drawChar(
+      &ctx,
+      60, 60, '8',                        // int16_t x, int16_t y, unsigned char c,
+      u , u ,       // uint16_t color, uint16_t bg,
+      10, 10);                            // uint8_t size_x, uint8_t size_y);
+    #endif
 
     // gpio_toggle( LCD_CTL_PORT, LCD_CTL_LED);    // toggle backlight
     msleep(500);

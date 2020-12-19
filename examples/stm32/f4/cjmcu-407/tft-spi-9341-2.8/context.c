@@ -16,16 +16,16 @@
 
 
 
-void startWrite(Context *ctx) 
+void startWrite(Context *ctx)
 {
   UNUSED(ctx);
   // dummy
   // would normally do cs.
-  // except we 
+  // except we
   // lcd_spi_enable();
 }
 
-void endWrite(Context *ctx) 
+void endWrite(Context *ctx)
 {
   UNUSED(ctx);
 
@@ -108,19 +108,17 @@ void initialize(Context *ctx)
   ////////////////////
 
 
-    // not sure if this is the best place
+  // not sure if this is the best place
+  // doing enable/disable will mean writes synch properly.
   lcd_spi_enable();
   delay(1);
 
 
   // hardware reset - review
-  // gpio_set(  LCD_CTL_PORT, LCD_CTL_RST);    // high
   lcd_spi_deassert_rst();
   delay(150);
   lcd_spi_assert_rst();
-  // gpio_clear(LCD_CTL_PORT, LCD_CTL_RST);   // low
   delay(150);
-  // gpio_set(  LCD_CTL_PORT, LCD_CTL_RST);   // high
   lcd_spi_deassert_rst();
   delay(150);
 
