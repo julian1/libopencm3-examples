@@ -44,6 +44,7 @@ static void tim_setup(void)
 	rcc_periph_clock_enable(RCC_TIM2);
 
 	/* Enable TIM2 interrupt. */
+  // priority
 	nvic_enable_irq(NVIC_TIM2_IRQ);
 
 	/* Reset TIM2 peripheral to defaults. */
