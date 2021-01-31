@@ -88,10 +88,10 @@ int main(void)
 
   setTextColor(&ctx, ILI9341_BLUE);
   setCursor(&ctx, 50, 50);
-  setTextSize(&ctx, 3, 3);
+  setTextSize(&ctx, 0.3, 0.3);
 
   // ok. this will actually wrap correctly...
-  drawText(&ctx, "hi there friends all");
+  drawText(&ctx, "hi there friends all  ");
 
   drawText(&ctx, "77.123");
 

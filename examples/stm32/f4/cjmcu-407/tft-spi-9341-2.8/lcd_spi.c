@@ -1,6 +1,9 @@
 /*
   we want a vertical scroll
   and organize the code - so it's checked in.
+
+  https://www.eevblog.com/forum/projects/ili9341-tft-display-and-hardware-scrolling/
+
 */
 /*
   Not sure, how useful using hardware NSS with an external PU resistor is.
