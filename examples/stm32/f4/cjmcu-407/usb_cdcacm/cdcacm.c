@@ -1,20 +1,10 @@
 /*
- * This file is part of the libopencm3 project.
- *
- * Copyright (C) 2010 Gareth McMullin <gareth@blacksphere.co.nz>
- *
- * This library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+
+need fix in usb_f107.c in libopencm3 and recompile...
+
+brings up /dev/ttyACM0
+
+
  */
 
 #include <stdlib.h>
@@ -226,7 +216,20 @@ int main(void)
 {
 	usbd_device *usbd_dev;
 
-	rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
+  // JA
+  // xtal on bluepill like stm32f411 is 25MHz. presumably so easy to hit 100MHz.
+  // but not in rcc.h. maybe updated?
+	// rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);  // stm32f407 168MHz
+	rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_84MHZ] );  // stm32f411  upto 100MHz.
+
+  // http://libopencm3.org/docs/latest/stm32f4/html/f4_2rcc_8h.html
+  // note there is a single 25MHz entry for rcc_hse_25mhz_3v3[RCC_CLOCK_3V3_END]   perhaps 4x for 100MHz.
+  
+  /*
+    see here for rcc.c example, defining 100MHz,
+      https://github.com/insane-adding-machines/unicore-mx/blob/master/lib/stm32/f4/rcc.c
+  */
+  
 
 	rcc_periph_clock_enable(RCC_GPIOA);
 	rcc_periph_clock_enable(RCC_OTGFS);
